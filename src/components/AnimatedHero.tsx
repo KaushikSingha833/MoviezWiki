@@ -11,14 +11,15 @@ const BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/original";
 
 export default function AnimatedHero({ movies }: { movies: any[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    if (!movies || movies.length === 0) return;
+    if (!movies || movies.length === 0 || isPaused) return;
     const interval = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % movies.length);
     }, 8000); // 8 seconds per slide
     return () => clearInterval(interval);
-  }, [movies]);
+  }, [movies, isPaused]);
 
   if (!movies || movies.length === 0) return null;
 
@@ -94,7 +95,7 @@ export default function AnimatedHero({ movies }: { movies: any[] }) {
 
             {/* Buttons */}
             <div className="pt-4">
-              <HeroButtons movie={currentMovie} />
+              <HeroButtons movie={currentMovie} onInteractionChange={(interacting) => setIsPaused(interacting)} />
             </div>
           </motion.div>
         </AnimatePresence>

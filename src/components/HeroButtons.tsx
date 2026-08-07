@@ -5,7 +5,7 @@ import { getMovieTrailer } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
 import AISummaryModal from "@/components/AISummaryModal";
 
-export default function HeroButtons({ movie }: { movie: any }) {
+export default function HeroButtons({ movie, onInteractionChange }: { movie: any, onInteractionChange?: (acting: boolean) => void }) {
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +16,7 @@ export default function HeroButtons({ movie }: { movie: any }) {
   const handleAISummary = async () => {
     if (!movie) return;
     setShowAIModal(true);
+    if (onInteractionChange) onInteractionChange(true);
     if (!aiSummary) {
       setIsLoadingAI(true);
       const summary = await getAISummary(movie.title || movie.name || "Untitled", movie.overview || "No plot overview available.");
@@ -33,6 +34,7 @@ export default function HeroButtons({ movie }: { movie: any }) {
     
     setTrailerKey(key);
     setShowModal(true);
+    if (onInteractionChange) onInteractionChange(true);
     setIsLoading(false);
   };
 
@@ -64,7 +66,7 @@ export default function HeroButtons({ movie }: { movie: any }) {
         <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/95 p-4 md:p-12">
           <div className="relative w-full max-w-5xl aspect-video bg-black rounded-xl overflow-hidden shadow-2xl border border-neutral-800">
             <button 
-              onClick={() => setShowModal(false)} 
+              onClick={() => { setShowModal(false); if (onInteractionChange) onInteractionChange(false); }} 
               className="absolute top-4 right-4 z-10 text-white bg-black/50 hover:bg-red-600 rounded-full w-10 h-10 flex items-center justify-center transition-colors"
             >
               ✕
@@ -90,7 +92,7 @@ export default function HeroButtons({ movie }: { movie: any }) {
 
       <AISummaryModal 
         isOpen={showAIModal}
-        onClose={() => setShowAIModal(false)}
+        onClose={() => { setShowAIModal(false); if (onInteractionChange) onInteractionChange(false); }}
         summary={aiSummary}
         title={movie?.title || movie?.name || "Untitled"}
         isLoading={isLoadingAI}
