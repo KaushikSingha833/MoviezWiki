@@ -89,3 +89,32 @@ export async function getTVSeasonTrailer(tvId: number, seasonNumber: number) {
     return null;
   }
 }
+
+export async function getStreamingProviders(id: number, type: "movie" | "tv" = "movie") {
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/${type}/${id}/watch/providers?api_key=${API_KEY}`,
+      { next: { revalidate: 3600 } }
+    );
+    const data = await res.json();
+    
+    if (!data.results || Object.keys(data.results).length === 0) return null;
+
+    // Prioritize US streaming rights, or fallback to the first available country
+    const regionData = data.results.US || Object.values(data.results)[0];
+    if (!regionData) return null;
+
+    // Combine flatrate (subscriptions), and free options
+    const flatrate = regionData.flatrate || [];
+    const free = regionData.free || [];
+    
+    // Deduplicate platforms using provider_id
+    const combined = [...flatrate, ...free];
+    const uniqueProviders = Array.from(new Map(combined.map((item: any) => [item.provider_id, item])).values());
+    
+    return uniqueProviders.length > 0 ? uniqueProviders : null;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
