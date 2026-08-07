@@ -6,11 +6,14 @@ import { getAISummary } from "@/actions/aiActions";
 import { useWishlist } from "@/context/WishlistContext";
 import { getGenreNames } from "@/lib/genres";
 import AISummaryModal from "@/components/AISummaryModal";
+import InfoModal from "@/components/InfoModal";
+import { Info } from "lucide-react";
 
 export default function TopTenCard({ item, index }: { item: any, index: number }) {
   const genres = getGenreNames(item.genre_ids);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
   const [aiSummary, setAiSummary] = useState("");
@@ -68,28 +71,40 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                 className="w-full h-full object-cover"
               />
               
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleWishlist(item);
-                }}
-                className="absolute top-2 right-2 z-30 p-1.5 bg-black/60 rounded-full hover:bg-black/80 transition-colors border border-neutral-700 hover:border-transparent"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill={isInWishlist ? "red" : "none"}
-                  stroke={isInWishlist ? "red" : "white"}
-                  strokeWidth="2"
-                  className="w-4 h-4 md:w-5 md:h-5"
+              <div className="absolute top-2 right-2 flex flex-col gap-2 z-30">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleWishlist(item);
+                  }}
+                  className="p-1.5 bg-black/60 rounded-full hover:bg-black/80 transition-colors border border-neutral-700 hover:border-transparent shadow-lg"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill={isInWishlist ? "red" : "none"}
+                    stroke={isInWishlist ? "red" : "white"}
+                    strokeWidth="2"
+                    className="w-4 h-4 md:w-5 md:h-5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+                    />
+                  </svg>
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowInfoModal(true);
+                  }}
+                  className="p-1.5 bg-black/60 rounded-full hover:bg-black/80 flex items-center justify-center text-white hover:text-indigo-400 transition-colors border border-neutral-700 hover:border-transparent shadow-lg"
+                >
+                  <Info className="w-4 h-4 md:w-5 md:h-5" />
+                </button>
+              </div>
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent opacity-100 md:opacity-0 flex flex-col justify-end p-2.5 md:hidden">
                 <span className="text-white text-xs font-bold mb-1 line-clamp-2">
@@ -181,6 +196,10 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
             )}
           </div>
         </div>
+      )}
+
+      {showInfoModal && (
+        <InfoModal movie={item} onClose={() => setShowInfoModal(false)} />
       )}
 
       <AISummaryModal 

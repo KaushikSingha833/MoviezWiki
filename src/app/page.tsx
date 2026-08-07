@@ -9,30 +9,47 @@ import {
   getUpcomingMovies,
   getNowPlayingMovies,
   getPopularCelebrities,
-  getTrendingTvShows
+  getTrendingTvShows,
+  getPopularTvShows,
+  getTrendingAnime,
+  getKoreanDrama
 } from "@/lib/tmdb";
 import LatestTrailers from "@/components/LatestTrailers";
 import TopTenCarousel from "@/components/TopTenCarousel";
 import MovieCarousel from "@/components/MovieCarousel";
 
 export default async function HomePage() {
-  const [trending, popular, topRated, upcoming, nowPlaying, celebrities, trendingTv] = await Promise.all([
+  const [
+    trending, 
+    popular, 
+    topRated, 
+    upcoming, 
+    nowPlaying, 
+    celebrities, 
+    trendingTv,
+    popularTv,
+    anime,
+    kDrama
+  ] = await Promise.all([
     getTrendingMovies(),
     getPopularMovies(),
     getTopRatedMovies(),
     getUpcomingMovies(),
     getNowPlayingMovies(),
     getPopularCelebrities(),
-    getTrendingTvShows()
+    getTrendingTvShows(),
+    getPopularTvShows(),
+    getTrendingAnime(),
+    getKoreanDrama()
   ]);
-
-  const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
   const movieSections = [
     { title: "Now Playing in Theaters", data: nowPlaying.results },
-    { title: "Fan Favorites (Top Rated)", data: topRated.results },
-    { title: "Upcoming Releases", data: upcoming.results },
-    { title: "Popular Right Now", data: popular.results },
+    { title: "Binge-Worthy TV Series", data: popularTv.results },
+    { title: "Trending Japanese Anime", data: anime.results },
+    { title: "K-Dramas & Korean Cinema", data: kDrama.results },
+    { title: "Upcoming Cinematic Releases", data: upcoming.results },
+    { title: "Global Fan Favorites", data: topRated.results },
   ];
 
   return (

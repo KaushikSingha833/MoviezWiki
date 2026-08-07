@@ -86,6 +86,10 @@ export const getUpcomingMovies = () => fetchTMDB('/movie/upcoming');
 export const getNowPlayingMovies = () => fetchTMDB('/movie/now_playing');
 export const getPopularCelebrities = () => fetchTMDB('/person/popular');
 export const getTrendingTvShows = () => fetchTMDB('/trending/tv/day');
+export const getPopularTvShows = () => fetchTMDB('/tv/popular');
+export const getTrendingAnime = () => fetchTMDB('/discover/tv', '&with_genres=16&with_original_language=ja&sort_by=popularity.desc');
+export const getKoreanDrama = () => fetchTMDB('/discover/tv', '&with_original_language=ko&sort_by=popularity.desc');
+
 export const searchTMDB = async (query: string) => {
   const data = await fetchTMDB('/search/multi', `&query=${encodeURIComponent(query)}`);
   
