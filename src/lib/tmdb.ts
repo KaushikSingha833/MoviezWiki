@@ -107,3 +107,25 @@ export const searchTMDB = async (query: string) => {
   
   return data;
 };
+
+export const discoverTMDBAdvanced = async (genres?: string, region?: string) => {
+  let params = "&sort_by=popularity.desc";
+  if (genres) {
+    params += `&with_genres=${genres}`;
+  }
+  
+  if (region === "hollywood") {
+    params += "&with_origin_country=US&with_original_language=en";
+  } else if (region === "bollywood") {
+    params += "&with_origin_country=IN&with_original_language=hi";
+  } else if (region === "tollywood") {
+    params += "&with_origin_country=IN&with_original_language=te";
+  } else if (region === "korean") {
+    params += "&with_origin_country=KR&with_original_language=ko";
+  } else if (region === "anime") {
+    if (!genres || !genres.includes("16")) params += "&with_genres=16"; // Anime is animation
+    params += "&with_original_language=ja";
+  }
+
+  return fetchTMDB('/discover/movie', params);
+};

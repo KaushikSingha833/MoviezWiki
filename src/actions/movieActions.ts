@@ -137,7 +137,23 @@ export async function getMediaReviews(id: number | string, type: "movie" | "tv" 
       { next: { revalidate: 3600 } }
     );
     const data = await res.json();
-    return data.results?.slice(0, 10) || [];
+    return data.results || [];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+export async function getSearchSuggestions(query: string) {
+  if (!query) return [];
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1`,
+      { next: { revalidate: 3600 } }
+    );
+    const data = await res.json();
+    // Return only top 5 for fast visual dropdown
+    return data.results?.slice(0, 5) || [];
   } catch (error) {
     console.error(error);
     return [];

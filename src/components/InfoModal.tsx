@@ -35,6 +35,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
   const [showReviews, setShowReviews] = useState(false);
   const [reviews, setReviews] = useState<any[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [visibleReviewsCount, setVisibleReviewsCount] = useState(5);
 
   useEffect(() => {
     if (isTV) {
@@ -285,8 +286,8 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                    Fetching real user opinions...
                  </div>
               ) : reviews.length > 0 ? (
-                 <div className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide snap-x">
-                   {reviews.map((r, i) => {
+                 <div className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide snap-x items-stretch">
+                   {reviews.slice(0, visibleReviewsCount).map((r, i) => {
                      const avatarUrl = getAvatarFallback(r.author_details?.avatar_path);
                      const rating = r.author_details?.rating;
                      return (
@@ -318,6 +319,19 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                        </div>
                      );
                    })}
+                   
+                   {visibleReviewsCount < reviews.length && (
+                     <div 
+                       onClick={() => setVisibleReviewsCount(prev => prev + 5)}
+                       className="flex-shrink-0 w-80 sm:w-96 snap-start flex flex-col items-center justify-center p-6 bg-[#1a1a1a]/50 border-2 border-dashed border-neutral-800 rounded-2xl cursor-pointer hover:bg-neutral-800/50 hover:border-[#F5C518]/50 transition-all group"
+                     >
+                       <div className="w-12 h-12 rounded-full bg-[#141414] border border-neutral-700 flex items-center justify-center mb-3 group-hover:border-[#F5C518] transition-colors">
+                          <MessageCircle className="w-5 h-5 text-neutral-400 group-hover:text-[#F5C518] transition-colors" />
+                       </div>
+                       <span className="text-white font-bold text-lg mb-1 group-hover:text-[#F5C518] transition-colors">Read More</span>
+                       <span className="text-neutral-500 text-xs font-semibold">{reviews.length - visibleReviewsCount} remaining comments</span>
+                     </div>
+                   )}
                  </div>
               ) : (
                  <div className="text-neutral-500 italic bg-neutral-900/40 border border-neutral-800 rounded-xl p-8 text-center text-sm font-medium">

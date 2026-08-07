@@ -5,7 +5,213 @@ import { usePathname, useRouter } from "next/navigation";
 import { useWishlist } from "@/context/WishlistContext";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
+import { getSearchSuggestions } from "@/actions/movieActions";
+import { GENRE_MAP } from "@/lib/genres";
+import { Filter, SlidersHorizontal, Search, Settings2, Popcorn, Film, Globe } from "lucide-react";
+
+const SearchBar = ({ isMobile = false }) => {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  
+  // Search State Managers
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Advanced Filter States
+  const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
+  const [selectedRegion, setSelectedRegion] = useState<string>("");
+  
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setShowDropdown(false);
+        setShowFilters(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Fetch Auto-Suggestions
+  useEffect(() => {
+    const fetchSugg = async () => {
+      if (query.trim().length < 2) {
+        setSuggestions([]);
+        return;
+      }
+      const res = await getSearchSuggestions(query);
+      setSuggestions(res);
+    };
+    const timer = setTimeout(fetchSugg, 300);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Handle Form Submission for Advanced Search
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setShowDropdown(false);
+    setShowFilters(false);
+    
+    const params = new URLSearchParams();
+    if (query.trim()) params.append('q', query.trim());
+    if (selectedGenres.length > 0) params.append('genres', selectedGenres.join(','));
+    if (selectedRegion) params.append('region', selectedRegion);
+    
+    // If all inputs are blank, do not route
+    if (!query.trim() && selectedGenres.length === 0 && !selectedRegion) return;
+    
+    router.push(`/search?${params.toString()}`);
+  };
+
+  const toggleGenre = (id: number) => {
+    setSelectedGenres(prev => prev.includes(id) ? prev.filter(g => g !== id) : [...prev, id]);
+  };
+
+  return (
+    <div className={`relative ${isMobile ? 'w-full flex' : 'hidden md:flex'}`} ref={containerRef}>
+      <form onSubmit={handleSearchSubmit} className="flex relative items-center w-full shadow-lg rounded-md overflow-hidden group">
+        <input 
+          type="text" 
+          name="q"
+          value={query}
+          onChange={(e) => { setQuery(e.target.value); setShowDropdown(true); setShowFilters(false); }}
+          onFocus={() => { if (query.length >= 2) setShowDropdown(true); }}
+          placeholder="Search movies, tv, people..." 
+          className={`bg-[#0a0a0c] text-white px-5 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#F5C518] text-sm group-hover:bg-[#121215] transition-colors border-y border-l border-neutral-800 ${isMobile ? 'w-full' : 'w-[280px]'}`}
+          autoComplete="off"
+        />
+        
+        {/* Toggle Filters Button */}
+        <button 
+          type="button"
+          onClick={() => { setShowFilters(!showFilters); setShowDropdown(false); }}
+          className={`px-3 py-2.5 border-y text-neutral-400 hover:text-white transition-colors border-neutral-800 flex items-center justify-center ${showFilters ? 'bg-[#1a1a1a] text-[#F5C518]' : 'bg-[#0a0a0c] group-hover:bg-[#121215]'}`}
+          title="Advanced Filters"
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+        </button>
+
+        {/* Submit Search Button */}
+        <button 
+          type="submit" 
+          className="bg-[#F5C518] hover:bg-yellow-500 transition-colors text-black px-5 py-2.5 font-bold text-sm border-y border-r border-[#F5C518]"
+        >
+           <Search className="w-4 h-4" />
+        </button>
+      </form>
+      
+      {/* Search Auto-Suggestions Dropdown */}
+      {showDropdown && suggestions.length > 0 && !showFilters && (
+        <div className="absolute top-full left-0 mt-2 w-full bg-[#121215] border border-neutral-700/50 rounded-xl shadow-[0_15px_50px_rgba(0,0,0,0.8)] overflow-hidden z-[100] flex flex-col">
+          {suggestions.map((s, i) => {
+            const title = s.title || s.name;
+            const imgPath = s.poster_path || s.profile_path;
+            const imgUrl = imgPath ? `https://image.tmdb.org/t/p/w92${imgPath}` : null;
+            return (
+              <Link 
+                key={i} 
+                href={`/search?q=${encodeURIComponent(title)}`}
+                onClick={() => { setShowDropdown(false); setQuery(title); }}
+                className="flex items-center gap-4 p-3 hover:bg-neutral-800/80 transition-colors border-b border-neutral-800/50 last:border-0"
+              >
+                <div className="w-9 h-12 bg-neutral-900 rounded bg-cover bg-center shrink-0 border border-neutral-800" style={{ backgroundImage: imgUrl ? `url(${imgUrl})` : 'none' }}>
+                  {!imgUrl && <div className="w-full h-full flex items-center justify-center text-xs text-neutral-600 font-bold">?</div>}
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-white text-sm font-bold line-clamp-1">{title}</span>
+                  <span className="text-[#F5C518] text-[9px] uppercase font-bold tracking-widest">{s.media_type === 'person' ? 'Person' : s.media_type === 'tv' ? 'TV Series' : 'Movie'}</span>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Advanced Discovery Filters Popover */}
+      {showFilters && (
+        <div className="absolute top-full right-0 lg:left-0 mt-3 w-[320px] sm:w-[400px] md:w-[480px] bg-[#121215]/95 backdrop-blur-xl border border-neutral-700/50 rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.9)] overflow-hidden z-[100] flex flex-col">
+           <div className="p-4 sm:p-6 border-b border-neutral-800">
+             <div className="flex items-center gap-2 mb-1">
+               <Settings2 className="w-5 h-5 text-[#F5C518]" />
+               <h3 className="text-lg font-black text-white tracking-tight">Discovery Engine</h3>
+             </div>
+             <p className="text-xs font-medium text-neutral-500">Find titles instantly by selecting categories. Text query is optional!</p>
+           </div>
+           <div className="p-4 sm:p-6 flex flex-col gap-6 max-h-[50vh] overflow-y-auto custom-scrollbar">
+             
+             {/* Region Filter */}
+             <div>
+               <div className="flex items-center gap-2 mb-3">
+                 <Globe className="w-4 h-4 text-emerald-400" />
+                 <h4 className="text-sm font-bold tracking-widest uppercase text-neutral-300">Industry / Region</h4>
+               </div>
+               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                 {[
+                   { id: "", label: "Global / All" },
+                   { id: "hollywood", label: "Hollywood (US)" },
+                   { id: "bollywood", label: "Bollywood (Hindi)" },
+                   { id: "tollywood", label: "Tollywood (Telugu)" },
+                   { id: "korean", label: "K-Drama / Korean" },
+                   { id: "anime", label: "Anime (Japan)" }
+                 ].map(reg => (
+                   <label key={reg.id} className={`flex items-center justify-center p-2 rounded-lg cursor-pointer transition-all border ${selectedRegion === reg.id ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400 font-bold' : 'bg-black/50 border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-white'}`}>
+                     <input type="radio" name="region" value={reg.id} checked={selectedRegion === reg.id} onChange={() => setSelectedRegion(reg.id)} className="hidden" />
+                     {reg.label}
+                   </label>
+                 ))}
+               </div>
+             </div>
+             
+             {/* Genres Filter (To-Do List Checklist style) */}
+             <div>
+               <div className="flex items-center gap-2 mb-3">
+                 <Film className="w-4 h-4 text-indigo-400" />
+                 <h4 className="text-sm font-bold tracking-widest uppercase text-neutral-300">Movie Genres Checklist</h4>
+               </div>
+               <div className="grid grid-cols-2 gap-2 text-xs">
+                 {Object.entries(GENRE_MAP).filter(([id, name]) => Number(id) <= 10752 && name !== "Documentary").map(([id, name]) => {
+                   const gId = Number(id);
+                   const isChecked = selectedGenres.includes(gId);
+                   return (
+                     <label key={gId} onClick={(e) => { e.preventDefault(); toggleGenre(gId); }} className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-indigo-500/10 border-indigo-500/50' : 'bg-transparent border-transparent hover:bg-white/5'}`}>
+                       <div className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors ${isChecked ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-neutral-600 bg-black/50'}`}>
+                         {isChecked && <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                       </div>
+                       <span className={isChecked ? 'text-white font-bold' : 'text-neutral-400 font-medium'}>{name}</span>
+                     </label>
+                   )
+                 })}
+               </div>
+             </div>
+             
+           </div>
+
+           <div className="p-4 sm:p-6 border-t border-neutral-800 bg-[#0a0a0c] flex gap-3">
+             <button 
+               type="button"
+               onClick={() => { setSelectedGenres([]); setSelectedRegion(""); setQuery(""); }}
+               className="px-4 py-3 rounded-xl border border-neutral-700 text-neutral-400 hover:text-white hover:bg-neutral-800 font-bold text-xs transition-all flex-1"
+             >
+               Reset Array
+             </button>
+             <button 
+               type="button"
+               onClick={handleSearchSubmit}
+               className="px-4 py-3 rounded-xl bg-gradient-to-r from-[#F5C518] to-yellow-600 text-black font-black text-xs sm:text-sm shadow-[0_0_20px_rgba(245,197,24,0.3)] hover:scale-[1.02] transition-all flex-[2] flex items-center justify-center gap-2"
+             >
+               <Popcorn className="w-4 h-4" /> Find Curated Movies
+             </button>
+           </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -19,7 +225,6 @@ export default function Navbar() {
   };
 
   const isAuthPage = pathname === "/login" || pathname === "/register" || pathname === "/forgot-password" || pathname === "/welcome";
-
   if (isAuthPage) return null;
 
   const NavLinks = ({ mobile = false }) => (
@@ -36,10 +241,7 @@ export default function Navbar() {
         <div className={`flex items-center gap-3 ${mobile ? 'mt-4' : 'ml-4'} bg-neutral-900 px-3 py-1.5 rounded-full border border-neutral-700 shadow-inner`}>
           <span className="text-xs text-neutral-300 font-medium truncate max-w-[150px]">{user.email}</span>
           <button 
-            onClick={() => {
-              handleLogout();
-              if (mobile) setIsMobileMenuOpen(false);
-            }} 
+            onClick={() => { handleLogout(); if (mobile) setIsMobileMenuOpen(false); }} 
             className="text-red-500 hover:text-red-400 bg-red-500/10 hover:bg-red-500/20 p-1.5 rounded-full transition-colors"
             title="Log Out"
           >
@@ -63,21 +265,10 @@ export default function Navbar() {
         </div>
         
         <div className="flex items-center gap-2 sm:gap-4">
-          <form action="/search" className="hidden sm:flex relative">
-            <input 
-              type="text" 
-              name="q"
-              placeholder="Search movies..." 
-              className="bg-neutral-800 text-white px-4 py-2 rounded-l-md focus:outline-none focus:ring-1 focus:ring-[#F5C518] text-sm w-48 md:w-64"
-              required
-            />
-            <button type="submit" className="bg-[#F5C518] hover:bg-yellow-500 transition-colors text-black px-4 py-2 rounded-r-md font-bold text-sm">
-              Search
-            </button>
-          </form>
+          <SearchBar />
 
           <button 
-            className="lg:hidden text-white p-2 hover:bg-neutral-800 rounded-md transition-colors"
+            className="md:hidden text-white p-2 hover:bg-neutral-800 rounded-md transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
@@ -93,19 +284,8 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden bg-[#181818] border-t border-neutral-800 p-4 flex flex-col space-y-6 shadow-inner absolute w-full left-0">
-          <form action="/search" className="flex relative sm:hidden w-full">
-            <input 
-              type="text" 
-              name="q"
-              placeholder="Search movies..." 
-              className="bg-neutral-800 text-white px-4 py-2 rounded-l-md focus:outline-none focus:ring-1 focus:ring-[#F5C518] text-sm w-full"
-              required
-            />
-            <button type="submit" className="bg-[#F5C518] hover:bg-yellow-500 transition-colors text-black px-4 py-2 rounded-r-md font-bold text-sm">
-              Search
-            </button>
-          </form>
+        <div className="md:hidden bg-[#181818] border-t border-neutral-800 p-4 flex flex-col space-y-6 shadow-inner absolute w-full left-0 z-50">
+          <SearchBar isMobile={true} />
           <div className="flex flex-col space-y-4 font-semibold text-sm pl-2">
             <NavLinks mobile={true} />
           </div>
