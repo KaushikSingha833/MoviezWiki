@@ -52,3 +52,40 @@ export async function getMovieTrailer(id: number, type: "movie" | "tv" = "movie"
     return null;
   }
 }
+
+export async function getTVDetails(tvId: number) {
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/tv/${tvId}?api_key=${API_KEY}`,
+      { next: { revalidate: 3600 } }
+    );
+    return await res.json();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function getTVSeasonTrailer(tvId: number, seasonNumber: number) {
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}/videos?api_key=${API_KEY}`,
+      { next: { revalidate: 3600 } }
+    );
+    const data = await res.json();
+    
+    if (!data.results || data.results.length === 0) return null;
+
+    const youtubeVideos = data.results.filter((vid: any) => vid.site === "YouTube");
+    
+    const trailer = youtubeVideos.find((vid: any) => vid.type === "Trailer");
+    const teaser = youtubeVideos.find((vid: any) => vid.type === "Teaser");
+    
+    const finalVideo = trailer || teaser || youtubeVideos[0];
+    
+    return finalVideo ? finalVideo.key : null;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}

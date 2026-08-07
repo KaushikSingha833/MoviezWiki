@@ -6,12 +6,15 @@ import { getAISummary } from "@/actions/aiActions";
 import { useWishlist } from "@/context/WishlistContext";
 import { getGenreNames } from "@/lib/genres";
 import AISummaryModal from "./AISummaryModal";
+import InfoModal from "./InfoModal";
+import { Info } from "lucide-react";
 
 export default function MovieCard({ movie }: { movie: any }) {
   const genres = getGenreNames(movie.genre_ids);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
+  const [showInfoModal, setShowInfoModal] = useState(false);
   const [aiSummary, setAiSummary] = useState("");
   const [isLoadingTrailer, setIsLoadingTrailer] = useState(false);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
@@ -52,17 +55,29 @@ export default function MovieCard({ movie }: { movie: any }) {
               className="w-full h-full object-cover"
             />
             
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleWishlist(movie);
-              }}
-              className="absolute top-2 right-2 bg-black/60 p-2 rounded-full opacity-100 md:opacity-0 md:group-hover/card:opacity-100 transition-opacity duration-300 delay-300 z-10 hover:bg-black/80"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-colors ${isSaved ? 'text-red-500' : 'text-white hover:text-red-500'}`} viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-              </svg>
-            </button>
+            <div className="absolute top-2 right-2 flex flex-col gap-2 z-10 opacity-100 md:opacity-0 md:group-hover/card:opacity-100 transition-opacity duration-300 delay-300">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleWishlist(movie);
+                }}
+                className="bg-black/60 p-2 rounded-full hover:bg-black/80 shadow-lg"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-colors ${isSaved ? 'text-red-500' : 'text-white hover:text-red-500'}`} viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+                </svg>
+              </button>
+              
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowInfoModal(true);
+                }}
+                className="bg-black/60 p-2 rounded-full hover:bg-black/80 flex items-center justify-center text-white hover:text-indigo-400 shadow-lg"
+              >
+                <Info className="w-4 h-4" />
+              </button>
+            </div>
             
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent opacity-100 md:opacity-0 flex flex-col justify-end p-3 md:hidden">
               <h3 className="font-bold text-white mb-1 text-xs line-clamp-2 drop-shadow-md">{movie.title || movie.name}</h3>
@@ -151,6 +166,10 @@ export default function MovieCard({ movie }: { movie: any }) {
             )}
           </div>
         </div>
+      )}
+
+      {showInfoModal && (
+        <InfoModal movie={movie} onClose={() => setShowInfoModal(false)} />
       )}
 
       <AISummaryModal 
