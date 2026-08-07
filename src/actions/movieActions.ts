@@ -100,15 +100,12 @@ export async function getStreamingProviders(id: number, type: "movie" | "tv" = "
     
     if (!data.results || Object.keys(data.results).length === 0) return null;
 
-    // Prioritize US streaming rights, or fallback to the first available country
     const regionData = data.results.US || Object.values(data.results)[0];
     if (!regionData) return null;
 
-    // Combine flatrate (subscriptions), and free options
     const flatrate = regionData.flatrate || [];
     const free = regionData.free || [];
     
-    // Deduplicate platforms using provider_id
     const combined = [...flatrate, ...free];
     const uniqueProviders = Array.from(new Map(combined.map((item: any) => [item.provider_id, item])).values());
     
@@ -116,5 +113,19 @@ export async function getStreamingProviders(id: number, type: "movie" | "tv" = "
   } catch (error) {
     console.error(error);
     return null;
+  }
+}
+
+export async function getMediaCredits(id: number, type: "movie" | "tv" = "movie") {
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${API_KEY}`,
+      { next: { revalidate: 3600 } }
+    );
+    const data = await res.json();
+    return data.cast || [];
+  } catch (error) {
+    console.error(error);
+    return [];
   }
 }

@@ -1,49 +1,57 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders } from "@/actions/movieActions";
+import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
 import { X, Play, Sparkles, Star, Calendar, Tv } from "lucide-react";
 import { getGenreNames } from "@/lib/genres";
 import AISummaryModal from "./AISummaryModal";
 
 export default function InfoModal({ movie, onClose }: { movie: any, onClose: () => void }) {
-  const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original"; // High res for modal
+  const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original";
   const THUMB_BASE_URL = "https://image.tmdb.org/t/p/w500";
   
   const isTV = (movie.name && !movie.title) || movie.media_type === "tv";
   const title = movie.title || movie.name;
   const genres = getGenreNames(movie.genre_ids);
   
-  // States for standard actions
   const [mainTrailerKey, setMainTrailerKey] = useState<string | null>(null);
   const [showMainTrailer, setShowMainTrailer] = useState(false);
   const [showAIModal, setShowAIModal] = useState(false);
   const [aiSummary, setAiSummary] = useState("");
   const [isLoadingAction, setIsLoadingAction] = useState(false);
   
-  // States specific to TV Series
   const [tvSeasons, setTvSeasons] = useState<any[]>([]);
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(isTV);
 
-  // States for Streaming Providers
   const [providers, setProviders] = useState<any[] | null>(null);
   const [isLoadingProviders, setIsLoadingProviders] = useState(true);
+
+  // New Cast States
+  const [cast, setCast] = useState<any[]>([]);
+  const [isLoadingCast, setIsLoadingCast] = useState(true);
 
   useEffect(() => {
     if (isTV) {
       loadTVData();
     }
     
-    // Load Streaming Data concurrently
     const loadProviders = async () => {
       setIsLoadingProviders(true);
       const data = await getStreamingProviders(movie.id, isTV ? "tv" : "movie");
       setProviders(data);
       setIsLoadingProviders(false);
     };
+
+    const loadCast = async () => {
+      setIsLoadingCast(true);
+      const castData = await getMediaCredits(movie.id, isTV ? "tv" : "movie");
+      setCast(castData.slice(0, 15)); // Top 15 actors for the scroll UI
+      setIsLoadingCast(false);
+    };
     
     loadProviders();
+    loadCast();
   }, [movie.id, isTV]);
 
   const loadTVData = async () => {
@@ -197,6 +205,39 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
             </div>
           </div>
 
+          {/* Top Cast Section */}
+          <div className="px-6 md:px-12 pb-8">
+            <div className="flex items-center gap-4 mb-5">
+              <h3 className="text-xl font-bold text-white">Top Cast</h3>
+              <div className="h-px bg-neutral-800 flex-1" />
+            </div>
+
+            {isLoadingCast ? (
+               <div className="flex items-center gap-3 text-neutral-500 font-bold justify-center bg-neutral-900/40 rounded-xl border border-neutral-800 p-6">
+                 <div className="w-4 h-4 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" /> 
+                 Extracting Cast Roster...
+               </div>
+            ) : cast.length > 0 ? (
+               <div className="flex overflow-x-auto gap-4 md:gap-6 pb-2 scrollbar-hide snap-x">
+                 {cast.map(c => (
+                   <div key={c.id} className="flex-shrink-0 w-24 snap-start group/cast flex flex-col items-center">
+                     <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-neutral-800 border-2 border-transparent group-hover/cast:border-[#F5C518] transition-all duration-300 shadow-xl mb-3">
+                       {c.profile_path ? (
+                         <img src={`${THUMB_BASE_URL}${c.profile_path}`} className="w-full h-full object-cover group-hover/cast:scale-110 transition-transform duration-500" alt={c.name} />
+                       ) : (
+                         <div className="w-full h-full flex flex-col items-center justify-center text-neutral-600 text-xs bg-neutral-900 font-medium">No Photo</div>
+                       )}
+                     </div>
+                     <p className="text-white text-xs font-bold text-center w-full leading-tight mb-1">{c.name}</p>
+                     <p className="text-neutral-500 text-[10px] font-medium text-center w-full line-clamp-2">{c.character}</p>
+                   </div>
+                 ))}
+               </div>
+            ) : (
+               <p className="text-neutral-500 text-sm italic">No cast information available.</p>
+            )}
+          </div>
+
           {/* TV Shows Exclusive: Season Traversing */}
           {isTV && (
             <div className="p-6 md:p-12 pt-0">
@@ -255,7 +296,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
         </div>
       </div>
 
-      {/* Embedded Main Trailer Modal from MovieCard */}
+      {/* Embedded Main Trailer Modal */}
       {showMainTrailer && mainTrailerKey && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 p-4 md:p-12">
           <div className="relative w-full max-w-5xl aspect-video bg-black rounded-xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,1)] border border-neutral-800">
@@ -278,7 +319,6 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
         </div>
       )}
 
-      {/* Embedded AI Modal */}
       <AISummaryModal 
         isOpen={showAIModal}
         onClose={() => setShowAIModal(false)}
