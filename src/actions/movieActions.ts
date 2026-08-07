@@ -129,3 +129,17 @@ export async function getMediaCredits(id: number, type: "movie" | "tv" = "movie"
     return [];
   }
 }
+
+export async function getMediaReviews(id: number | string, type: "movie" | "tv" = "movie") {
+  try {
+    const res = await fetch(
+      `https://api.themoviedb.org/3/${type}/${id}/reviews?api_key=${API_KEY}`,
+      { next: { revalidate: 3600 } }
+    );
+    const data = await res.json();
+    return data.results?.slice(0, 10) || [];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}

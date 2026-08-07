@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits } from "@/actions/movieActions";
+import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits, getMediaReviews } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
-import { X, Play, Sparkles, Star, Calendar, Tv } from "lucide-react";
+import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User } from "lucide-react";
 import { getGenreNames } from "@/lib/genres";
 import AISummaryModal from "./AISummaryModal";
 
@@ -30,6 +30,11 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
   // New Cast States
   const [cast, setCast] = useState<any[]>([]);
   const [isLoadingCast, setIsLoadingCast] = useState(true);
+
+  // New Reviews States
+  const [showReviews, setShowReviews] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
 
   useEffect(() => {
     if (isTV) {
@@ -89,6 +94,22 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
     }
   };
 
+  const handleShowReviews = async () => {
+    setShowReviews(!showReviews);
+    if (!showReviews && reviews.length === 0) {
+      setIsLoadingReviews(true);
+      const fetchedReviews = await getMediaReviews(movie.id, isTV ? "tv" : "movie");
+      setReviews(fetchedReviews);
+      setIsLoadingReviews(false);
+    }
+  };
+
+  const getAvatarFallback = (path: string | null) => {
+    if (!path) return null;
+    if (path.startsWith("/http")) return path.substring(1);
+    return `https://image.tmdb.org/t/p/w200${path}`;
+  };
+
   return (
     <>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 px-0 sm:px-4">
@@ -134,19 +155,29 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-3 md:gap-4">
                 <button 
                   onClick={handlePlayMainTrailer}
                   disabled={isLoadingAction}
-                  className="flex items-center gap-2 bg-white hover:bg-neutral-200 text-black px-6 md:px-8 py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl"
+                  className="flex items-center gap-2 bg-white hover:bg-neutral-200 text-black px-5 md:px-8 py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl text-sm md:text-base"
                 >
                   <Play className="w-5 h-5 fill-black" /> {isLoadingAction ? 'Loading...' : 'Play Trailer'}
                 </button>
                 <button 
                   onClick={handleAISummary}
-                  className="flex items-center gap-2 bg-neutral-800/80 hover:bg-neutral-700/80 backdrop-blur-md text-white px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 border border-neutral-600 shadow-xl"
+                  className="flex items-center gap-2 bg-neutral-800/80 hover:bg-neutral-700/80 backdrop-blur-md text-white px-5 md:px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 border border-neutral-600 shadow-xl text-sm md:text-base"
                 >
                   <Sparkles className="w-5 h-5 text-[#F5C518]" /> Insight Summaries
+                </button>
+                <button 
+                  onClick={handleShowReviews}
+                  className={`flex items-center gap-2 px-5 md:px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl border text-sm md:text-base ${
+                    showReviews 
+                      ? "bg-[#F5C518] text-black border-[#F5C518]" 
+                      : "bg-black/60 hover:bg-neutral-800/80 backdrop-blur-md text-white border-neutral-600"
+                  }`}
+                >
+                  <MessageCircle className={`w-5 h-5 ${showReviews ? "text-black" : "text-[#F5C518]"}`} /> Audience Reviews
                 </button>
               </div>
             </div>
@@ -236,6 +267,64 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
             ) : (
                <p className="text-neutral-500 text-sm italic">No cast information available.</p>
             )}
+          </div>
+
+          {/* Collapsible Reviews Section */}
+          <div className={`overflow-hidden transition-all duration-500 ease-in-out ${showReviews ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"}`}>
+            <div className="px-6 md:px-12 pb-8 bg-black/40 border-y border-neutral-800/50 py-8">
+              <div className="flex items-center gap-4 mb-6">
+                <h3 className="text-2xl font-black text-white flex items-center gap-2">
+                  <MessageCircle className="w-6 h-6 text-[#F5C518]" /> Audience Reviews
+                </h3>
+                <div className="h-px bg-neutral-800 flex-1" />
+              </div>
+
+              {isLoadingReviews ? (
+                 <div className="flex items-center gap-3 text-neutral-500 font-bold p-8 justify-center bg-neutral-900/40 rounded-xl border border-neutral-800">
+                   <div className="w-5 h-5 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" />
+                   Fetching real user opinions...
+                 </div>
+              ) : reviews.length > 0 ? (
+                 <div className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide snap-x">
+                   {reviews.map((r, i) => {
+                     const avatarUrl = getAvatarFallback(r.author_details?.avatar_path);
+                     const rating = r.author_details?.rating;
+                     return (
+                       <div key={i} className="flex-shrink-0 w-80 sm:w-96 snap-start bg-[#1a1a1a] border border-neutral-800 rounded-2xl p-6 shadow-xl hover:border-neutral-700 transition-colors flex flex-col max-h-[350px]">
+                         <div className="flex justify-between items-start mb-4">
+                           <div className="flex items-center gap-3">
+                             <div className="w-10 h-10 rounded-full bg-neutral-800 border-2 border-[#F5C518]/50 overflow-hidden flex items-center justify-center shrink-0">
+                               {avatarUrl ? (
+                                 <img src={avatarUrl} alt={r.author} className="w-full h-full object-cover" onError={(e) => e.currentTarget.style.display = 'none'} />
+                               ) : (
+                                 <User className="w-5 h-5 text-neutral-500" />
+                               )}
+                             </div>
+                             <div>
+                               <p className="text-white text-sm font-bold line-clamp-1">{r.author}</p>
+                               <p className="text-neutral-500 text-[10px] font-medium tracking-wide uppercase">TMDB Member</p>
+                             </div>
+                           </div>
+                           {rating && (
+                             <div className="flex items-center gap-1 bg-[#F5C518]/10 px-2 py-1 rounded border border-[#F5C518]/20 shrink-0">
+                               <Star className="w-3.5 h-3.5 fill-[#F5C518] text-[#F5C518]" />
+                               <span className="text-[#F5C518] font-bold text-xs">{rating}/10</span>
+                             </div>
+                           )}
+                         </div>
+                         <div className="text-neutral-300 text-sm leading-relaxed overflow-y-auto pr-2 custom-scrollbar flex-1 font-light italic">
+                           "{r.content.replace(/_|-|\*/g, '')}"
+                         </div>
+                       </div>
+                     );
+                   })}
+                 </div>
+              ) : (
+                 <div className="text-neutral-500 italic bg-neutral-900/40 border border-neutral-800 rounded-xl p-8 text-center text-sm font-medium">
+                   No audience reviews are currently available for this title on TMDB.
+                 </div>
+              )}
+            </div>
           </div>
 
           {/* TV Shows Exclusive: Season Traversing */}
