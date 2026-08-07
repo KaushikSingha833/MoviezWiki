@@ -4,9 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useInView, useMotionTemplate, useMotionValue } from "framer-motion";
 import CinematicScroll from "@/components/CinematicScroll";
-import { 
-  Sparkles, Globe2, Bookmark, MonitorPlay, Zap, ShieldCheck, 
-  Film, Trophy, Star, ChevronRight, CheckCircle, Cpu, Layers, Play, Award 
+import {
+  Sparkles, Globe2, Bookmark, MonitorPlay, Zap, ShieldCheck,
+  Film, Trophy, Star, ChevronRight, CheckCircle, Cpu, Layers, Play, Award
 } from "lucide-react";
 
 // =======================================================================
@@ -16,34 +16,34 @@ const AI_MOVIES_DEMO = [
   {
     id: "inception", title: "Inception", year: "2010", director: "Christopher Nolan",
     genres: ["Sci-Fi", "Action", "Thriller"],
-    poster: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=600&auto=format&fit=crop",
+    poster: "https://image.tmdb.org/t/p/original/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg",
     aiSummary: "A highly skilled thief who steals valuable secrets from deep within the subconscious during the dream state is offered a chance to regain his old life as payment for a seemingly impossible task: planting an idea into a target's subconscious rather than stealing one.",
     vibe: "Mind-Bending & Layered", cinematographyScore: 99, audienceScore: 97,
     keywords: ["Dream Heist", "Subconscious Architecture", "Totem", "Zero-Gravity Hallway"]
   },
   {
-    id: "darkknight", title: "The Dark Knight", year: "2008", director: "Christopher Nolan",
-    genres: ["Action", "Crime", "Drama"],
-    poster: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=600&auto=format&fit=crop",
-    aiSummary: "With the help of allies in the police department and district attorney's office, Gotham City's legendary vigilante systematically dismantles remaining organized crime syndicates. However, a chaotic mastermind known only as the Joker emerges to throw the metropolis into anarchy.",
-    vibe: "Relentless & Gripping", cinematographyScore: 98, audienceScore: 99,
-    keywords: ["Moral Dilemmas", "Chaos vs Order", "High-Stakes Interrogation", "IMAX Spectacle"]
+    id: "matrix", title: "The Matrix", year: "1999", director: "The Wachowskis",
+    genres: ["Action", "Sci-Fi"],
+    poster: "https://image.tmdb.org/t/p/original/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg",
+    aiSummary: "A computer hacker learns from mysterious rebels about the true nature of his reality and his role in the war against its controlling machines.",
+    vibe: "Cyberpunk & Philosophical", cinematographyScore: 98, audienceScore: 96,
+    keywords: ["Simulated Reality", "Red Pill", "Bullet Time", "Hacker"]
   },
   {
-    id: "interstellar", title: "Interstellar", year: "2014", director: "Christopher Nolan",
-    genres: ["Adventure", "Drama", "Sci-Fi"],
-    poster: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=600&auto=format&fit=crop",
-    aiSummary: "Facing extinction on a resource-depleted Earth, a dedicated former NASA pilot leads an exploratory team through a newly discovered wormhole in search of a habitable future for humanity. Time dilation and cosmic isolation test the unbreakable bonds between a parent and child.",
-    vibe: "Awe-Inspiring & Emotional", cinematographyScore: 100, audienceScore: 96,
-    keywords: ["Event Horizon", "Time Dilation", "Organ Symphony", "Cosmic Survival"]
+    id: "jurassic", title: "Jurassic Park", year: "1993", director: "Steven Spielberg",
+    genres: ["Adventure", "Sci-Fi"],
+    poster: "https://image.tmdb.org/t/p/original/oU7Oq2kFAAlGqbU4VoAE36g4hoI.jpg",
+    aiSummary: "A wealthy entrepreneur secretly creates a theme park featuring living dinosaurs drawn from prehistoric DNA. However, chaos erupts when a massive storm hits the island and the security systems fail.",
+    vibe: "Awe-Inspiring & Thrilling", cinematographyScore: 97, audienceScore: 98,
+    keywords: ["Apex Predators", "Theme Park", "Survival Scenario", "Chaos Theory"]
   },
   {
-    id: "spirited", title: "Spirited Away", year: "2001", director: "Hayao Miyazaki",
-    genres: ["Animation", "Family", "Fantasy"],
-    poster: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=600&auto=format&fit=crop",
-    aiSummary: "While moving to a new suburb, a ten-year-old girl and her parents stumble into a seemingly abandoned amusement park that operates as a supernatural resort for spirits and gods. To save her family, she must navigate an extraordinary bathhouse run by a formidable witch.",
-    vibe: "Enchanting & Whimsical", cinematographyScore: 98, audienceScore: 98,
-    keywords: ["Studio Ghibli", "Supernatural Bathhouse", "Coming of Age", "Hand-Drawn Masterwork"]
+    id: "avatar", title: "Avatar", year: "2009", director: "James Cameron",
+    genres: ["Action", "Adventure", "Sci-Fi"],
+    poster: "https://image.tmdb.org/t/p/original/jRXYjXNq0Cs2TcJjLkki24MLp7u.jpg",
+    aiSummary: "A paraplegic Marine dispatched to the moon Pandora on a unique mission becomes torn between following his orders and protecting the world he feels is his home.",
+    vibe: "Visually Stunning & Epic", cinematographyScore: 100, audienceScore: 92,
+    keywords: ["Pandora", "Avatar Bodies", "Environmentalism", "Visual Spectacle"]
   }
 ];
 
@@ -152,7 +152,7 @@ export default function WelcomeLandingPage() {
 
   return (
     <div className="bg-[#0a0a0a] text-white font-sans overflow-x-hidden selection:bg-[#F5C518] selection:text-black min-h-screen">
-      
+
       {/* =======================================================================
           FLOATING GLASSMORPHISM LANDING HEADER
       ======================================================================= */}
@@ -178,14 +178,14 @@ export default function WelcomeLandingPage() {
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-          <Link 
-            href="/login" 
+          <Link
+            href="/login"
             className="text-[10px] sm:text-[11px] font-bold text-neutral-300 hover:text-white px-2 sm:px-3.5 py-2 transition-colors hidden sm:inline-block tracking-wider uppercase"
           >
             Log In
           </Link>
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="group relative bg-gradient-to-r from-[#F5C518] to-amber-500 hover:from-amber-400 hover:to-amber-500 text-black font-black text-[10px] sm:text-xs px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-[0_0_15px_rgba(245,197,24,0.3)] transition-all overflow-hidden flex items-center justify-center whitespace-nowrap"
           >
             {/* Shimmer sweep effect */}
@@ -208,7 +208,7 @@ export default function WelcomeLandingPage() {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-sky-600/10 rounded-full blur-[160px] pointer-events-none mix-blend-screen" />
 
         <div className="max-w-6xl mx-auto relative z-10">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -220,7 +220,7 @@ export default function WelcomeLandingPage() {
               <span>Interactive AI Demonstration</span>
             </div>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tighter leading-none">
-              Spoiler-Free Intelligence. <br/>
+              Spoiler-Free Intelligence. <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 via-purple-400 to-pink-400">
                 Powered by Advanced AI.
               </span>
@@ -238,11 +238,10 @@ export default function WelcomeLandingPage() {
                 <button
                   key={movie.id}
                   onClick={() => setSelectedMovie(movie)}
-                  className={`group relative flex items-center gap-2 px-5 sm:px-7 py-3 sm:py-3.5 rounded-full font-black text-[11px] sm:text-xs transition-all duration-500 focus:outline-none overflow-hidden ${
-                    isActive 
-                      ? "text-white scale-105 shadow-[0_15px_40px_rgba(99,102,241,0.4)] border-transparent" 
+                  className={`group relative flex items-center gap-2 px-5 sm:px-7 py-3 sm:py-3.5 rounded-full font-black text-[11px] sm:text-xs transition-all duration-500 focus:outline-none overflow-hidden ${isActive
+                      ? "text-white scale-105 shadow-[0_15px_40px_rgba(99,102,241,0.4)] border-transparent"
                       : "bg-[#121215] text-neutral-400 border border-neutral-800 hover:text-white hover:border-neutral-700"
-                  }`}
+                    }`}
                 >
                   {/* Dynamic Active Background with gradient sweep */}
                   {isActive && (
@@ -277,18 +276,18 @@ export default function WelcomeLandingPage() {
               </div>
 
               {/* 3D Poster Graphic */}
-              <motion.div 
+              <motion.div
                 whileHover={{ rotateY: 5, rotateX: -5, scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
                 className="lg:col-span-5 relative h-72 sm:h-[400px] w-full rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 group cursor-pointer perspective-[1000px] z-10"
               >
-                <img 
-                  src={selectedMovie.poster} 
-                  alt={selectedMovie.title} 
+                <img
+                  src={selectedMovie.poster}
+                  alt={selectedMovie.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
-                
+
                 <div className="absolute inset-x-0 bottom-0 p-6 flex justify-between items-end">
                   <div className="space-y-1">
                     <span className="text-[10px] uppercase tracking-widest font-black text-[#F5C518] drop-shadow-md">Directed By</span>
@@ -335,7 +334,7 @@ export default function WelcomeLandingPage() {
                 <div className="relative rounded-[1.5rem] p-[1px] overflow-hidden group">
                   {/* Glowing Animated Border Sweep */}
                   <div className="absolute inset-0 bg-[conic-gradient(from_0deg_at_50%_50%,#4f46e5,#ec4899,#4f46e5)] animate-spin-slow opacity-30 group-hover:opacity-100 transition-opacity duration-500" />
-                  
+
                   <div className="relative bg-black/90 backdrop-blur-2xl rounded-[1.5rem] p-6 lg:p-8 h-full w-full">
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-xs font-black uppercase tracking-widest text-[#F5C518] flex items-center gap-2">
@@ -386,21 +385,21 @@ export default function WelcomeLandingPage() {
       <section id="global-cinema" className="py-28 px-4 sm:px-6 bg-[#0a0a0c] relative border-t border-neutral-900 overflow-hidden">
         {/* Dynamic morphing ambient glow based on selection */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div 
-            animate={{ 
-              backgroundColor: 
-                selectedRegion.id === 'IN' ? 'rgba(16,185,129,0.06)' : 
-                selectedRegion.id === 'KR' ? 'rgba(79,70,229,0.06)' : 
-                selectedRegion.id === 'US' ? 'rgba(244,63,94,0.06)' : 
-                'rgba(14,165,233,0.06)' 
+          <motion.div
+            animate={{
+              backgroundColor:
+                selectedRegion.id === 'IN' ? 'rgba(16,185,129,0.06)' :
+                  selectedRegion.id === 'KR' ? 'rgba(79,70,229,0.06)' :
+                    selectedRegion.id === 'US' ? 'rgba(244,63,94,0.06)' :
+                      'rgba(14,165,233,0.06)'
             }}
             transition={{ duration: 1 }}
-            className="absolute -top-1/4 -right-1/4 w-[150%] h-[150%] blur-[160px] rounded-full mix-blend-screen" 
+            className="absolute -top-1/4 -right-1/4 w-[150%] h-[150%] blur-[160px] rounded-full mix-blend-screen"
           />
         </div>
 
         <div className="max-w-7xl mx-auto relative z-10">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -424,7 +423,7 @@ export default function WelcomeLandingPage() {
             <div className="lg:col-span-4 flex flex-col gap-3">
               {REGION_DEMO.map((region, idx) => {
                 const isSelected = selectedRegion.id === region.id;
-                
+
                 // Determine glow color maps
                 const colorMap: Record<string, string> = {
                   'emerald': 'group-hover:border-emerald-500/50',
@@ -447,11 +446,10 @@ export default function WelcomeLandingPage() {
                     transition={{ delay: idx * 0.1 }}
                     key={region.id}
                     onClick={() => setSelectedRegion(region)}
-                    className={`group w-full text-left p-5 xl:p-6 rounded-2xl border transition-all duration-300 flex items-center justify-between ${
-                      isSelected 
+                    className={`group w-full text-left p-5 xl:p-6 rounded-2xl border transition-all duration-300 flex items-center justify-between ${isSelected
                         ? activeBorderMap[region.themeColor]
                         : `border-neutral-800 bg-[#121215] ${colorMap[region.themeColor]} hover:scale-[1.02]`
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-4">
                       <div className="text-3xl lg:text-4xl filter drop-shadow-lg">{region.flag}</div>
@@ -504,7 +502,7 @@ export default function WelcomeLandingPage() {
                   {/* Sub Bento 1: Wealth Index */}
                   <div className="bg-[#121215] border border-neutral-800 rounded-3xl p-6 relative overflow-hidden group hover:border-neutral-700 transition-colors shadow-xl">
                     <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-6 flex items-center gap-2">
-                       <Award className="w-4 h-4 text-amber-500" /> Crown Jewel Index
+                      <Award className="w-4 h-4 text-amber-500" /> Crown Jewel Index
                     </div>
                     <div className="space-y-2">
                       <div className="text-xl font-black text-[#F5C518] line-clamp-1">{selectedRegion.topCeleb}</div>
@@ -517,7 +515,7 @@ export default function WelcomeLandingPage() {
                   {/* Sub Bento 2: Massive Hits */}
                   <div className="bg-[#121215] border border-neutral-800 rounded-3xl p-6 relative overflow-hidden group hover:border-neutral-700 transition-colors shadow-xl flex flex-col justify-between">
                     <div className="text-[10px] font-black uppercase tracking-widest text-neutral-500 mb-4 flex items-center gap-2">
-                       <Star className="w-4 h-4 text-rose-500" /> Historical Box Office Smashes
+                      <Star className="w-4 h-4 text-rose-500" /> Historical Box Office Smashes
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {selectedRegion.recentHits.map((hit, idx) => (
@@ -539,7 +537,7 @@ export default function WelcomeLandingPage() {
       ======================================================================= */}
       <section id="features" className="py-32 px-4 sm:px-6 bg-[#0a0a0a] relative border-t border-neutral-900">
         <div className="max-w-7xl mx-auto">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
@@ -637,7 +635,7 @@ export default function WelcomeLandingPage() {
               { from: 0, to: 50, suffix: "+", label: "Regional Architectures", sub: "Global Chart Indices" },
               { from: 0, to: 100, suffix: "%", label: "Free Ecosystem", sub: "No Paywalls. Ever." }
             ].map((stat, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -678,7 +676,7 @@ export default function WelcomeLandingPage() {
             </div>
 
             <h2 className="text-[clamp(2.5rem,6vw,5.5rem)] font-black text-white tracking-tighter leading-[0.95]">
-              YOUR WATCHLIST, <br/>
+              YOUR WATCHLIST, <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#F5C518] via-amber-400 to-yellow-600 drop-shadow-xl">
                 SUPERCHARGED.
               </span>
@@ -687,17 +685,17 @@ export default function WelcomeLandingPage() {
             <p className="text-neutral-400 text-sm sm:text-lg max-w-2xl mx-auto font-medium leading-relaxed">
               Join thousands of cinephiles exploring global box-offices, streaming crisp trailers seamlessly, and generating AI deep-dives at lightspeed.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 pt-6">
-              
+
               {/* Pro Concentric Pulse Button */}
               <div className="relative group w-full sm:w-auto">
                 {/* Expanding outer pulse ring */}
                 <div className="absolute inset-0 rounded-2xl bg-[#F5C518]/40 animate-ping opacity-75 duration-1000 group-hover:bg-[#F5C518]/60" />
                 <div className="absolute -inset-1 rounded-[18px] bg-gradient-to-r from-[#F5C518] to-amber-500 opacity-30 blur-lg group-hover:opacity-70 transition duration-500" />
-                
-                <Link 
-                  href="/" 
+
+                <Link
+                  href="/"
                   className="relative w-full sm:w-auto inline-flex items-center justify-center gap-3 bgGradient bg-gradient-to-r from-[#F5C518] to-amber-400 hover:from-amber-400 hover:to-amber-500 text-black font-black text-xs sm:text-base py-4 sm:py-5 px-10 rounded-2xl transition-all duration-300 shadow-[0_0_40px_rgba(245,197,24,0.3)] transform hover:scale-[1.02] border border-white/20"
                 >
                   <Play className="w-5 h-5 fill-black" />
@@ -705,8 +703,8 @@ export default function WelcomeLandingPage() {
                 </Link>
               </div>
 
-              <Link 
-                href="/register" 
+              <Link
+                href="/register"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-[#121215] hover:bg-white/10 text-white font-black text-xs sm:text-base tracking-wide uppercase py-4 sm:py-5 px-10 rounded-2xl transition-all duration-300 border border-white/10 hover:border-white/30 backdrop-blur-md shadow-xl"
               >
                 <span>Create Free Profile</span>
