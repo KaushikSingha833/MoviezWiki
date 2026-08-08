@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { motion, Variants } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import ActorModal from "./ActorModal";
 
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
@@ -19,6 +21,8 @@ const item: Variants = {
 };
 
 export default function CelebrityRow({ celebrities }: { celebrities: any[] }) {
+  const [selectedActorId, setSelectedActorId] = useState<number | null>(null);
+
   if (!celebrities || celebrities.length === 0) return null;
 
   return (
@@ -44,6 +48,7 @@ export default function CelebrityRow({ celebrities }: { celebrities: any[] }) {
           <motion.div 
             key={person.id} 
             variants={item}
+            onClick={() => setSelectedActorId(person.id)}
             className="relative flex-shrink-0 snap-start w-36 sm:w-44 lg:w-48 aspect-[2/3] rounded-3xl overflow-hidden group cursor-pointer border border-neutral-800 hover:border-[#F5C518]/50 shadow-xl transition-colors duration-300 bg-neutral-900"
           >
             <img 
@@ -63,6 +68,10 @@ export default function CelebrityRow({ celebrities }: { celebrities: any[] }) {
           </motion.div>
         ))}
       </motion.div>
+
+      {selectedActorId && (
+        <ActorModal personId={selectedActorId} onClose={() => setSelectedActorId(null)} />
+      )}
     </section>
   );
 }

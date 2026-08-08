@@ -8,6 +8,7 @@ import { getGenreNames } from "@/lib/genres";
 import AISummaryModal from "./AISummaryModal";
 import MovieCard from "./MovieCard";
 import { getSimilarMedia } from "@/actions/movieActions";
+import ActorModal from "./ActorModal";
 
 const getDirectPlatformLink = (providerName: string, title: string) => {
   const query = encodeURIComponent(title);
@@ -58,6 +59,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
   const [reviews, setReviews] = useState<any[]>([]);
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [visibleReviewsCount, setVisibleReviewsCount] = useState(5);
+  const [selectedActorId, setSelectedActorId] = useState<number | null>(null);
 
   useEffect(() => {
     if (isTV) {
@@ -311,7 +313,11 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
             ) : cast.length > 0 ? (
                <div className="flex overflow-x-auto gap-4 md:gap-6 pb-2 scrollbar-hide snap-x">
                  {cast.map(c => (
-                   <div key={c.id} className="flex-shrink-0 w-24 snap-start group/cast flex flex-col items-center">
+                   <button 
+                     key={c.id} 
+                     onClick={() => setSelectedActorId(c.id)}
+                     className="flex-shrink-0 w-24 snap-start group/cast flex flex-col items-center bg-transparent focus:outline-none"
+                   >
                      <div className="w-20 h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-neutral-800 border-2 border-transparent group-hover/cast:border-[#F5C518] transition-all duration-300 shadow-xl mb-3">
                        {c.profile_path ? (
                          <img src={`${THUMB_BASE_URL}${c.profile_path}`} className="w-full h-full object-cover group-hover/cast:scale-110 transition-transform duration-500" alt={c.name} />
@@ -319,9 +325,9 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                          <div className="w-full h-full flex flex-col items-center justify-center text-neutral-600 text-xs bg-neutral-900 font-medium">No Photo</div>
                        )}
                      </div>
-                     <p className="text-white text-xs font-bold text-center w-full leading-tight mb-1">{c.name}</p>
+                     <p className="text-white text-xs font-bold text-center w-full leading-tight mb-1 group-hover/cast:text-[#F5C518] transition-colors">{c.name}</p>
                      <p className="text-neutral-500 text-[10px] font-medium text-center w-full line-clamp-2">{c.character}</p>
-                   </div>
+                   </button>
                  ))}
                </div>
             ) : (
@@ -513,6 +519,11 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
         title={title}
         isLoading={isLoadingAction}
       />
+
+      {/* Embedded Actor Modal */}
+      {selectedActorId && (
+        <ActorModal personId={selectedActorId} onClose={() => setSelectedActorId(null)} />
+      )}
     </>
   );
 }

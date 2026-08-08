@@ -19,7 +19,7 @@ export async function getMoviesByCountry(countryCode: string) {
 export async function getPersonDetails(personId: number) {
   try {
     const res = await fetch(
-      `https://api.themoviedb.org/3/person/${personId}?api_key=${API_KEY}`,
+      `https://api.themoviedb.org/3/person/${personId}?api_key=${API_KEY}&append_to_response=combined_credits`,
       { next: { revalidate: 86400 } }
     );
     return await res.json();
