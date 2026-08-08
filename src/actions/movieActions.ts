@@ -109,7 +109,7 @@ export async function getStreamingProviders(id: number, type: "movie" | "tv" = "
     const combined = [...flatrate, ...free];
     const uniqueProviders = Array.from(new Map(combined.map((item: any) => [item.provider_id, item])).values());
     
-    return uniqueProviders.length > 0 ? uniqueProviders : null;
+    return uniqueProviders.length > 0 ? { providers: uniqueProviders, watchLink: regionData.link } : null;
   } catch (error) {
     console.error(error);
     return null;
@@ -138,6 +138,39 @@ export async function getMediaReviews(id: number | string, type: "movie" | "tv" 
     );
     const data = await res.json();
     return data.results || [];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+export async function getSimilarMedia(id: number | string, type: "movie" | "tv" = "movie") {
+  try {
+    // 1. First attempt to fetch high-quality community recommendations
+    const recRes = await fetch(
+      `https://api.themoviedb.org/3/${type}/${id}/recommendations?api_key=${API_KEY}&page=1`,
+      { next: { revalidate: 3600 } }
+    );
+    const recData = await recRes.json();
+    let results = recData.results || [];
+
+    // 2. Fallback to basic keyword similarities if no recommendations exist
+    if (results.length === 0) {
+      const simRes = await fetch(
+        `https://api.themoviedb.org/3/${type}/${id}/similar?api_key=${API_KEY}&page=1`,
+        { next: { revalidate: 3600 } }
+      );
+      const simData = await simRes.json();
+      results = simData.results || [];
+    }
+    
+    // Inject the media_type into each item if missing
+    const processed = results.map((item: any) => ({
+      ...item,
+      media_type: type
+    }));
+    
+    return processed.slice(0, 15);
   } catch (error) {
     console.error(error);
     return [];

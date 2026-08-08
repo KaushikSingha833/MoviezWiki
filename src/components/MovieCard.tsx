@@ -108,20 +108,20 @@ export default function MovieCard({ movie }: { movie: any }) {
             </div>
           </div>
 
-          <div className="h-0 opacity-0 md:group-hover/card:h-[50%] md:group-hover/card:opacity-100 bg-[#141414] transition-all duration-300 delay-300 flex flex-col p-3 w-full overflow-hidden">
-            <h3 className="font-bold text-white text-xs md:text-sm mb-1 truncate">{movie.title || movie.name}</h3>
+          <div className="h-0 opacity-0 md:group-hover/card:h-[50%] md:group-hover/card:opacity-100 bg-[#141414] transition-all duration-300 delay-300 flex flex-col p-2 w-full overflow-hidden">
+            <h3 className="font-bold text-white text-xs md:text-sm mb-1 truncate shrink-0">{movie.title || movie.name}</h3>
             {genres.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-1.5">
+              <div className="flex flex-nowrap overflow-hidden gap-1 mb-1.5 shrink-0">
                 {genres.slice(0, 2).map((genre, idx) => (
-                  <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-neutral-800/80 text-neutral-300 border border-neutral-700/60 shadow-inner truncate max-w-[85px]">
+                  <span key={idx} className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-semibold bg-neutral-800/80 text-neutral-300 border border-neutral-700/60 shadow-inner truncate shrink-0">
                     <span className="w-1 h-1 rounded-full bg-[#F5C518] mr-1 shrink-0"></span>
                     <span className="truncate">{genre}</span>
                   </span>
                 ))}
               </div>
             )}
-            <p className="text-[9px] text-neutral-400 line-clamp-2 mb-2 leading-snug flex-grow">{movie.overview}</p>
-            <div className="flex gap-2 mt-auto">
+            <p className="text-[9px] text-neutral-400 line-clamp-2 mb-2 leading-snug flex-grow min-h-0 overflow-hidden">{movie.overview}</p>
+            <div className="flex gap-2 mt-auto shrink-0">
               <button 
                 onClick={handlePlayTrailer} 
                 disabled={isLoadingTrailer}

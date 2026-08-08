@@ -3,9 +3,28 @@
 import { useState, useEffect } from "react";
 import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits, getMediaReviews } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
-import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User } from "lucide-react";
+import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2 } from "lucide-react";
 import { getGenreNames } from "@/lib/genres";
 import AISummaryModal from "./AISummaryModal";
+import MovieCard from "./MovieCard";
+import { getSimilarMedia } from "@/actions/movieActions";
+
+const getDirectPlatformLink = (providerName: string, title: string) => {
+  const query = encodeURIComponent(title);
+  const name = providerName.toLowerCase();
+  
+  if (name.includes("netflix")) return `https://www.netflix.com/search?q=${query}`;
+  if (name.includes("amazon") || name.includes("prime")) return `https://www.amazon.com/s?k=${query}&i=instant-video`;
+  if (name.includes("hulu")) return `https://www.hulu.com/search?q=${query}`;
+  if (name.includes("disney") || name.includes("hotstar")) return `https://www.hotstar.com/in/explore?searchQuery=${query}`;
+  if (name.includes("apple")) return `https://tv.apple.com/us/search?q=${query}`;
+  if (name.includes("peacock")) return `https://www.peacocktv.com/watch/search?q=${query}`;
+  if (name.includes("max") || name.includes("hbo")) return `https://play.max.com/search?q=${query}`;
+  if (name.includes("paramount")) return `https://www.paramountplus.com/search/?q=${query}`;
+  if (name.includes("crunchyroll")) return `https://www.crunchyroll.com/search?q=${query}`;
+  
+  return `https://www.google.com/search?q=${encodeURIComponent(title + " streaming on " + providerName)}`;
+};
 
 export default function InfoModal({ movie, onClose }: { movie: any, onClose: () => void }) {
   const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/original";
@@ -24,8 +43,11 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
   const [tvSeasons, setTvSeasons] = useState<any[]>([]);
   const [isLoadingSeasons, setIsLoadingSeasons] = useState(isTV);
 
-  const [providers, setProviders] = useState<any[] | null>(null);
+  const [providersData, setProvidersData] = useState<{ providers: any[], watchLink: string } | null>(null);
   const [isLoadingProviders, setIsLoadingProviders] = useState(true);
+
+  const [similarMedia, setSimilarMedia] = useState<any[]>([]);
+  const [isLoadingSimilar, setIsLoadingSimilar] = useState(true);
 
   // New Cast States
   const [cast, setCast] = useState<any[]>([]);
@@ -45,8 +67,15 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
     const loadProviders = async () => {
       setIsLoadingProviders(true);
       const data = await getStreamingProviders(movie.id, isTV ? "tv" : "movie");
-      setProviders(data);
+      setProvidersData(data);
       setIsLoadingProviders(false);
+    };
+
+    const loadSimilar = async () => {
+      setIsLoadingSimilar(true);
+      const similar = await getSimilarMedia(movie.id, isTV ? "tv" : "movie");
+      setSimilarMedia(similar);
+      setIsLoadingSimilar(false);
     };
 
     const loadCast = async () => {
@@ -58,6 +87,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
     
     loadProviders();
     loadCast();
+    loadSimilar();
   }, [movie.id, isTV]);
 
   const loadTVData = async () => {
@@ -102,6 +132,23 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
       const fetchedReviews = await getMediaReviews(movie.id, isTV ? "tv" : "movie");
       setReviews(fetchedReviews);
       setIsLoadingReviews(false);
+    }
+  };
+
+  const handleShare = async () => {
+    const url = `${window.location.origin}/movies/${movie.id}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `Check out ${title} on MoviezWiki!`,
+          url: url
+        });
+      } catch (err) {
+        console.log("Error sharing", err);
+      }
+    } else {
+      navigator.clipboard.writeText(url);
+      alert("Link copied to clipboard!");
     }
   };
 
@@ -180,6 +227,12 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                 >
                   <MessageCircle className={`w-5 h-5 ${showReviews ? "text-black" : "text-[#F5C518]"}`} /> Audience Reviews
                 </button>
+                <button 
+                  onClick={handleShare}
+                  className="flex items-center gap-2 px-4 md:px-5 py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl border bg-black/60 hover:bg-neutral-800/80 backdrop-blur-md text-white border-neutral-600 text-sm md:text-base"
+                >
+                  <Share2 className="w-5 h-5 text-emerald-400" /> Share
+                </button>
               </div>
             </div>
           </div>
@@ -213,20 +266,28 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                   <div className="text-neutral-400 text-xs flex items-center gap-2">
                     <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div> Scanning platforms...
                   </div>
-                ) : providers && providers.length > 0 ? (
+                ) : providersData && providersData.providers.length > 0 ? (
                   <div className="flex flex-wrap gap-3">
-                    {providers.map((p: any) => (
-                      <div key={p.provider_id} className="relative group/provider cursor-pointer">
+                    {providersData.providers.map((p: any) => {
+                      const platformName = p.provider_name.toLowerCase().includes("hotstar") ? "Jio Hotstar" : p.provider_name;
+                      return (
+                      <a 
+                        key={p.provider_id} 
+                        href={getDirectPlatformLink(p.provider_name, title)} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="relative group/provider block"
+                      >
                         <img 
                           src={`https://image.tmdb.org/t/p/w200${p.logo_path}`} 
-                          alt={p.provider_name}
-                          className="w-10 h-10 rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.5)] border border-neutral-700 hover:scale-110 hover:border-[#F5C518] transition-all duration-300 pointer-events-auto"
+                          alt={platformName}
+                          className="w-10 h-10 rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.5)] border border-neutral-700 hover:scale-110 hover:border-emerald-400 transition-all duration-300 pointer-events-auto"
                         />
                         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-bold tracking-wide whitespace-nowrap px-2 py-1 rounded shadow-lg border border-neutral-800 opacity-0 group-hover/provider:opacity-100 pointer-events-none z-[150] transition-opacity">
-                          {p.provider_name}
+                          Stream on {platformName}
                         </div>
-                      </div>
-                    ))}
+                      </a>
+                    )})}
                   </div>
                 ) : (
                   <span className="inline-block bg-neutral-900 border border-neutral-800 text-neutral-400 text-xs px-3 py-1.5 rounded-full font-medium">
@@ -395,6 +456,31 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
               )}
             </div>
           )}
+
+          {/* Similar Media Section - Placed properly INSIDE the scroll view container */}
+          <div className="p-6 md:p-12 bg-[#0a0a0c] border-t border-neutral-800 relative z-20">
+            <div className="flex items-center gap-4 mb-6">
+              <h3 className="text-2xl font-black text-white">More Like This</h3>
+              <div className="h-px bg-neutral-800 flex-1" />
+            </div>
+
+            {isLoadingSimilar ? (
+              <div className="flex items-center gap-3 text-neutral-500 font-bold p-8 justify-center bg-neutral-900/40 rounded-xl border border-neutral-800">
+                <div className="w-5 h-5 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" />
+                Finding similar titles...
+              </div>
+            ) : similarMedia.length > 0 ? (
+              <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 pb-2">
+                {similarMedia.map((media) => (
+                  <MovieCard key={media.id} movie={media} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-neutral-500 italic bg-neutral-900/40 border border-neutral-800 rounded-xl p-8 text-center text-sm font-medium">
+                No similar media currently available.
+              </div>
+            )}
+          </div>
 
         </div>
       </div>
