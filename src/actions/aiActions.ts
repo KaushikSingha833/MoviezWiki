@@ -36,3 +36,38 @@ export async function getAISummary(title: string, overview: string) {
     return "Failed to generate AI summary at this time.";
   }
 }
+
+export async function getSmartMovieTitles(query: string) {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  
+  if (!GEMINI_API_KEY) {
+    console.error("Missing Gemini API Key");
+    return [];
+  }
+
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  
+  const prompt = `The user is looking for a movie or TV show based on this semantic description: "${query}". Provide exactly 10 real, existing, well-known movie or TV show titles that perfectly match this description. Output YOUR ENTIRE RESPONSE as a strict JSON array of strings ONLY. Do not include markdown blocks like \`\`\`json or any other conversational text. \nExample exactly like this: ["Interstellar", "Arrival", "The Martian"]`;
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+
+    const data = await response.json();
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!text) return [];
+    
+    // Safely strip markdown if Gemini accidentally included it
+    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    
+    const titles = JSON.parse(text);
+    return Array.isArray(titles) ? titles.slice(0, 10) : [];
+  } catch (error) {
+    console.error("AI Semantic Error:", error);
+    return [];
+  }
+}

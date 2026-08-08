@@ -23,6 +23,9 @@ const SearchBar = ({ isMobile = false }) => {
   const [selectedGenres, setSelectedGenres] = useState<number[]>([]);
   const [selectedRegion, setSelectedRegion] = useState<string>("");
   
+  // AI Neural Search Engine State
+  const [isAiMode, setIsAiMode] = useState(false);
+  
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Close menus when clicking outside
@@ -61,6 +64,7 @@ const SearchBar = ({ isMobile = false }) => {
     if (query.trim()) params.append('q', query.trim());
     if (selectedGenres.length > 0) params.append('genres', selectedGenres.join(','));
     if (selectedRegion) params.append('region', selectedRegion);
+    if (isAiMode && query.trim()) params.append('ai', 'true');
     
     // If all inputs are blank, do not route
     if (!query.trim() && selectedGenres.length === 0 && !selectedRegion) return;
@@ -74,18 +78,28 @@ const SearchBar = ({ isMobile = false }) => {
 
   return (
     <div className={`relative ${isMobile ? 'w-full flex' : 'hidden md:flex'}`} ref={containerRef}>
-      <form onSubmit={handleSearchSubmit} className="flex relative items-center w-full shadow-lg rounded-md overflow-hidden group">
+      <form onSubmit={handleSearchSubmit} className={`flex relative items-center w-full shadow-lg rounded-md overflow-hidden group transition-all duration-300 ${isAiMode ? 'ring-2 ring-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.4)]' : ''}`}>
         <input 
           type="text" 
           name="q"
           value={query}
           onChange={(e) => { setQuery(e.target.value); setShowDropdown(true); setShowFilters(false); }}
           onFocus={() => { if (query.length >= 2) setShowDropdown(true); }}
-          placeholder="Search movies, tv, people..." 
-          className={`bg-[#0a0a0c] text-white px-5 py-2.5 focus:outline-none focus:ring-1 focus:ring-[#F5C518] text-sm group-hover:bg-[#121215] transition-colors border-y border-l border-neutral-800 ${isMobile ? 'w-full' : 'w-[280px]'}`}
+          placeholder={isAiMode ? "Describe a movie (e.g. funny heist)..." : "Search movies, tv, people..."} 
+          className={`bg-[#0a0a0c] text-white px-5 py-2.5 focus:outline-none focus:ring-1 focus:ring-${isAiMode ? 'indigo-500' : '[#F5C518]'} text-sm group-hover:bg-[#121215] transition-colors border-y border-l border-neutral-800 ${isMobile ? 'w-full' : 'w-[280px]'}`}
           autoComplete="off"
         />
         
+        {/* Toggle AI Mode Button */}
+        <button 
+          type="button"
+          onClick={() => { setIsAiMode(!isAiMode); setShowDropdown(false); setShowFilters(false); }}
+          className={`px-3 py-2.5 border-y transition-all border-neutral-800 flex items-center justify-center ${isAiMode ? 'bg-[#1a1a2e] text-indigo-400 border-l border-neutral-800' : 'bg-[#0a0a0c] text-neutral-400 hover:text-white group-hover:bg-[#121215]'}`}
+          title="Deep AI Semantic Search"
+        >
+          <span className="text-sm">✨</span>
+        </button>
+
         {/* Toggle Filters Button */}
         <button 
           type="button"
@@ -99,7 +113,7 @@ const SearchBar = ({ isMobile = false }) => {
         {/* Submit Search Button */}
         <button 
           type="submit" 
-          className="bg-[#F5C518] hover:bg-yellow-500 transition-colors text-black px-5 py-2.5 font-bold text-sm border-y border-r border-[#F5C518]"
+          className={`transition-colors text-black px-5 py-2.5 font-bold text-sm border-y border-r flex justify-center items-center ${isAiMode ? 'bg-indigo-500 hover:bg-indigo-400 border-indigo-500' : 'bg-[#F5C518] hover:bg-yellow-500 border-[#F5C518]'}`}
         >
            <Search className="w-4 h-4" />
         </button>

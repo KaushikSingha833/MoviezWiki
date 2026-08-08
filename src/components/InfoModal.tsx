@@ -175,17 +175,17 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
           </button>
 
           {/* Hero Section */}
-          <div className="relative w-full h-[50vh] md:h-[60vh]">
+          <div className="relative w-full h-auto min-h-[50vh] md:min-h-[60vh] flex flex-col justify-end">
             <img 
               src={`${IMAGE_BASE_URL}${movie.backdrop_path || movie.poster_path}`} 
-              className="w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover"
               alt={title}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/60 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#141414] via-transparent to-transparent" />
             
             {/* Overlay Info */}
-            <div className="absolute bottom-0 left-0 p-6 md:p-12 w-full max-w-3xl">
+            <div className="relative z-10 p-6 pt-24 md:p-12 w-full max-w-3xl">
               <h1 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tight drop-shadow-2xl">{title}</h1>
               
               <div className="flex flex-wrap items-center gap-4 text-sm font-semibold mb-6">
@@ -257,8 +257,6 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                   ))}
                 </div>
               </div>
-              
-              <div className="h-px bg-neutral-800 w-full"></div>
               
               <div>
                 <span className="text-neutral-500 block mb-2">Where to Watch:</span>
@@ -352,7 +350,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                      const avatarUrl = getAvatarFallback(r.author_details?.avatar_path);
                      const rating = r.author_details?.rating;
                      return (
-                       <div key={i} className="flex-shrink-0 w-80 sm:w-96 snap-start bg-[#1a1a1a] border border-neutral-800 rounded-2xl p-6 shadow-xl hover:border-neutral-700 transition-colors flex flex-col max-h-[350px]">
+                       <div key={i} className="flex-shrink-0 w-[85vw] sm:w-96 snap-start bg-[#1a1a1a] border border-neutral-800 rounded-2xl p-5 md:p-6 shadow-xl hover:border-neutral-700 transition-colors flex flex-col max-h-[350px]">
                          <div className="flex justify-between items-start mb-4">
                            <div className="flex items-center gap-3">
                              <div className="w-10 h-10 rounded-full bg-neutral-800 border-2 border-[#F5C518]/50 overflow-hidden flex items-center justify-center shrink-0">

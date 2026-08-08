@@ -129,3 +129,32 @@ export const discoverTMDBAdvanced = async (genres?: string, region?: string) => 
 
   return fetchTMDB('/discover/movie', params);
 };
+
+export const searchSemanticTMDB = async (titles: string[]) => {
+  if (!titles || titles.length === 0) return { results: [] };
+  
+  try {
+    // Perform parallel searches for every AI-suggested title
+    const searchPromises = titles.map(title => searchTMDB(title));
+    const searchResults = await Promise.all(searchPromises);
+    
+    // Extract the absolute best match (index 0) for each title
+    const aggregated = searchResults
+      .filter(res => res && res.results && res.results.length > 0)
+      .map(res => res.results[0]);
+      
+    // Remove potential duplicates and people (we only want media)
+    const uniqueIds = new Set();
+    const finalResults = aggregated.filter(item => {
+      if (!item || !item.id || item.media_type === 'person') return false;
+      if (uniqueIds.has(item.id)) return false;
+      uniqueIds.add(item.id);
+      return true;
+    });
+
+    return { results: finalResults };
+  } catch (error) {
+    console.error("Error executing semantic TMDB mapping:", error);
+    return { results: [] };
+  }
+};

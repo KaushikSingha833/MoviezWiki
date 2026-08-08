@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { searchTMDB, discoverTMDBAdvanced } from "@/lib/tmdb";
-import { Search, Compass } from "lucide-react";
+import { searchTMDB, discoverTMDBAdvanced, searchSemanticTMDB } from "@/lib/tmdb";
+import { getSmartMovieTitles } from "@/actions/aiActions";
+import { Search, Compass, Sparkles } from "lucide-react";
 import SearchClientGrid from "@/components/SearchClientGrid";
 
 export default async function SearchPage({
@@ -12,11 +13,15 @@ export default async function SearchPage({
   const q = typeof resolvedParams.q === 'string' ? resolvedParams.q : '';
   const genres = typeof resolvedParams.genres === 'string' ? resolvedParams.genres : '';
   const region = typeof resolvedParams.region === 'string' ? resolvedParams.region : '';
+  const isAi = resolvedParams.ai === 'true';
   
   let results: any[] = [];
   try {
     let data;
-    if (q) {
+    if (isAi && q) {
+      const semTitles = await getSmartMovieTitles(q);
+      data = await searchSemanticTMDB(semTitles);
+    } else if (q) {
       data = await searchTMDB(q);
     } else if (genres || region) {
       data = await discoverTMDBAdvanced(genres, region);
@@ -58,15 +63,17 @@ export default async function SearchPage({
         
         <div className="max-w-[1400px] mx-auto relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full mb-6 backdrop-blur-md">
-              {q ? <Search className="w-4 h-4 text-indigo-400" /> : <Compass className="w-4 h-4 text-[#F5C518]" />}
+            <div className={`inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full mb-6 backdrop-blur-md ${isAi ? 'border-indigo-500/30 bg-indigo-500/10' : ''}`}>
+              {isAi ? <Sparkles className="w-4 h-4 text-indigo-400" /> : q ? <Search className="w-4 h-4 text-indigo-400" /> : <Compass className="w-4 h-4 text-[#F5C518]" />}
               <span className="text-xs font-bold tracking-widest uppercase text-neutral-300">
-                {q ? "Database Query" : "Discovery Engine"}
+                {isAi ? "Neural Network Engine" : q ? "Database Query" : "Discovery Engine"}
               </span>
             </div>
             
             <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-white mb-2 leading-tight">
-              {q ? (
+              {isAi ? (
+                <>AI Match for <br className="hidden md:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-600">"{q}"</span></>
+              ) : q ? (
                 <>Results for <br className="hidden md:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F5C518] to-yellow-500">"{q}"</span></>
               ) : (
                 <>Curated <br className="hidden md:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#F5C518] to-yellow-500">Discovery Matches</span></>
