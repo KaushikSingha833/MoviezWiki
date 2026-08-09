@@ -1,14 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Calendar, MapPin, Film, User } from "lucide-react";
+import { X, Calendar, MapPin, Film, User, Heart } from "lucide-react";
 import { getPersonDetails } from "@/actions/movieActions";
 import MovieCard from "./MovieCard";
+import { useWishlist } from "@/context/WishlistContext";
 
 export default function ActorModal({ personId, onClose }: { personId: number, onClose: () => void }) {
   const [actor, setActor] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showFullBio, setShowFullBio] = useState(false);
+
+  const { toggleWishlist, isInWishlist } = useWishlist();
+  const isHearted = isInWishlist(personId);
+
+  const handleLikeActor = () => {
+    // Inject strict categorization payload so the Wishlist page knows how to route it
+    toggleWishlist({ ...actor, media_type: "person" });
+  };
 
   useEffect(() => {
     const fetchActor = async () => {
@@ -81,7 +90,15 @@ export default function ActorModal({ personId, onClose }: { personId: number, on
             
             {/* Mobile overlays for title */}
             <div className="absolute bottom-0 left-0 p-6 w-full md:hidden flex flex-col justify-end z-10 text-white">
-              <h2 className="text-4xl font-black tracking-tighter drop-shadow-[0_0_15px_rgba(0,0,0,1)]">{actor.name}</h2>
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-4xl font-black tracking-tighter drop-shadow-[0_0_15px_rgba(0,0,0,1)]">{actor.name}</h2>
+                <button 
+                  onClick={handleLikeActor}
+                  className="bg-black/50 p-2.5 rounded-full border border-neutral-600 backdrop-blur-md shrink-0 shadow-lg"
+                >
+                  <Heart className={`w-5 h-5 transition-colors ${isHearted ? "fill-rose-500 text-rose-500" : "text-white"}`} />
+                </button>
+              </div>
               <p className="text-[#F5C518] font-bold text-xs uppercase tracking-widest">{actor.known_for_department}</p>
             </div>
           </div>
@@ -91,10 +108,20 @@ export default function ActorModal({ personId, onClose }: { personId: number, on
             
             {/* Desktop Title */}
             <div className="hidden md:block mb-8">
-              <span className="text-[#F5C518] font-bold text-[10px] uppercase tracking-widest bg-[#F5C518]/10 px-2 py-1 rounded inline-block mb-3 border border-[#F5C518]/20">
-                {actor.known_for_department}
-              </span>
-              <h2 className="text-4xl lg:text-5xl font-black text-white tracking-tighter">{actor.name}</h2>
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[#F5C518] font-bold text-[10px] uppercase tracking-widest bg-[#F5C518]/10 px-2 py-1 rounded inline-block mb-3 border border-[#F5C518]/20">
+                    {actor.known_for_department}
+                  </span>
+                  <h2 className="text-4xl lg:text-5xl font-black text-white tracking-tighter">{actor.name}</h2>
+                </div>
+                <button 
+                  onClick={handleLikeActor}
+                  className="flex items-center justify-center bg-[#0a0a0c] border border-neutral-800 hover:border-rose-500/50 p-4 rounded-full transition-all shadow-xl group hover:scale-105 shrink-0"
+                >
+                  <Heart className={`w-7 h-7 transition-colors ${isHearted ? "fill-rose-500 text-rose-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]" : "text-neutral-500 group-hover:text-rose-400"}`} />
+                </button>
+              </div>
             </div>
             
             {/* Bio Stats */}

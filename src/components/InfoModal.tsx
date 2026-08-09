@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits, getMediaReviews } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
-import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2 } from "lucide-react";
+import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2, Trash2 } from "lucide-react";
 import { getGenreNames } from "@/lib/genres";
 import AISummaryModal from "./AISummaryModal";
 import MovieCard from "./MovieCard";
 import { getSimilarMedia } from "@/actions/movieActions";
 import ActorModal from "./ActorModal";
+import { useWishlist } from "@/context/WishlistContext";
+import { addCommunityComment, getCommunityComments, deleteCommunityComment, CommunityComment } from "@/lib/comments";
 
 const getDirectPlatformLink = (providerName: string, title: string) => {
   const query = encodeURIComponent(title);
@@ -60,6 +62,16 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [visibleReviewsCount, setVisibleReviewsCount] = useState(5);
   const [selectedActorId, setSelectedActorId] = useState<number | null>(null);
+
+  // Native Comments State
+  const { user } = useWishlist();
+  const [nativeComments, setNativeComments] = useState<CommunityComment[]>([]);
+  const [isFetchingNative, setIsFetchingNative] = useState(false);
+  const [newCommentText, setNewCommentText] = useState("");
+  const [newCommentRating, setNewCommentRating] = useState(0);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     if (isTV) {
@@ -129,12 +141,69 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
 
   const handleShowReviews = async () => {
     setShowReviews(!showReviews);
-    if (!showReviews && reviews.length === 0) {
-      setIsLoadingReviews(true);
-      const fetchedReviews = await getMediaReviews(movie.id, isTV ? "tv" : "movie");
-      setReviews(fetchedReviews);
-      setIsLoadingReviews(false);
+    if (!showReviews) {
+      if (reviews.length === 0) {
+        setIsLoadingReviews(true);
+        const fetchedReviews = await getMediaReviews(movie.id, isTV ? "tv" : "movie");
+        setReviews(fetchedReviews);
+        setIsLoadingReviews(false);
+      }
+      if (nativeComments.length === 0) {
+        setIsFetchingNative(true);
+        const fetchedNative = await getCommunityComments(movie.id, isTV ? "tv" : "movie");
+        setNativeComments(fetchedNative);
+        setIsFetchingNative(false);
+      }
     }
+  };
+
+  const handleSubmitNativeComment = async () => {
+    if (!user) {
+      alert("Please log in to join the discussion.");
+      return;
+    }
+    if (!newCommentText.trim()) return;
+    if (newCommentRating === 0) {
+      alert("Please select a star rating!");
+      return;
+    }
+
+    setIsSubmittingComment(true);
+    const userName = user.displayName || user.email?.split("@")[0] || "Anonymous Master";
+    
+    const newComment = await addCommunityComment(
+      movie.id,
+      isTV ? "tv" : "movie",
+      user.uid,
+      userName,
+      newCommentText,
+      newCommentRating
+    );
+
+    if (newComment) {
+      setNativeComments(prev => [newComment, ...prev]);
+      setNewCommentText("");
+      setNewCommentRating(0);
+      setHoverRating(0);
+    } else {
+      alert("Error submitting comment. Please try again later.");
+    }
+    setIsSubmittingComment(false);
+  };
+
+  const handleDeleteRequest = (commentId: string) => {
+    setCommentToDelete(commentId);
+  };
+
+  const confirmDeleteComment = async () => {
+    if (!commentToDelete) return;
+    const success = await deleteCommunityComment(commentToDelete);
+    if (success) {
+       setNativeComments(prev => prev.filter(c => c.id !== commentToDelete));
+    } else {
+       alert("Failed to delete comment. Permissions may be missing.");
+    }
+    setCommentToDelete(null);
   };
 
   const handleShare = async () => {
@@ -345,13 +414,88 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                 <div className="h-px bg-neutral-800 flex-1" />
               </div>
 
-              {isLoadingReviews ? (
+              {/* Native Comment Input Box */}
+              <div className="mb-10 bg-[#1a1a1a] border border-neutral-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                {!user && (
+                  <div className="absolute inset-0 z-10 backdrop-blur-md bg-black/40 flex flex-col items-center justify-center rounded-2xl">
+                    <p className="text-white font-bold mb-3 text-lg">Join the Discussion</p>
+                    <a href="/login" className="bg-[#F5C518] text-black px-6 py-2 rounded-lg font-bold hover:scale-105 transition-transform shadow-lg">Login to Review</a>
+                  </div>
+                )}
+                <div className={!user ? "opacity-30 pointer-events-none" : ""}>
+                   <div className="flex gap-1 mb-4">
+                     {[1,2,3,4,5,6,7,8,9,10].map(star => (
+                        <button key={star} onClick={() => setNewCommentRating(star)} onMouseEnter={() => setHoverRating(star)} onMouseLeave={() => setHoverRating(0)} className="group outline-none hover:scale-110 transition-transform">
+                          <Star className={`w-6 h-6 transition-colors ${star <= (hoverRating || newCommentRating) ? "fill-[#F5C518] text-[#F5C518]" : "text-neutral-700"}`} />
+                        </button>
+                     ))}
+                   </div>
+                   <textarea
+                     value={newCommentText}
+                     onChange={(e) => setNewCommentText(e.target.value)}
+                     placeholder="What did you think about this?"
+                     className="w-full bg-neutral-900 border border-neutral-700 rounded-xl p-4 text-white placeholder-neutral-500 focus:outline-none focus:border-[#F5C518] transition-colors resize-none min-h-[100px] shadow-inner"
+                   />
+                   <div className="mt-4 flex justify-end">
+                     <button 
+                       onClick={handleSubmitNativeComment}
+                       disabled={isSubmittingComment || !newCommentText.trim() || newCommentRating === 0}
+                       className="bg-[#F5C518] text-black font-bold px-6 py-2 rounded-lg disabled:opacity-50 transition-all shadow-lg hover:bg-[#d4a810]"
+                     >
+                       {isSubmittingComment ? "Posting..." : "Post Review"}
+                     </button>
+                   </div>
+                </div>
+              </div>
+
+              {isLoadingReviews || isFetchingNative ? (
                  <div className="flex items-center gap-3 text-neutral-500 font-bold p-8 justify-center bg-neutral-900/40 rounded-xl border border-neutral-800">
                    <div className="w-5 h-5 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" />
                    Fetching real user opinions...
                  </div>
-              ) : reviews.length > 0 ? (
+              ) : (reviews.length > 0 || nativeComments.length > 0) ? (
                  <div className="flex overflow-x-auto gap-6 pb-4 scrollbar-hide snap-x items-stretch">
+                   
+                   {/* Native Community Reviews (Rendered First) */}
+                   {nativeComments.map((nc) => (
+                     <div key={nc.id} className="flex-shrink-0 w-[85vw] sm:w-96 snap-start bg-[#121212] border border-[#F5C518]/30 rounded-2xl p-5 md:p-6 shadow-xl relative overflow-hidden flex flex-col max-h-[350px] hover:border-[#F5C518]/60 transition-colors">
+                       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#F5C518] to-transparent/10" />
+                       
+                       <div className="flex justify-between items-start mb-4 relative z-10">
+                         <div className="flex items-center gap-3">
+                           <div className="w-10 h-10 rounded-full bg-black border border-[#F5C518]/50 flex items-center justify-center shrink-0">
+                             <User className="w-5 h-5 text-[#F5C518]" />
+                           </div>
+                           <div>
+                             <p className="text-white text-sm font-bold line-clamp-1 flex items-center gap-2">
+                               {nc.userName}
+                               <span className="text-neutral-500 font-normal text-[10px] whitespace-nowrap">
+                                 {nc.createdAt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                               </span>
+                             </p>
+                             <p className="text-[#F5C518] text-[10px] font-black tracking-wide uppercase drop-shadow">Community Member</p>
+                           </div>
+                         </div>
+                         <div className="flex items-center gap-2">
+                           <div className="flex items-center gap-1 bg-[#F5C518]/10 px-2 py-1 rounded border border-[#F5C518]/30 shrink-0">
+                             <Star className="w-3.5 h-3.5 fill-[#F5C518] text-[#F5C518]" />
+                             <span className="text-[#F5C518] font-bold text-xs">{nc.rating}/10</span>
+                           </div>
+                           {/* Owner Delete Button */}
+                           {user?.uid === nc.userId && (
+                             <button onClick={() => handleDeleteRequest(nc.id)} className="text-neutral-500 hover:text-red-500 hover:bg-red-500/10 p-1.5 rounded-lg transition-colors border border-transparent hover:border-red-500/30">
+                               <Trash2 className="w-4 h-4" />
+                             </button>
+                           )}
+                         </div>
+                       </div>
+                       <div className="text-neutral-100 text-sm leading-relaxed overflow-y-auto pr-2 custom-scrollbar flex-1 font-medium whitespace-pre-wrap">
+                         {nc.text}
+                       </div>
+                     </div>
+                   ))}
+
+                   {/* Standard TMDB Reviews */}
                    {reviews.slice(0, visibleReviewsCount).map((r, i) => {
                      const avatarUrl = getAvatarFallback(r.author_details?.avatar_path);
                      const rating = r.author_details?.rating;
@@ -400,7 +544,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                  </div>
               ) : (
                  <div className="text-neutral-500 italic bg-neutral-900/40 border border-neutral-800 rounded-xl p-8 text-center text-sm font-medium">
-                   No audience reviews are currently available for this title on TMDB.
+                   Be the first to review this!
                  </div>
               )}
             </div>
@@ -523,6 +667,31 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
       {/* Embedded Actor Modal */}
       {selectedActorId && (
         <ActorModal personId={selectedActorId} onClose={() => setSelectedActorId(null)} />
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {commentToDelete && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-[#1a1a1a] border border-neutral-800 rounded-2xl p-6 md:p-8 max-w-sm w-full text-center shadow-2xl animate-in zoom-in-95 duration-200">
+            <Trash2 className="w-12 h-12 text-red-500 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(220,38,38,0.5)]" />
+            <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Delete Review?</h3>
+            <p className="text-neutral-400 text-sm mb-8 font-medium">This action cannot be undone. Are you sure you want to permanently obliterate this comment?</p>
+            <div className="flex gap-4 w-full">
+              <button 
+                onClick={() => setCommentToDelete(null)}
+                className="flex-1 bg-neutral-800 hover:bg-neutral-700 text-white py-3 rounded-xl font-bold transition-colors border border-neutral-700"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={confirmDeleteComment}
+                className="flex-1 bg-red-600 hover:bg-red-500 text-white py-3 rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(220,38,38,0.3)] hover:shadow-[0_0_25px_rgba(220,38,38,0.6)]"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

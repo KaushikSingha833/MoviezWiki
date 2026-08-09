@@ -18,9 +18,9 @@ export default function PersonCard({ person }: { person: any }) {
       <div className="relative w-full aspect-[2/3] group/card">
         <div 
           onClick={() => setShowActorModal(true)}
-          className="absolute inset-0 rounded-lg bg-neutral-900 transition-all duration-300 delay-300 md:group-hover/card:scale-125 md:group-hover/card:z-50 md:group-hover/card:-translate-y-6 md:group-hover/card:shadow-2xl overflow-hidden cursor-pointer z-10 flex flex-col border border-transparent md:group-hover/card:border-neutral-700"
+          className="absolute inset-0 rounded-lg bg-neutral-900 transition-all duration-300 delay-100 md:group-hover/card:scale-125 md:group-hover/card:z-50 md:group-hover/card:-translate-y-6 md:group-hover/card:shadow-2xl overflow-hidden cursor-pointer z-10 flex flex-col border border-transparent md:group-hover/card:border-neutral-700"
         >
-          <div className="relative w-full h-full md:group-hover/card:h-[60%] transition-all duration-300 delay-300 shrink-0 bg-[#0a0a0c] flex items-center justify-center">
+          <div className="relative w-full h-full md:group-hover/card:h-[50%] transition-all duration-300 delay-100 shrink-0 bg-[#0a0a0c] flex items-center justify-center">
             {person.profile_path ? (
               <img 
                 src={`${IMAGE_BASE_URL}${person.profile_path}`} 
@@ -44,7 +44,7 @@ export default function PersonCard({ person }: { person: any }) {
             </div>
           </div>
 
-          <div className="h-0 opacity-0 md:group-hover/card:h-[40%] md:group-hover/card:opacity-100 bg-[#141414] transition-all duration-300 delay-300 flex flex-col p-3 w-full overflow-hidden border-t border-neutral-800">
+          <div className="h-0 opacity-0 md:group-hover/card:h-[50%] md:group-hover/card:opacity-100 bg-[#141414] transition-all duration-300 delay-100 flex flex-col p-3 w-full overflow-hidden border-t border-neutral-800">
             <h3 className="font-black text-white text-sm mb-1 truncate shrink-0">{person.name}</h3>
             
             {knownFor.length > 0 ? (
@@ -63,12 +63,12 @@ export default function PersonCard({ person }: { person: any }) {
                 </div>
               </div>
             ) : (
-              <div className="flex-grow flex items-center justify-center py-4">
-                <span className="text-[10px] text-neutral-500 italic">No significant cinematic credits mapped.</span>
+              <div className="flex-grow flex items-center justify-center py-1">
+                <span className="text-[10px] text-neutral-500 italic text-center leading-tight">No significant cinematic credits mapped.</span>
               </div>
             )}
             
-            <button className="w-full mt-3 bg-[#F5C518] text-black text-[10px] font-black py-1.5 rounded uppercase tracking-wider hover:bg-yellow-500 transition-colors shrink-0">
+            <button className="w-full mt-auto bg-[#F5C518] text-black text-[10px] font-black py-2 rounded uppercase tracking-wider hover:bg-yellow-500 transition-colors shrink-0">
               View Biography
             </button>
           </div>

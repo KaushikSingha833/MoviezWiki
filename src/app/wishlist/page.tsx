@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
-import { Heart, Lock, Sparkles, FolderHeart, ArrowRight } from "lucide-react";
+import { Heart, Lock, Sparkles, FolderHeart, ArrowRight, Film, User } from "lucide-react";
 import MovieCard from "@/components/MovieCard";
+import PersonCard from "@/components/PersonCard";
 import { useWishlist } from "@/context/WishlistContext";
 
 const gridContainer: Variants = {
@@ -26,6 +27,10 @@ const cardItem: Variants = {
 
 export default function WishlistPage() {
   const { wishlist, user } = useWishlist();
+
+  // Route saved objects into two specific buckets for rendering
+  const savedPeople = wishlist.filter(item => item.media_type === "person");
+  const savedMedia = wishlist.filter(item => item.media_type !== "person");
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white font-sans overflow-x-hidden">
@@ -101,22 +106,50 @@ export default function WishlistPage() {
 
         ) : wishlist.length > 0 ? (
           
-          /* Grid View State */
-          <motion.div 
-            variants={gridContainer}
-            initial="hidden"
-            animate="show"
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 sm:gap-x-6 gap-y-12 pb-24"
-          >
-            {wishlist.map((movie: any) => (
-              <motion.div key={movie.id} variants={cardItem} className="flex-shrink-0">
-                <MovieCard movie={movie} />
-              </motion.div>
-            ))}
-          </motion.div>
+          <div className="flex flex-col gap-12 md:gap-20 pb-24">
+            {/* Cinematic Movies & TV Segment */}
+            {savedMedia.length > 0 && (
+              <div>
+                <h2 className="text-2xl md:text-3xl font-black text-white mb-8 flex items-center gap-3 border-b border-neutral-900 pb-4">
+                  <Film className="w-6 h-6 text-[#F5C518]" /> Saved Titles
+                </h2>
+                <motion.div 
+                  variants={gridContainer}
+                  initial="hidden"
+                  animate="show"
+                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 sm:gap-x-6 gap-y-12"
+                >
+                  {savedMedia.map((movie: any) => (
+                    <motion.div key={movie.id} variants={cardItem} className="flex-shrink-0">
+                      <MovieCard movie={movie} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </div>
+            )}
 
+            {/* Favorite Actors Segment */}
+            {savedPeople.length > 0 && (
+              <div>
+                <h2 className="text-2xl md:text-3xl font-black text-white mb-8 flex items-center gap-3 border-b border-neutral-900 pb-4">
+                  <User className="w-6 h-6 text-rose-500" /> Favorite Cast & Crew
+                </h2>
+                <motion.div 
+                  variants={gridContainer}
+                  initial="hidden"
+                  animate="show"
+                  className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 sm:gap-x-6 gap-y-12"
+                >
+                  {savedPeople.map((person: any) => (
+                    <motion.div key={person.id} variants={cardItem} className="flex-shrink-0">
+                      <PersonCard person={person} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </div>
+            )}
+          </div>
         ) : (
-          
           /* Empty Zero-State */
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }}
