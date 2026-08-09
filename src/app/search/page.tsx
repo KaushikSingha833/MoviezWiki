@@ -28,16 +28,9 @@ export default async function SearchPage({
     }
     
     if (data && Array.isArray(data.results)) {
-      let processedData: any[] = [];
-      data.results.forEach((item: any) => {
-        if (item.media_type === 'person') {
-          if (Array.isArray(item.known_for)) {
-            processedData.push(...item.known_for);
-          }
-        } else {
-          processedData.push(item);
-        }
-      });
+      // Just take the raw results directly from the API. 
+      // If it's a person, it will remain a person object.
+      let processedData: any[] = [...data.results];
       
       const uniqueIds = new Set();
       results = processedData.filter(i => {
