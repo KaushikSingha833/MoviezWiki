@@ -106,7 +106,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   };
 
   const handleOpenNetwork = async (type: "followers" | "following") => {
-    if (user?.uid !== profile?.uid) return; // Only owner can see this
+    if (!profile || user?.uid !== profile.uid) return; // Only owner can see this
     setShowNetworkModal(type);
     setLoadingNetwork(true);
     const results = await getNetworkList(profile.uid, type);
@@ -256,7 +256,7 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
       <div className="max-w-[1400px] mx-auto px-4 md:px-8 mt-12 pb-24 relative z-20">
         <h3 className="text-xl md:text-2xl font-black text-white mb-8 flex items-center gap-3 border-b border-neutral-800/80 pb-4">
           <FolderHeart className="w-6 h-6 text-[#F5C518]" /> 
-          {profile.displayName.split(' ')[0]}'s Curated Vault
+          {(profile.displayName || profile.username).split(' ')[0]}'s Curated Vault
           {vaultLoading && <div className="ml-2 w-4 h-4 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" />}
         </h3>
         
