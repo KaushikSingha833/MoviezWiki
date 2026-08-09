@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
 
 // Fallback metadata for classic movies in case of network disconnect or DNS/IPv6 issues with TMDB API
@@ -53,8 +55,67 @@ const DEMO_FALLBACKS: Record<string, any> = {
 };
 
 export async function fetchTMDB(endpoint: string, extraParams: string = '') {
+  let activeEndpoint = endpoint;
+  let activeParams = extraParams;
+
+  try {
+    const cookieStore = await cookies();
+    const childMode = cookieStore.get("childMode")?.value === "true";
+    const prefMode = cookieStore.get("preferenceMode")?.value;
+    const region = cookieStore.get("region")?.value;
+
+    if (childMode) {
+      activeParams += "&certification_country=US&certification.lte=PG";
+      
+      // Pivot all generic row endpoints into strict Kids & Family categories
+      if (activeEndpoint === "/trending/movie/day") {
+        activeEndpoint = "/discover/movie";
+        activeParams += "&with_genres=10751,16&sort_by=popularity.desc";
+      } else if (activeEndpoint === "/movie/popular") {
+        activeEndpoint = "/discover/movie";
+        activeParams += "&with_genres=10751&sort_by=revenue.desc";
+      } else if (activeEndpoint === "/movie/upcoming") {
+        const today = new Date().toISOString().split('T')[0];
+        activeEndpoint = "/discover/movie";
+        activeParams += `&with_genres=16&primary_release_date.gte=${today}&sort_by=popularity.desc`;
+      } else if (activeEndpoint === "/trending/tv/day") {
+        activeEndpoint = "/discover/tv";
+        activeParams += "&with_genres=10762&sort_by=popularity.desc";
+      } else if (activeEndpoint === "/tv/popular") {
+        activeEndpoint = "/discover/tv";
+        activeParams += "&with_genres=16&sort_by=popularity.desc";
+      } else if (activeEndpoint === "/movie/top_rated") {
+        activeEndpoint = "/discover/movie";
+        activeParams += "&with_genres=10751,16&sort_by=vote_average.desc&vote_count.gte=500";
+      } else if (activeEndpoint === "/movie/now_playing") {
+        activeEndpoint = "/discover/movie";
+        activeParams += "&with_genres=10751&with_release_type=2|3&sort_by=popularity.desc";
+      }
+    } else if (prefMode === "national" && region) {
+      if (activeEndpoint === "/trending/movie/day" || activeEndpoint === "/movie/popular") {
+        activeEndpoint = "/discover/movie";
+        activeParams += `&with_origin_country=${region}&sort_by=popularity.desc`;
+      } else if (activeEndpoint === "/trending/tv/day" || activeEndpoint === "/tv/popular") {
+        activeEndpoint = "/discover/tv";
+        activeParams += `&with_origin_country=${region}&sort_by=popularity.desc`;
+      } else if (activeEndpoint === "/movie/top_rated") {
+        activeEndpoint = "/discover/movie";
+        activeParams += `&with_origin_country=${region}&sort_by=vote_average.desc&vote_count.gte=200`;
+      } else if (activeEndpoint === "/movie/upcoming") {
+        const today = new Date().toISOString().split('T')[0];
+        activeEndpoint = "/discover/movie";
+        activeParams += `&with_origin_country=${region}&primary_release_date.gte=${today}&sort_by=popularity.desc`;
+      } else if (activeEndpoint === "/movie/now_playing") {
+        activeEndpoint = "/discover/movie";
+        activeParams += `&with_origin_country=${region}&with_release_type=2|3&sort_by=popularity.desc`;
+      }
+    }
+  } catch (e) {
+    // Failsafe in case fetchTMDB is ever executed outside of a Server Component context mapping cookies
+  }
+
   const apiKey = process.env.TMDB_API_KEY || "fallback_key";
-  const url = `${TMDB_BASE_URL}${endpoint}?api_key=${apiKey}&language=en-US&page=1${extraParams}`;
+  const url = `${TMDB_BASE_URL}${activeEndpoint}?api_key=${apiKey}&language=en-US&page=1${activeParams}`;
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -87,6 +148,7 @@ export const getNowPlayingMovies = () => fetchTMDB('/movie/now_playing');
 export const getPopularCelebrities = () => fetchTMDB('/person/popular');
 export const getTrendingTvShows = () => fetchTMDB('/trending/tv/day');
 export const getPopularTvShows = () => fetchTMDB('/tv/popular');
+export const getTrendingReality = () => fetchTMDB('/discover/tv', '&with_genres=10764&sort_by=popularity.desc');
 export const getTrendingAnime = () => fetchTMDB('/discover/tv', '&with_genres=16&with_original_language=ja&sort_by=popularity.desc');
 export const getKoreanDrama = () => fetchTMDB('/discover/tv', '&with_original_language=ko&sort_by=popularity.desc');
 

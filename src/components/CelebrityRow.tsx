@@ -20,7 +20,7 @@ const item: Variants = {
   show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 100 } }
 };
 
-export default function CelebrityRow({ celebrities }: { celebrities: any[] }) {
+export default function CelebrityRow({ celebrities, title = "A-List Celebrities" }: { celebrities: any[], title?: string }) {
   const [selectedActorId, setSelectedActorId] = useState<number | null>(null);
 
   if (!celebrities || celebrities.length === 0) return null;
@@ -30,7 +30,7 @@ export default function CelebrityRow({ celebrities }: { celebrities: any[] }) {
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-3xl font-black text-white flex items-center gap-3">
           <div className="w-1.5 h-8 bg-[#F5C518] rounded-full" />
-          A-List Celebrities
+          {title}
         </h2>
         <span className="text-xs font-bold text-[#F5C518] uppercase tracking-wider bg-[#F5C518]/10 px-3 py-1 rounded-full border border-[#F5C518]/20 flex items-center gap-1">
           <Sparkles className="w-3 h-3" /> Trending Weekly

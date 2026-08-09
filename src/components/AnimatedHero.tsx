@@ -9,7 +9,7 @@ import { getGenreNames } from "@/lib/genres";
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 const BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/original";
 
-export default function AnimatedHero({ movies }: { movies: any[] }) {
+export default function AnimatedHero({ movies, badgeText = "Trending Worldwide" }: { movies: any[], badgeText?: string }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
 
@@ -65,7 +65,7 @@ export default function AnimatedHero({ movies }: { movies: any[] }) {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121212]/80 backdrop-blur-md border border-[#F5C518]/30 shadow-lg">
               <Sparkles className="w-4 h-4 text-[#F5C518]" />
               <span className="text-xs font-black uppercase tracking-widest text-white">
-                #{activeIndex + 1} Trending Worldwide
+                #{activeIndex + 1} {badgeText}
               </span>
             </div>
 

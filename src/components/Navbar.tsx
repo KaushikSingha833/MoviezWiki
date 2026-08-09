@@ -3,12 +3,22 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useWishlist } from "@/context/WishlistContext";
+import { useSettings } from "@/context/SettingsContext";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { useState, useEffect, useRef } from "react";
 import { getSearchSuggestions } from "@/actions/movieActions";
 import { GENRE_MAP } from "@/lib/genres";
 import { Filter, SlidersHorizontal, Search, Settings2, Popcorn, Film, Globe } from "lucide-react";
+
+function getFlagEmoji(countryCode: string) {
+  if (!countryCode) return '🌐';
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+}
 
 const SearchBar = ({ isMobile = false }) => {
   const router = useRouter();
@@ -230,8 +240,14 @@ const SearchBar = ({ isMobile = false }) => {
 export default function Navbar() {
   const pathname = usePathname();
   const { user, authLoaded } = useWishlist();
+  const { region } = useSettings();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -249,6 +265,9 @@ export default function Navbar() {
       <Link href="/welcome" onClick={() => mobile && setIsMobileMenuOpen(false)} className="inline-flex items-center gap-1 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-[#F5C518] border border-[#F5C518]/40 hover:bg-[#F5C518] hover:text-black font-bold px-3.5 py-1 rounded-full text-xs transition-all duration-300 shadow-sm">
         <span>✨</span> Discover V2
       </Link>
+      {mobile && (
+        <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-neutral-300 transition-colors">Settings & Region</Link>
+      )}
       {authLoaded && !user ? (
         <Link href="/login" onClick={() => mobile && setIsMobileMenuOpen(false)} className="hover:text-neutral-300 transition-colors md:ml-2">Login</Link>
       ) : authLoaded && user ? (
@@ -280,6 +299,15 @@ export default function Navbar() {
         
         <div className="flex items-center gap-2 sm:gap-4">
           <SearchBar />
+
+          {/* Region and Settings Pill */}
+          {mounted && (
+            <Link href="/settings" className="hidden md:flex items-center gap-2 bg-neutral-900 border border-neutral-700 px-3 py-1.5 rounded-full hover:bg-neutral-800 transition-colors shadow-inner" title="Global Settings">
+               <span className="text-sm">{getFlagEmoji(region)} {region}</span>
+               <div className="w-[1px] h-4 bg-neutral-700" />
+               <Settings2 className="w-4 h-4 text-neutral-400 hover:text-white" />
+            </Link>
+          )}
 
           <button 
             className="md:hidden text-white p-2 hover:bg-neutral-800 rounded-md transition-colors"
