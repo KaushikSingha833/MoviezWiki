@@ -10,9 +10,11 @@ type WishlistContextType = {
   toggleWishlist: (movie: any) => Promise<void>;
   isInWishlist: (movieId: number) => boolean;
   user: any;
+  profile: any;
   authLoaded: boolean;
   showAuthWarning: boolean;
   setShowAuthWarning: (val: boolean) => void;
+  customLists: any[];
 };
 
 const WishlistContext = createContext<WishlistContextType>({} as WishlistContextType);
@@ -20,8 +22,10 @@ const WishlistContext = createContext<WishlistContextType>({} as WishlistContext
 export function WishlistProvider({ children }: { children: ReactNode }) {
   const [wishlist, setWishlist] = useState<any[]>([]);
   const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [authLoaded, setAuthLoaded] = useState(false);
   const [showAuthWarning, setShowAuthWarning] = useState(false);
+  const [customLists, setCustomLists] = useState<any[]>([]);
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (currentUser) => {
@@ -29,14 +33,38 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       setAuthLoaded(true);
       
       if (currentUser && db) {
+        // Fetch User Profile Realtime (for username and meta)
+        const userRef = doc(db, "users", currentUser.uid);
+        const unsubscribeProfile = onSnapshot(userRef, (snapshot) => {
+          if (snapshot.exists()) {
+             setProfile(snapshot.data());
+          }
+        });
+
         const wishlistRef = collection(db, "users", currentUser.uid, "wishlist");
-        const unsubscribeSnapshot = onSnapshot(wishlistRef, (snapshot) => {
+        const unsubscribeWishlist = onSnapshot(wishlistRef, (snapshot) => {
           const items = snapshot.docs.map((doc) => doc.data());
           setWishlist(items);
         });
-        return () => unsubscribeSnapshot();
+        
+        const listsRef = collection(db, "users", currentUser.uid, "lists");
+        const unsubscribeLists = onSnapshot(listsRef, (snapshot) => {
+          const fetchedLists = snapshot.docs.map((doc) => doc.data());
+          // Sort by creation time (newest first)
+          fetchedLists.sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
+          setCustomLists(fetchedLists);
+        });
+
+        // We wrap unsub in a single function
+        return () => {
+           unsubscribeProfile();
+           unsubscribeWishlist();
+           unsubscribeLists();
+        };
       } else {
         setWishlist([]);
+        setCustomLists([]);
+        setProfile(null);
       }
     });
     
@@ -73,7 +101,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <WishlistContext.Provider value={{ wishlist, toggleWishlist, isInWishlist, user, authLoaded, showAuthWarning, setShowAuthWarning }}>
+    <WishlistContext.Provider value={{ wishlist, toggleWishlist, isInWishlist, user, profile, authLoaded, showAuthWarning, setShowAuthWarning, customLists }}>
       {children}
     </WishlistContext.Provider>
   );

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits, getMediaReviews } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
-import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2, Trash2 } from "lucide-react";
+import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2, Trash2, Heart, ListPlus, Check } from "lucide-react";
 import { getGenreNames } from "@/lib/genres";
 import AISummaryModal from "./AISummaryModal";
 import MovieCard from "./MovieCard";
@@ -11,6 +11,7 @@ import { getSimilarMedia } from "@/actions/movieActions";
 import ActorModal from "./ActorModal";
 import { useWishlist } from "@/context/WishlistContext";
 import { addCommunityComment, getCommunityComments, deleteCommunityComment, CommunityComment } from "@/lib/comments";
+import { addToList, removeFromList } from "@/lib/lists";
 
 const getDirectPlatformLink = (providerName: string, title: string) => {
   const query = encodeURIComponent(title);
@@ -64,7 +65,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
   const [selectedActorId, setSelectedActorId] = useState<number | null>(null);
 
   // Native Comments State
-  const { user } = useWishlist();
+  const { user, customLists, toggleWishlist, isInWishlist } = useWishlist();
   const [nativeComments, setNativeComments] = useState<CommunityComment[]>([]);
   const [isFetchingNative, setIsFetchingNative] = useState(false);
   const [newCommentText, setNewCommentText] = useState("");
@@ -72,6 +73,20 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [hoverRating, setHoverRating] = useState(0);
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
+
+  // List Management State
+  const [showListDropdown, setShowListDropdown] = useState(false);
+  const isHearted = isInWishlist(movie.id);
+
+  const handleToggleCustomList = async (listId: string, currentItems: any[]) => {
+    if (!user) return;
+    const exists = currentItems.some(i => i.id === movie.id);
+    if (exists) {
+       await removeFromList(user.uid, listId, movie);
+    } else {
+       await addToList(user.uid, listId, movie);
+    }
+  };
 
   useEffect(() => {
     if (isTV) {
@@ -275,13 +290,60 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-3 md:gap-4">
-                <button 
-                  onClick={handlePlayMainTrailer}
-                  disabled={isLoadingAction}
-                  className="flex items-center gap-2 bg-white hover:bg-neutral-200 text-black px-5 md:px-8 py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl text-sm md:text-base"
-                >
-                  <Play className="w-5 h-5 fill-black" /> {isLoadingAction ? 'Loading...' : 'Play Trailer'}
-                </button>
+                <div className="relative flex items-center group">
+                  <button 
+                    onClick={handlePlayMainTrailer}
+                    disabled={isLoadingAction}
+                    className="flex items-center gap-2 bg-white hover:bg-neutral-200 text-black px-5 md:px-8 py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl text-sm md:text-base mr-1"
+                  >
+                    <Play className="w-5 h-5 fill-black" /> {isLoadingAction ? 'Loading...' : 'Play Trailer'}
+                  </button>
+                  
+                  {/* Quick Heart Wishlist */}
+                  <button 
+                    onClick={() => toggleWishlist(movie)}
+                    className="p-3 mx-1 bg-black/60 hover:bg-neutral-800 backdrop-blur-md rounded-lg border border-neutral-600 transition-all hover:scale-110 shadow-xl"
+                  >
+                    <Heart className={`w-5 h-5 transition-colors ${isHearted ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
+                  </button>
+                  
+                  {/* Custom List Dropdown */}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setShowListDropdown(!showListDropdown)}
+                      className={`p-3 mx-1 bg-black/60 hover:bg-neutral-800 backdrop-blur-md rounded-lg border transition-all shadow-xl ${showListDropdown ? 'border-[#F5C518] scale-110' : 'border-neutral-600 hover:scale-110'}`}
+                    >
+                      <ListPlus className={`w-5 h-5 ${showListDropdown ? 'text-[#F5C518]' : 'text-white'}`} />
+                    </button>
+                    
+                    {showListDropdown && (
+                      <div className="absolute top-full left-0 mt-2 w-48 bg-[#121215] border border-neutral-700 rounded-xl shadow-2xl z-[200] overflow-hidden">
+                        <div className="p-2 border-b border-neutral-800/80">
+                          <span className="text-[10px] font-bold tracking-widest text-[#F5C518] uppercase">Add to List</span>
+                        </div>
+                        <div className="max-h-48 overflow-y-auto">
+                          {user && customLists && customLists.length > 0 ? (
+                            customLists.map(list => {
+                              const inList = list.items?.some((i:any) => i.id === movie.id);
+                              return (
+                                <button 
+                                  key={list.id} 
+                                  onClick={() => handleToggleCustomList(list.id, list.items || [])}
+                                  className="w-full text-left px-3 py-2.5 text-xs text-white hover:bg-neutral-800 flex items-center justify-between transition-colors"
+                                >
+                                  <span className="truncate pr-2 font-medium">{list.title}</span>
+                                  {inList && <Check className="w-3 h-3 text-emerald-400 shrink-0" />}
+                                </button>
+                              );
+                            })
+                          ) : (
+                            <div className="px-3 py-3 text-xs text-neutral-500 italic">No lists created.</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
                 <button 
                   onClick={handleAISummary}
                   className="flex items-center gap-2 bg-neutral-800/80 hover:bg-neutral-700/80 backdrop-blur-md text-white px-5 md:px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 border border-neutral-600 shadow-xl text-sm md:text-base"
