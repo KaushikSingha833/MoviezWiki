@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits, getMediaReviews } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
 import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2, Trash2, Heart, ListPlus, Check } from "lucide-react";
+import Link from "next/link";
 import { getGenreNames } from "@/lib/genres";
 import AISummaryModal from "./AISummaryModal";
 import MovieCard from "./MovieCard";
@@ -291,12 +292,19 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-3 md:gap-4">
                 <div className="relative flex items-center group">
+                  <Link
+                    href={`/watch/${isTV ? 'tv' : 'movie'}/${movie.id}`}
+                    className="flex items-center gap-2 bg-[#F5C518] hover:bg-[#d4a810] text-black px-6 md:px-8 py-3 rounded-lg font-black transition-all hover:scale-105 shadow-[0_0_20px_rgba(245,197,24,0.3)] text-sm md:text-base mr-3"
+                  >
+                    <Play className="w-5 h-5 fill-black" /> Watch Now
+                  </Link>
+
                   <button 
                     onClick={handlePlayMainTrailer}
                     disabled={isLoadingAction}
-                    className="flex items-center gap-2 bg-white hover:bg-neutral-200 text-black px-5 md:px-8 py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl text-sm md:text-base mr-1"
+                    className="flex items-center gap-2 bg-neutral-800/80 hover:bg-white hover:text-black text-white px-5 md:px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl text-sm md:text-base mr-1 backdrop-blur-md border border-neutral-600"
                   >
-                    <Play className="w-5 h-5 fill-black" /> {isLoadingAction ? 'Loading...' : 'Play Trailer'}
+                    {isLoadingAction ? '...' : 'Trailer'}
                   </button>
                   
                   {/* Quick Heart Wishlist */}
