@@ -5,9 +5,10 @@ import { getMovieTrailer } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
 import { useWishlist } from "@/context/WishlistContext";
 import { getGenreNames } from "@/lib/genres";
+import Link from "next/link";
 import AISummaryModal from "./AISummaryModal";
 import InfoModal from "./InfoModal";
-import { Info } from "lucide-react";
+import { Info, Play } from "lucide-react";
 
 export default function MovieCard({ movie }: { movie: any }) {
   const genres = getGenreNames(movie.genre_ids);
@@ -77,6 +78,14 @@ export default function MovieCard({ movie }: { movie: any }) {
               >
                 <Info className="w-4 h-4" />
               </button>
+              
+              <Link 
+                href={`/watch/${movie.name && !movie.title ? 'tv' : 'movie'}/${movie.id}`}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-black/60 p-2 rounded-full hover:bg-black/80 flex items-center justify-center text-white hover:text-[#F5C518] shadow-lg"
+              >
+                <Play className="w-4 h-4 fill-current" />
+              </Link>
             </div>
             
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent opacity-100 md:opacity-0 flex flex-col justify-end p-3 md:hidden">
@@ -96,7 +105,7 @@ export default function MovieCard({ movie }: { movie: any }) {
                   disabled={isLoadingTrailer}
                   className="bg-[#F5C518] hover:bg-yellow-500 text-black text-xs font-bold py-1.5 px-2 rounded w-full transition-colors relative z-20"
                 >
-                  {isLoadingTrailer ? '...' : '▶ Play'}
+                  {isLoadingTrailer ? '...' : '▶ Trailer'}
                 </button>
                 <button 
                   onClick={handleAISummary}
@@ -127,7 +136,7 @@ export default function MovieCard({ movie }: { movie: any }) {
                 disabled={isLoadingTrailer}
                 className="bg-[#F5C518] hover:bg-yellow-500 text-black text-[10px] font-bold py-1.5 px-2 rounded flex-1 transition-colors relative z-20"
               >
-                {isLoadingTrailer ? '...' : '▶ Play Trailer'}
+                {isLoadingTrailer ? '...' : '▶ Trailer'}
               </button>
               <button 
                 onClick={handleAISummary}

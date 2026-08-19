@@ -1,14 +1,10 @@
 "use server";
 
-const API_KEY = process.env.TMDB_API_KEY || process.env.NEXT_PUBLIC_TMDB_API_KEY;
+import { fetchTMDB } from "@/lib/tmdb";
 
 export async function getMoviesByCountry(countryCode: string) {
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/discover/movie?api_key=${API_KEY}&with_origin_country=${countryCode}&sort_by=popularity.desc&page=1`,
-      { next: { revalidate: 3600 } }
-    );
-    const data = await res.json();
+    const data = await fetchTMDB(`/discover/movie`, `&with_origin_country=${countryCode}&sort_by=popularity.desc`);
     return data.results?.slice(0, 10) || [];
   } catch (error) {
     console.error(error);
@@ -18,11 +14,7 @@ export async function getMoviesByCountry(countryCode: string) {
 
 export async function getPersonDetails(personId: number) {
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/person/${personId}?api_key=${API_KEY}&append_to_response=combined_credits`,
-      { next: { revalidate: 86400 } }
-    );
-    return await res.json();
+    return await fetchTMDB(`/person/${personId}`, `&append_to_response=combined_credits`);
   } catch (error) {
     console.error(error);
     return null;
@@ -31,11 +23,7 @@ export async function getPersonDetails(personId: number) {
 
 export async function getMovieTrailer(id: number, type: "movie" | "tv" = "movie") {
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/${type}/${id}/videos?api_key=${API_KEY}`,
-      { next: { revalidate: 3600 } }
-    );
-    const data = await res.json();
+    const data = await fetchTMDB(`/${type}/${id}/videos`);
     
     if (!data.results || data.results.length === 0) return null;
 
@@ -55,11 +43,7 @@ export async function getMovieTrailer(id: number, type: "movie" | "tv" = "movie"
 
 export async function getTVDetails(tvId: number) {
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/tv/${tvId}?api_key=${API_KEY}`,
-      { next: { revalidate: 3600 } }
-    );
-    return await res.json();
+    return await fetchTMDB(`/tv/${tvId}`);
   } catch (error) {
     console.error(error);
     return null;
@@ -68,11 +52,7 @@ export async function getTVDetails(tvId: number) {
 
 export async function getTVSeasonTrailer(tvId: number, seasonNumber: number) {
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/tv/${tvId}/season/${seasonNumber}/videos?api_key=${API_KEY}`,
-      { next: { revalidate: 3600 } }
-    );
-    const data = await res.json();
+    const data = await fetchTMDB(`/tv/${tvId}/season/${seasonNumber}/videos`);
     
     if (!data.results || data.results.length === 0) return null;
 
@@ -92,13 +72,9 @@ export async function getTVSeasonTrailer(tvId: number, seasonNumber: number) {
 
 export async function getStreamingProviders(id: number, type: "movie" | "tv" = "movie") {
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/${type}/${id}/watch/providers?api_key=${API_KEY}`,
-      { next: { revalidate: 3600 } }
-    );
-    const data = await res.json();
+    const data = await fetchTMDB(`/${type}/${id}/watch/providers`);
     
-    if (!data.results || Object.keys(data.results).length === 0) return null;
+    if (!data || !data.results || Object.keys(data.results).length === 0) return null;
 
     const regionData = data.results.US || Object.values(data.results)[0];
     if (!regionData) return null;
@@ -118,11 +94,7 @@ export async function getStreamingProviders(id: number, type: "movie" | "tv" = "
 
 export async function getMediaCredits(id: number, type: "movie" | "tv" = "movie") {
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/${type}/${id}/credits?api_key=${API_KEY}`,
-      { next: { revalidate: 3600 } }
-    );
-    const data = await res.json();
+    const data = await fetchTMDB(`/${type}/${id}/credits`);
     return data.cast || [];
   } catch (error) {
     console.error(error);
@@ -132,11 +104,7 @@ export async function getMediaCredits(id: number, type: "movie" | "tv" = "movie"
 
 export async function getMediaReviews(id: number | string, type: "movie" | "tv" = "movie") {
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/${type}/${id}/reviews?api_key=${API_KEY}`,
-      { next: { revalidate: 3600 } }
-    );
-    const data = await res.json();
+    const data = await fetchTMDB(`/${type}/${id}/reviews`);
     return data.results || [];
   } catch (error) {
     console.error(error);
@@ -147,21 +115,13 @@ export async function getMediaReviews(id: number | string, type: "movie" | "tv" 
 export async function getSimilarMedia(id: number | string, type: "movie" | "tv" = "movie") {
   try {
     // 1. First attempt to fetch high-quality community recommendations
-    const recRes = await fetch(
-      `https://api.themoviedb.org/3/${type}/${id}/recommendations?api_key=${API_KEY}&page=1`,
-      { next: { revalidate: 3600 } }
-    );
-    const recData = await recRes.json();
-    let results = recData.results || [];
+    let data = await fetchTMDB(`/${type}/${id}/recommendations`);
+    let results = data.results || [];
 
     // 2. Fallback to basic keyword similarities if no recommendations exist
     if (results.length === 0) {
-      const simRes = await fetch(
-        `https://api.themoviedb.org/3/${type}/${id}/similar?api_key=${API_KEY}&page=1`,
-        { next: { revalidate: 3600 } }
-      );
-      const simData = await simRes.json();
-      results = simData.results || [];
+      data = await fetchTMDB(`/${type}/${id}/similar`);
+      results = data.results || [];
     }
     
     // Inject the media_type into each item if missing
@@ -180,12 +140,7 @@ export async function getSimilarMedia(id: number | string, type: "movie" | "tv" 
 export async function getSearchSuggestions(query: string) {
   if (!query) return [];
   try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=1`,
-      { next: { revalidate: 3600 } }
-    );
-    const data = await res.json();
-    // Return only top 5 for fast visual dropdown
+    const data = await fetchTMDB(`/search/multi`, `&query=${encodeURIComponent(query)}`);
     return data.results?.slice(0, 5) || [];
   } catch (error) {
     console.error(error);

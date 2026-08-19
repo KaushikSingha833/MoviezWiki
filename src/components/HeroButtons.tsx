@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { getMovieTrailer } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
 import AISummaryModal from "@/components/AISummaryModal";
@@ -40,16 +41,26 @@ export default function HeroButtons({ movie, onInteractionChange }: { movie: any
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full sm:w-auto">
-        <button 
-          onClick={handlePlayTrailer}
-          disabled={isLoading}
-          className="w-full sm:w-auto bg-[#F5C518] text-black font-bold py-3 px-8 rounded-md hover:bg-yellow-500 hover:scale-105 transition-all duration-300 flex justify-center items-center shadow-lg disabled:opacity-50"
+      <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full sm:w-auto flex-wrap">
+        <Link
+          href={`/watch/${movie?.name && !movie?.title ? 'tv' : 'movie'}/${movie?.id}`}
+          className="w-full sm:w-auto bg-[#F5C518] text-black font-bold py-3 px-8 rounded-md hover:bg-yellow-400 hover:scale-105 transition-all duration-300 flex justify-center items-center shadow-[0_0_20px_rgba(245,197,24,0.3)] shrink-0"
         >
           <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
           </svg>
-          {isLoading ? "..." : "Play"}
+          Watch {movie?.name && !movie?.title ? 'Show' : 'Movie'}
+        </Link>
+        <button 
+          onClick={handlePlayTrailer}
+          disabled={isLoading}
+          className="w-full sm:w-auto bg-neutral-800 text-white font-bold py-3 px-8 rounded-md hover:bg-neutral-700 hover:scale-105 transition-all duration-300 flex justify-center items-center shadow-lg border border-neutral-700 disabled:opacity-50 shrink-0"
+        >
+          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {isLoading ? "..." : "Trailer"}
         </button>
         <button 
           onClick={handleAISummary}

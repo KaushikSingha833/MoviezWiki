@@ -5,9 +5,10 @@ import { getMovieTrailer } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
 import { useWishlist } from "@/context/WishlistContext";
 import { getGenreNames } from "@/lib/genres";
+import Link from "next/link";
 import AISummaryModal from "@/components/AISummaryModal";
 import InfoModal from "@/components/InfoModal";
-import { Info } from "lucide-react";
+import { Info, Play } from "lucide-react";
 
 export default function TopTenCard({ item, index }: { item: any, index: number }) {
   const genres = getGenreNames(item.genre_ids);
@@ -104,6 +105,13 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                 >
                   <Info className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
+                <Link 
+                  href={`/watch/${item.name && !item.title ? 'tv' : 'movie'}/${item.id}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="p-1.5 bg-black/60 rounded-full hover:bg-black/80 flex items-center justify-center text-white hover:text-[#F5C518] transition-colors border border-neutral-700 hover:border-transparent shadow-lg"
+                >
+                  <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+                </Link>
               </div>
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent opacity-100 md:opacity-0 flex flex-col justify-end p-2.5 md:hidden">
@@ -156,7 +164,7 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                   disabled={isLoading}
                   className="bg-[#F5C518] hover:bg-yellow-500 text-black text-[9px] font-bold py-1.5 px-2 rounded flex-1 transition-colors relative z-20"
                 >
-                  {isLoading ? '...' : '▶ Play'}
+                  {isLoading ? '...' : '▶ Trailer'}
                 </button>
                 <button 
                   onClick={handleAISummary}
