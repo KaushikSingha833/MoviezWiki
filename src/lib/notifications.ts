@@ -28,7 +28,7 @@ export const pushNotification = async (
   if (ownerUid === fromUid) return false; // purely a fail-safe, you can't notify yourself
 
   try {
-    const notifId = `${type}_${fromUid}_${targetId || 'core'}`;
+    const notifId = type === "follow" ? `${type}_${fromUid}_${Date.now()}` : `${type}_${fromUid}_${targetId || 'core'}`;
     const notifRef = doc(db, "users", ownerUid, "notifications", notifId);
     
     await setDoc(notifRef, {
@@ -40,7 +40,7 @@ export const pushNotification = async (
       targetName: targetName || null,
       status: type === "follow" ? "read" : "pending", 
       createdAt: Timestamp.now()
-    }, { merge: true });
+    });
     
     return true;
   } catch (error) {

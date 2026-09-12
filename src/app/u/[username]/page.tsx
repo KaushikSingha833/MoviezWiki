@@ -163,83 +163,73 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white pt-24 pb-20 overflow-x-hidden font-sans">
+    <div className="min-h-screen bg-[#050505] text-white overflow-x-hidden font-sans pb-24">
       
-      {/* Premium Profile Header Card */}
-      <div className="max-w-4xl mx-auto px-4 md:px-8 mb-8 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/20 to-[#0a0a0c] rounded-[3rem] blur-xl" />
-        
-        <div className="bg-[#121215]/80 backdrop-blur-xl border border-neutral-800/80 rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden shadow-2xl flex flex-col md:flex-row items-center md:items-start gap-8 z-10">
-          
-          {/* Aesthetic Highlights */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-[80px]" />
-          
-          <div className="w-32 h-32 md:w-40 md:h-40 shrink-0 bg-neutral-900 rounded-full border-4 border-[#121215] ring-2 ring-neutral-800 flex items-center justify-center shadow-2xl relative overflow-hidden">
-            {profile.photoURL ? (
-              <img src={profile.photoURL} alt={profile.displayName} className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-16 h-16 text-neutral-600" />
-            )}
-            <div className="absolute bottom-0 w-full h-1/2 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
-          </div>
+      {/* Premium Cover Banner */}
+      <div className="w-full h-48 md:h-72 bg-gradient-to-br from-[#121215] via-[#0a0a0c] to-[#F5C518]/20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
+        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-[#F5C518]/20 rounded-full blur-[100px]"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent"></div>
+      </div>
 
-          <div className="flex-1 text-center md:text-left relative z-10 w-full">
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
-              <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-white">
+      {/* Main Profile Info Overlay */}
+      <div className="max-w-[1200px] mx-auto px-4 sm:px-6 md:px-8 relative z-20 -mt-20 md:-mt-32">
+        
+        <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-end mb-8 md:mb-12">
+          
+          {/* Overlapping Avatar */}
+          <div className="w-36 h-36 md:w-48 md:h-48 shrink-0 bg-[#0a0a0c] rounded-full p-2 shadow-[0_20px_50px_rgba(0,0,0,0.8)] relative group">
+            <div className="w-full h-full rounded-full overflow-hidden border-2 border-[#F5C518]/50 bg-[#121215] flex items-center justify-center relative">
+              {profile.photoURL ? (
+                <img src={profile.photoURL} alt={profile.displayName} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+              ) : (
+                <User className="w-20 h-20 text-neutral-600" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </div>
+            
+            {/* Online Status / Verified Badge Overlap */}
+            <div className="absolute bottom-4 right-4 bg-[#0a0a0c] rounded-full p-1 shadow-lg">
+              <div className="bg-[#F5C518] text-black w-8 h-8 rounded-full flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+          
+          {/* Text and Actions */}
+          <div className="flex-1 text-center md:text-left flex flex-col items-center md:items-start w-full">
+            <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white drop-shadow-lg">
                 {profile.displayName}
               </h1>
               {user?.uid === profile.uid && (
-                <span className="hidden md:inline-flex items-center gap-1 text-[10px] bg-neutral-800/80 border border-neutral-700 text-neutral-300 font-bold px-2 py-1 rounded uppercase tracking-wider">
+                <span className="bg-[#F5C518]/10 text-[#F5C518] border border-[#F5C518]/30 font-bold px-3 py-1 rounded-full text-xs uppercase tracking-widest shadow-inner">
                   You
                 </span>
               )}
             </div>
             
-            <p className="text-[#F5C518] font-bold tracking-wide text-lg mb-6 drop-shadow-md">
+            <p className="text-[#F5C518] font-bold tracking-widest text-sm md:text-base mb-6">
               @{profile.username}
             </p>
             
-            <div className="flex items-center justify-center md:justify-start gap-6 border-y border-neutral-800/50 py-4 mb-6 relative">
-              <div 
-                className={`text-center md:text-left flex flex-col items-center md:items-start group ${user?.uid === profile.uid ? 'cursor-pointer hover:bg-white/5 p-2 rounded-xl transition -m-2' : ''}`}
-                onClick={() => handleOpenNetwork("followers")}
-              >
-                <span className="text-xl md:text-2xl font-black text-white">{followersCount}</span>
-                <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest group-hover:text-neutral-300 transition-colors">Followers</span>
-              </div>
-              <div className="w-px h-8 bg-neutral-800" />
-              <div 
-                className={`text-center md:text-left flex flex-col items-center md:items-start group ${user?.uid === profile.uid ? 'cursor-pointer hover:bg-white/5 p-2 rounded-xl transition -m-2' : ''}`}
-                onClick={() => handleOpenNetwork("following")}
-              >
-                <span className="text-xl md:text-2xl font-black text-white">{followingCount}</span>
-                <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest group-hover:text-neutral-300 transition-colors">Following</span>
-              </div>
-              <div className="w-px h-8 bg-neutral-800" />
-              <div className="text-center md:text-left flex flex-col items-center md:items-start group">
-                <div className="flex items-center justify-center h-[28px] md:h-[32px]">
-                   <ShieldCheck className="w-5 h-5 text-indigo-400" />
-                </div>
-                <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-widest">Verified</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
+            {/* Quick Actions (Desktop & Mobile) */}
+            <div className="flex flex-wrap justify-center md:justify-start gap-4 w-full max-w-md md:max-w-none">
               {user?.uid === profile.uid ? (
                 <button 
                   onClick={() => router.push("/settings")}
-                  className="flex-1 bg-[#1a1a2e] hover:bg-indigo-900/50 border border-indigo-500/30 text-indigo-300 hover:text-white font-black py-3 px-6 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
+                  className="flex-1 md:flex-none bg-[#121215] hover:bg-neutral-800 border border-neutral-700/50 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all flex justify-center items-center gap-2 hover:border-[#F5C518]/50 hover:shadow-[0_0_15px_rgba(245,197,24,0.15)]"
                 >
-                  <Settings className="w-4 h-4" /> Edit Profile Settings
+                  <Settings className="w-4 h-4 text-neutral-400" /> Settings
                 </button>
               ) : (
                 <button 
                   onClick={handleToggleFollow}
                   disabled={isToggling}
-                  className={`flex-1 font-black py-3 px-6 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 disabled:opacity-50 ${isFollowing ? 'bg-neutral-800 hover:bg-neutral-700 text-white' : 'bg-indigo-500 hover:bg-indigo-400 text-white shadow-[0_0_20px_rgba(99,102,241,0.3)]'}`}
+                  className={`flex-1 md:flex-none font-bold py-3 px-8 rounded-full shadow-lg transition-all flex justify-center items-center gap-2 disabled:opacity-50 border ${isFollowing ? 'bg-[#121215] hover:bg-neutral-800 border-neutral-700/50 text-white' : 'bg-[#F5C518] hover:bg-yellow-400 text-black border-[#F5C518] shadow-[0_0_20px_rgba(245,197,24,0.2)] hover:scale-105'}`}
                 >
                   {isToggling ? (
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
                   ) : isFollowing ? (
                     <><UserMinus className="w-4 h-4" /> Unfollow</>
                   ) : (
@@ -250,51 +240,97 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
             </div>
           </div>
         </div>
+
+        {/* Premium Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16">
+           <div 
+             className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center md:items-start group hover:bg-white/5 hover:border-white/10 transition-all cursor-pointer shadow-lg relative overflow-hidden"
+             onClick={() => handleOpenNetwork("followers")}
+           >
+             <div className="absolute top-0 right-0 w-20 h-20 bg-[#F5C518]/5 rounded-bl-full group-hover:bg-[#F5C518]/10 transition-colors"></div>
+             <span className="text-3xl md:text-4xl font-black text-white relative z-10">{followersCount}</span>
+             <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest mt-2 flex items-center gap-2 relative z-10">
+               <User className="w-3 h-3 text-[#F5C518]" /> Followers
+             </span>
+           </div>
+           
+           <div 
+             className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center md:items-start group hover:bg-white/5 hover:border-white/10 transition-all cursor-pointer shadow-lg relative overflow-hidden"
+             onClick={() => handleOpenNetwork("following")}
+           >
+             <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-bl-full group-hover:bg-emerald-500/10 transition-colors"></div>
+             <span className="text-3xl md:text-4xl font-black text-white relative z-10">{followingCount}</span>
+             <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest mt-2 flex items-center gap-2 relative z-10">
+               <UserPlus className="w-3 h-3 text-emerald-400" /> Following
+             </span>
+           </div>
+
+           <div className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center md:items-start shadow-lg relative overflow-hidden">
+             <div className="absolute top-0 right-0 w-20 h-20 bg-rose-500/5 rounded-bl-full"></div>
+             <span className="text-3xl md:text-4xl font-black text-white relative z-10">{vaultItems.length}</span>
+             <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest mt-2 flex items-center gap-2 relative z-10">
+               <FolderHeart className="w-3 h-3 text-rose-500" /> Saved Items
+             </span>
+           </div>
+           
+           <div className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center justify-center shadow-lg">
+             <div className="w-12 h-12 rounded-full bg-[#F5C518]/10 flex items-center justify-center mb-3 border border-[#F5C518]/20 shadow-[0_0_15px_rgba(245,197,24,0.15)]">
+               <Activity className="w-6 h-6 text-[#F5C518]" />
+             </div>
+             <span className="text-xs text-[#F5C518] font-bold uppercase tracking-widest text-center">Active Link</span>
+           </div>
+        </div>
       </div>
       
       {/* Vault / Public Wishlist Segment */}
-      <div className="max-w-[1400px] mx-auto px-4 md:px-8 mt-12 pb-24 relative z-20">
-        <h3 className="text-xl md:text-2xl font-black text-white mb-8 flex items-center gap-3 border-b border-neutral-800/80 pb-4">
-          <FolderHeart className="w-6 h-6 text-[#F5C518]" /> 
-          {(profile.displayName || profile.username).split(' ')[0]}'s Curated Vault
-          {vaultLoading && <div className="ml-2 w-4 h-4 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" />}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 pb-24 relative z-20">
+        <h3 className="text-2xl md:text-3xl font-black text-white mb-10 flex items-center gap-4">
+          <div className="p-3 bg-[#F5C518]/10 rounded-2xl border border-[#F5C518]/20 shadow-[0_0_20px_rgba(245,197,24,0.15)]">
+            <FolderHeart className="w-7 h-7 text-[#F5C518]" /> 
+          </div>
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-400">
+            {(profile.displayName || profile.username).split(' ')[0]}'s Curated Vault
+          </span>
+          {vaultLoading && <div className="ml-4 w-5 h-5 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" />}
         </h3>
         
         {!vaultLoading && isVaultPrivate ? (
-           <div className="flex flex-col items-center justify-center py-20 px-4 bg-[#121215]/50 border border-neutral-800/50 rounded-3xl text-center">
-             <Lock className="w-16 h-16 text-[#F5C518] mb-4" />
-             <h4 className="text-xl font-black text-white">Private Master Vault</h4>
-             <p className="text-neutral-500 max-w-sm mt-2 mb-6">
-               @{profile.username} has sealed their main wishlist.
+           <div className="flex flex-col items-center justify-center py-24 px-4 bg-[#121215]/50 border border-white/5 rounded-[2.5rem] text-center shadow-inner relative overflow-hidden">
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#F5C518]/5 rounded-full blur-[80px]"></div>
+             <Lock className="w-20 h-20 text-[#F5C518] mb-6 relative z-10" />
+             <h4 className="text-2xl md:text-3xl font-black text-white relative z-10">Private Master Vault</h4>
+             <p className="text-neutral-400 text-sm md:text-base max-w-md mt-4 mb-10 relative z-10 leading-relaxed">
+               @{profile.username} has sealed their main wishlist. Request access to view their curated collection.
              </p>
              {!user ? (
-                <Link href="/login" className="bg-white text-black font-black py-3 px-6 rounded-xl hover:bg-neutral-200 transition">
+                <Link href="/login" className="bg-white text-black font-black py-4 px-10 rounded-full hover:bg-neutral-200 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:scale-105 relative z-10">
                   Login to Request Access
                 </Link>
              ) : vaultRequestSent ? (
-                <button disabled className="border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-black py-3 px-6 rounded-xl transition cursor-default">
+                <button disabled className="border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 font-black py-4 px-10 rounded-full transition cursor-default shadow-[0_0_20px_rgba(16,185,129,0.2)] relative z-10">
                   Request Sent ✓
                 </button>
              ) : (
-                <button onClick={handleRequestVaultAccess} className="bg-[#F5C518] hover:bg-yellow-400 text-black font-black py-3 px-6 rounded-xl transition shadow-[0_0_20px_rgba(245,197,24,0.2)]">
+                <button onClick={handleRequestVaultAccess} className="bg-[#F5C518] hover:bg-yellow-400 text-black font-black py-4 px-10 rounded-full transition-all shadow-[0_0_30px_rgba(245,197,24,0.3)] hover:scale-105 relative z-10">
                   Request Access
                 </button>
              )}
            </div>
         ) : !vaultLoading && vaultItems.length === 0 ? (
-           <div className="flex flex-col items-center justify-center py-20 px-4 bg-[#121215]/50 border border-neutral-800/50 rounded-3xl text-center">
-             <Heart className="w-16 h-16 text-neutral-800 mb-4" />
-             <h4 className="text-xl font-black text-neutral-300">Vault is Empty</h4>
-             <p className="text-neutral-500 max-w-sm mt-2">
+           <div className="flex flex-col items-center justify-center py-24 px-4 bg-[#121215]/30 border border-dashed border-white/10 rounded-[2.5rem] text-center">
+             <Heart className="w-16 h-16 text-neutral-800 mb-6" />
+             <h4 className="text-xl md:text-2xl font-black text-neutral-500">Vault is Empty</h4>
+             <p className="text-neutral-600 max-w-sm mt-3 leading-relaxed">
                {profile.username} hasn't shared any favorite movies, shows, or actors to their public collection yet.
              </p>
            </div>
         ) : (
-          <div className="flex flex-col gap-12">
+          <div className="flex flex-col gap-16">
             {vaultItems.filter(i => i.media_type !== "person").length > 0 && (
               <div>
-                <h4 className="text-sm font-bold tracking-widest uppercase text-neutral-400 mb-4 flex items-center gap-2">
-                  <Film className="w-4 h-4 text-indigo-400" /> Saved Titles
+                <h4 className="text-sm font-bold tracking-widest uppercase text-neutral-400 mb-6 flex items-center gap-3">
+                  <Film className="w-4 h-4 text-[#F5C518]" /> Saved Titles
+                  <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent ml-2"></div>
                 </h4>
                 <motion.div variants={gridContainer} initial="hidden" animate="show" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-12">
                   {vaultItems.filter(i => i.media_type !== "person").map((movie: any) => (
@@ -307,9 +343,10 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
             )}
             
             {vaultItems.filter(i => i.media_type === "person").length > 0 && (
-              <div className="mt-8">
-                <h4 className="text-sm font-bold tracking-widest uppercase text-neutral-400 mb-4 flex items-center gap-2">
+              <div>
+                <h4 className="text-sm font-bold tracking-widest uppercase text-neutral-400 mb-6 flex items-center gap-3">
                   <User className="w-4 h-4 text-rose-500" /> Favorite Cast & Crew
+                  <div className="flex-1 h-px bg-gradient-to-r from-white/10 to-transparent ml-2"></div>
                 </h4>
                 <motion.div variants={gridContainer} initial="hidden" animate="show" className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-12">
                   {vaultItems.filter(i => i.media_type === "person").map((person: any) => (

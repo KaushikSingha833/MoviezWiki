@@ -10,10 +10,11 @@ import { useState, useEffect, useRef } from "react";
 import { getSearchSuggestions } from "@/actions/movieActions";
 import { searchUsers } from "@/lib/profiles";
 import { GENRE_MAP } from "@/lib/genres";
-import { Filter, SlidersHorizontal, Search, Settings2, Popcorn, Film, Globe, User, Bell, Check, X, Lock, Home, Map, Sparkles, LogIn, FolderHeart } from "lucide-react";
+import { Filter, SlidersHorizontal, Search, Settings2, Popcorn, Film, Globe, User, UserPlus, Bell, Check, X, Lock, Home, Map, Sparkles, LogIn, FolderHeart } from "lucide-react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { approveAccessRequest, dismissNotification, AppNotification } from "@/lib/notifications";
+import { followUser, getFollowState } from "@/lib/network";
 
 function getFlagEmoji(countryCode: string) {
   if (!countryCode) return '🌐';
@@ -110,7 +111,13 @@ const SearchBar = ({ isMobile = false }) => {
 
   return (
     <div className={`relative ${isMobile ? 'w-full flex' : 'hidden md:flex'}`} ref={containerRef}>
-      <form onSubmit={handleSearchSubmit} className={`flex relative items-center w-full shadow-lg rounded-md overflow-hidden group transition-all duration-300 ${isAiMode ? 'ring-2 ring-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.4)]' : ''}`}>
+      <form onSubmit={handleSearchSubmit} className={`flex relative items-center shadow-lg rounded-full overflow-hidden group transition-all duration-500 border ${isAiMode ? 'border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.4)]' : 'border-neutral-800 focus-within:border-[#F5C518]/50 focus-within:shadow-[0_0_20px_rgba(245,197,24,0.25)]'} ${isMobile ? 'w-full' : 'w-[280px] focus-within:w-[380px]'}`}>
+        
+        {/* Animated Search Icon inside input */}
+        <div className={`pl-4 flex items-center justify-center transition-colors duration-300 ${isAiMode ? 'bg-[#1a1a2e] text-indigo-400' : 'bg-[#0a0a0c] text-neutral-500 group-focus-within:text-[#F5C518] group-hover:bg-[#121215] group-focus-within:bg-[#121215]'}`}>
+           <Search className="w-4 h-4 transition-transform group-focus-within:scale-110" />
+        </div>
+
         <input 
           type="text" 
           name="q"
@@ -118,7 +125,7 @@ const SearchBar = ({ isMobile = false }) => {
           onChange={(e) => { setQuery(e.target.value); setShowDropdown(true); setShowFilters(false); }}
           onFocus={() => { if (query.length >= 2) setShowDropdown(true); }}
           placeholder={isAiMode ? "Describe a movie (e.g. funny heist)..." : "Search movies, tv, people..."} 
-          className={`bg-[#0a0a0c] text-white px-5 py-2.5 focus:outline-none focus:ring-1 focus:ring-${isAiMode ? 'indigo-500' : '[#F5C518]'} text-sm group-hover:bg-[#121215] transition-colors border-y border-l border-neutral-800 ${isMobile ? 'w-full' : 'w-[280px]'}`}
+          className={`bg-[#0a0a0c] text-white px-3 py-2.5 focus:outline-none text-sm group-hover:bg-[#121215] focus:bg-[#121215] transition-colors w-full`}
           autoComplete="off"
         />
         
@@ -126,28 +133,20 @@ const SearchBar = ({ isMobile = false }) => {
         <button 
           type="button"
           onClick={() => { setIsAiMode(!isAiMode); setShowDropdown(false); setShowFilters(false); }}
-          className={`px-3 py-2.5 border-y transition-all border-neutral-800 flex items-center justify-center ${isAiMode ? 'bg-[#1a1a2e] text-indigo-400 border-l border-neutral-800' : 'bg-[#0a0a0c] text-neutral-400 hover:text-white group-hover:bg-[#121215]'}`}
+          className={`px-3 py-2.5 transition-all flex items-center justify-center ${isAiMode ? 'bg-[#1a1a2e] text-indigo-400' : 'bg-[#0a0a0c] text-neutral-400 hover:text-[#F5C518] group-hover:bg-[#121215] focus:bg-[#121215]'}`}
           title="Deep AI Semantic Search"
         >
-          <span className="text-sm">✨</span>
+          <span className="text-sm transition-transform hover:scale-125">✨</span>
         </button>
 
         {/* Toggle Filters Button */}
         <button 
           type="button"
           onClick={() => { setShowFilters(!showFilters); setShowDropdown(false); }}
-          className={`px-3 py-2.5 border-y text-neutral-400 hover:text-white transition-colors border-neutral-800 flex items-center justify-center ${showFilters ? 'bg-[#1a1a1a] text-[#F5C518]' : 'bg-[#0a0a0c] group-hover:bg-[#121215]'}`}
+          className={`px-4 py-2.5 text-neutral-400 hover:text-[#F5C518] transition-colors flex items-center justify-center ${showFilters ? 'bg-[#F5C518]/10 text-[#F5C518]' : 'bg-[#0a0a0c] group-hover:bg-[#121215] focus:bg-[#121215]'}`}
           title="Advanced Filters"
         >
-          <SlidersHorizontal className="w-4 h-4" />
-        </button>
-
-        {/* Submit Search Button */}
-        <button 
-          type="submit" 
-          className={`transition-colors text-black px-5 py-2.5 font-bold text-sm border-y border-r flex justify-center items-center ${isAiMode ? 'bg-indigo-500 hover:bg-indigo-400 border-indigo-500' : 'bg-[#F5C518] hover:bg-yellow-500 border-[#F5C518]'}`}
-        >
-           <Search className="w-4 h-4" />
+          <SlidersHorizontal className="w-4 h-4 transition-transform hover:rotate-90" />
         </button>
       </form>
       
@@ -197,23 +196,25 @@ const SearchBar = ({ isMobile = false }) => {
 
       {/* Advanced Discovery Filters Popover */}
       {showFilters && (
-        <div className="absolute top-full right-0 lg:left-0 mt-3 w-[320px] sm:w-[400px] md:w-[480px] bg-[#121215]/95 backdrop-blur-xl border border-neutral-700/50 rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.9)] overflow-hidden z-[100] flex flex-col">
-           <div className="p-4 sm:p-6 border-b border-neutral-800">
-             <div className="flex items-center gap-2 mb-1">
-               <Settings2 className="w-5 h-5 text-[#F5C518]" />
-               <h3 className="text-lg font-black text-white tracking-tight">Discovery Engine</h3>
+        <div className="absolute top-full right-0 lg:left-0 mt-3 w-[320px] sm:w-[400px] md:w-[480px] bg-[#121215]/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.9)] overflow-hidden z-[100] flex flex-col">
+           <div className="p-5 sm:p-7 border-b border-white/5">
+             <div className="flex items-center gap-3 mb-2">
+               <div className="p-2 bg-[#F5C518]/10 rounded-lg">
+                 <Settings2 className="w-5 h-5 text-[#F5C518]" />
+               </div>
+               <h3 className="text-xl font-black text-white tracking-tight">Discovery Engine</h3>
              </div>
-             <p className="text-xs font-medium text-neutral-500">Find titles instantly by selecting categories. Text query is optional!</p>
+             <p className="text-xs sm:text-sm font-medium text-neutral-400 pl-1">Find titles instantly by selecting categories. Text query is optional!</p>
            </div>
-           <div className="p-4 sm:p-6 flex flex-col gap-6 max-h-[50vh] overflow-y-auto custom-scrollbar">
+           <div className="p-5 sm:p-7 flex flex-col gap-8 max-h-[50vh] overflow-y-auto custom-scrollbar">
              
              {/* Region Filter */}
              <div>
-               <div className="flex items-center gap-2 mb-3">
-                 <Globe className="w-4 h-4 text-emerald-400" />
-                 <h4 className="text-sm font-bold tracking-widest uppercase text-neutral-300">Industry / Region</h4>
+               <div className="flex items-center gap-2 mb-4">
+                 <Globe className="w-4 h-4 text-[#F5C518]" />
+                 <h4 className="text-xs sm:text-sm font-bold tracking-widest uppercase text-neutral-300">Industry / Region</h4>
                </div>
-               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-xs sm:text-sm">
                  {[
                    { id: "", label: "Global / All" },
                    { id: "hollywood", label: "Hollywood (US)" },
@@ -222,7 +223,7 @@ const SearchBar = ({ isMobile = false }) => {
                    { id: "korean", label: "K-Drama / Korean" },
                    { id: "anime", label: "Anime (Japan)" }
                  ].map(reg => (
-                   <label key={reg.id} className={`flex items-center justify-center p-2 rounded-lg cursor-pointer transition-all border ${selectedRegion === reg.id ? 'bg-emerald-500/10 border-emerald-500 text-emerald-400 font-bold' : 'bg-black/50 border-neutral-800 text-neutral-400 hover:border-neutral-700 hover:text-white'}`}>
+                   <label key={reg.id} className={`flex items-center justify-center p-3 rounded-xl cursor-pointer transition-all duration-300 border ${selectedRegion === reg.id ? 'bg-[#F5C518]/10 border-[#F5C518] text-[#F5C518] font-black shadow-[0_0_15px_rgba(245,197,24,0.15)] scale-105' : 'bg-black/40 border-neutral-800/80 text-neutral-400 hover:border-neutral-600 hover:text-white hover:bg-black/60'}`}>
                      <input type="radio" name="region" value={reg.id} checked={selectedRegion === reg.id} onChange={() => setSelectedRegion(reg.id)} className="hidden" />
                      {reg.label}
                    </label>
@@ -232,20 +233,20 @@ const SearchBar = ({ isMobile = false }) => {
              
              {/* Genres Filter (To-Do List Checklist style) */}
              <div>
-               <div className="flex items-center gap-2 mb-3">
-                 <Film className="w-4 h-4 text-indigo-400" />
-                 <h4 className="text-sm font-bold tracking-widest uppercase text-neutral-300">Movie Genres Checklist</h4>
+               <div className="flex items-center gap-2 mb-4">
+                 <Film className="w-4 h-4 text-[#F5C518]" />
+                 <h4 className="text-xs sm:text-sm font-bold tracking-widest uppercase text-neutral-300">Movie Genres Checklist</h4>
                </div>
-               <div className="grid grid-cols-2 gap-2 text-xs">
+               <div className="grid grid-cols-2 gap-3 text-xs sm:text-sm">
                  {Object.entries(GENRE_MAP).filter(([id, name]) => Number(id) <= 10752 && name !== "Documentary").map(([id, name]) => {
                    const gId = Number(id);
                    const isChecked = selectedGenres.includes(gId);
                    return (
-                     <label key={gId} onClick={(e) => { e.preventDefault(); toggleGenre(gId); }} className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors border ${isChecked ? 'bg-indigo-500/10 border-indigo-500/50' : 'bg-transparent border-transparent hover:bg-white/5'}`}>
-                       <div className={`w-4 h-4 rounded-[4px] border flex items-center justify-center transition-colors ${isChecked ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-neutral-600 bg-black/50'}`}>
-                         {isChecked && <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                     <label key={gId} onClick={(e) => { e.preventDefault(); toggleGenre(gId); }} className={`flex items-center gap-3 p-2.5 rounded-xl cursor-pointer transition-all duration-300 border ${isChecked ? 'bg-[#F5C518]/5 border-[#F5C518]/30 shadow-[0_0_10px_rgba(245,197,24,0.05)]' : 'bg-transparent border-transparent hover:bg-white/5'}`}>
+                       <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-300 ${isChecked ? 'bg-[#F5C518] border-[#F5C518] text-black shadow-[0_0_10px_rgba(245,197,24,0.4)] scale-110' : 'border-neutral-600 bg-black/50 hover:border-neutral-400'}`}>
+                         {isChecked && <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>}
                        </div>
-                       <span className={isChecked ? 'text-white font-bold' : 'text-neutral-400 font-medium'}>{name}</span>
+                       <span className={isChecked ? 'text-white font-black' : 'text-neutral-400 font-medium hover:text-neutral-200'}>{name}</span>
                      </label>
                    )
                  })}
@@ -254,13 +255,13 @@ const SearchBar = ({ isMobile = false }) => {
              
            </div>
 
-           <div className="p-4 sm:p-6 border-t border-neutral-800 bg-[#0a0a0c] flex gap-3">
+           <div className="p-5 sm:p-7 border-t border-white/5 bg-[#0a0a0c]/80 backdrop-blur-sm flex gap-4">
              <button 
                type="button"
                onClick={() => { setSelectedGenres([]); setSelectedRegion(""); setQuery(""); }}
-               className="px-4 py-3 rounded-xl border border-neutral-700 text-neutral-400 hover:text-white hover:bg-neutral-800 font-bold text-xs transition-all flex-1"
+               className="px-5 py-3.5 rounded-xl border border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-500 hover:bg-white/5 font-bold text-sm transition-all flex-1"
              >
-               Reset Array
+               Reset
              </button>
              <button 
                type="button"
@@ -278,13 +279,14 @@ const SearchBar = ({ isMobile = false }) => {
 
 export default function Navbar() {
   const pathname = usePathname();
-  const { user, authLoaded } = useWishlist();
+  const { user, profile: myProfile, authLoaded } = useWishlist();
   const { region } = useSettings();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [showNotifs, setShowNotifs] = useState(false);
+  const [followBackMap, setFollowBackMap] = useState<Record<string, boolean>>({});
   const notifRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -298,9 +300,24 @@ export default function Navbar() {
         collection(db, "users", user.uid, "notifications"),
         orderBy("createdAt", "desc")
       );
-      const unsub = onSnapshot(q, (snapshot) => {
+      const unsub = onSnapshot(q, async (snapshot) => {
         const notifs = snapshot.docs.map(doc => doc.data() as AppNotification);
         setNotifications(notifs);
+        
+        // Fetch follow states for any 'follow' notifications
+        const followNotifs = notifs.filter(n => n.type === 'follow');
+        if (followNotifs.length > 0) {
+          const newFollowMap = { ...followBackMap };
+          await Promise.all(
+            followNotifs.map(async (n) => {
+              if (newFollowMap[n.id] === undefined) {
+                const isFollowing = await getFollowState(user.uid, n.fromUid);
+                newFollowMap[n.id] = isFollowing;
+              }
+            })
+          );
+          setFollowBackMap(newFollowMap);
+        }
       });
       return () => unsub();
     } else {
@@ -329,6 +346,12 @@ export default function Navbar() {
   const handleDismiss = async (notifId: string) => {
     if (!user) return;
     await dismissNotification(user.uid, notifId);
+  };
+
+  const handleFollowBack = async (notif: AppNotification) => {
+    if (!user) return;
+    setFollowBackMap(prev => ({...prev, [notif.id]: true}));
+    await followUser(user.uid, notif.fromUid, myProfile?.username);
   };
 
   const handleLogout = async () => {
@@ -408,7 +431,7 @@ export default function Navbar() {
             <div className="relative" ref={notifRef}>
               <button 
                 onClick={() => setShowNotifs(!showNotifs)}
-                className={`relative p-2 rounded-full transition-colors ${showNotifs ? 'bg-indigo-500/20 text-indigo-400' : 'text-neutral-400 hover:text-white hover:bg-neutral-800'}`}
+                className={`relative p-2 rounded-full transition-colors ${showNotifs ? 'bg-[#F5C518]/20 text-[#F5C518]' : 'text-neutral-400 hover:text-white hover:bg-neutral-800'}`}
               >
                 <Bell className="w-5 h-5" />
                 {unreadCount > 0 && (
@@ -417,28 +440,33 @@ export default function Navbar() {
               </button>
               
               {showNotifs && (
-                <div className="absolute top-full right-0 mt-3 w-[320px] bg-[#121215]/95 backdrop-blur-xl border border-neutral-700/50 rounded-2xl shadow-[0_25px_50px_rgba(0,0,0,0.9)] overflow-hidden z-[100] flex flex-col">
-                  <div className="p-4 border-b border-neutral-800 flex justify-between items-center bg-[#1a1a1a]">
+                <div className="absolute top-full right-0 mt-3 w-[340px] bg-[#121215]/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.9)] overflow-hidden z-[100] flex flex-col">
+                  <div className="p-5 border-b border-white/5 flex justify-between items-center bg-[#0a0a0c]/50">
                     <h3 className="text-sm font-black text-white flex items-center gap-2">
-                       <Bell className="w-4 h-4 text-indigo-400" /> Notifications
+                       <Bell className="w-4 h-4 text-[#F5C518]" /> Notifications
                     </h3>
-                    <span className="text-xs font-bold text-neutral-500">{notifications.length} alerts</span>
+                    <span className="text-xs font-bold text-neutral-500 bg-neutral-900 px-2 py-1 rounded-full">{notifications.length} alerts</span>
                   </div>
                   
-                  <div className="max-h-[300px] overflow-y-auto custom-scrollbar flex flex-col">
+                  <div className="max-h-[350px] overflow-y-auto custom-scrollbar flex flex-col">
                     {notifications.length === 0 ? (
-                      <div className="p-6 text-center text-neutral-500 text-sm">
+                      <div className="p-8 text-center text-neutral-500 text-sm font-medium">
                          It's quiet in here...
                       </div>
                     ) : (
                       notifications.map(notif => (
-                        <div key={notif.id} className="p-4 border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors flex gap-3">
-                          <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0 border border-indigo-500/30">
-                            {notif.type === 'follow' ? <User className="w-4 h-4 text-indigo-400" /> : <Lock className="w-4 h-4 text-[#F5C518]" />}
-                          </div>
+                        <div key={notif.id} className="p-5 border-b border-white/5 hover:bg-white/5 transition-colors flex gap-3 relative group">
+                          
+                          {/* Avatar / Icon linking to profile */}
+                          <Link href={`/u/${notif.fromUsername}`} onClick={() => setShowNotifs(false)} className="w-10 h-10 rounded-full bg-[#F5C518]/10 flex items-center justify-center shrink-0 border border-[#F5C518]/30 hover:scale-105 transition-transform shadow-[0_0_15px_rgba(245,197,24,0.15)]">
+                            {notif.type === 'follow' ? <User className="w-5 h-5 text-[#F5C518]" /> : <Lock className="w-5 h-5 text-[#F5C518]" />}
+                          </Link>
+                          
                           <div className="flex-1 min-w-0">
                             <p className="text-xs text-neutral-300 leading-snug">
-                              <span className="font-bold text-white">@{notif.fromUsername}</span>
+                              <Link href={`/u/${notif.fromUsername}`} onClick={() => setShowNotifs(false)} className="font-black text-white hover:text-[#F5C518] transition-colors mr-1">
+                                @{notif.fromUsername}
+                              </Link>
                               {notif.type === 'follow' ? " started following you!" : 
                                notif.type === 'list_access' ? ` requested access to '${notif.targetName}'.` :
                                " requested access to your Master Wishlist."}
@@ -446,18 +474,25 @@ export default function Navbar() {
                             
                             {(notif.type === 'list_access' || notif.type === 'main_wishlist_access') && notif.status === 'pending' && (
                               <div className="flex gap-2 mt-3">
-                                <button onClick={() => handleApprove(notif)} className="flex-1 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 hover:text-black hover:border-emerald-500 text-emerald-400 font-bold py-1.5 rounded-lg text-xs transition-colors flex items-center justify-center gap-1">
+                                <button onClick={() => handleApprove(notif)} className="flex-1 bg-emerald-500/10 hover:bg-emerald-500 border border-emerald-500/30 hover:text-black hover:border-emerald-500 text-emerald-400 font-bold py-1.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1 shadow-sm">
                                   <Check className="w-3 h-3" /> Approve
                                 </button>
-                                <button onClick={() => handleDismiss(notif.id)} className="flex-1 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 hover:text-black hover:border-rose-500 text-rose-400 font-bold py-1.5 rounded-lg text-xs transition-colors flex items-center justify-center gap-1">
+                                <button onClick={() => handleDismiss(notif.id)} className="flex-1 bg-rose-500/10 hover:bg-rose-500 border border-rose-500/30 hover:text-black hover:border-rose-500 text-rose-400 font-bold py-1.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-1 shadow-sm">
                                   <X className="w-3 h-3" /> Deny
                                 </button>
                               </div>
                             )}
                             
                             {notif.type === 'follow' && (
-                              <div className="mt-2">
-                                <button onClick={() => handleDismiss(notif.id)} className="text-[10px] text-neutral-500 hover:text-white uppercase font-bold tracking-widest">
+                              <div className="flex items-center gap-2 mt-3">
+                                <button 
+                                  onClick={() => handleFollowBack(notif)} 
+                                  disabled={followBackMap[notif.id]}
+                                  className={`flex-1 font-bold py-1.5 rounded-xl text-xs transition-all flex items-center justify-center gap-1 shadow-sm border ${followBackMap[notif.id] ? 'bg-neutral-800 border-neutral-700 text-neutral-400' : 'bg-[#F5C518]/10 hover:bg-[#F5C518] border-[#F5C518]/30 hover:border-[#F5C518] hover:text-black text-[#F5C518]'}`}
+                                >
+                                  {followBackMap[notif.id] ? <><Check className="w-3 h-3" /> Followed</> : <><UserPlus className="w-3 h-3" /> Follow Back</>}
+                                </button>
+                                <button onClick={() => handleDismiss(notif.id)} className="px-3 py-1.5 text-[10px] text-neutral-500 hover:text-white uppercase font-bold tracking-widest hover:bg-white/5 rounded-lg transition-colors">
                                   Dismiss
                                 </button>
                               </div>
