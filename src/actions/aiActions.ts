@@ -57,15 +57,24 @@ export async function getSmartMovieTitles(query: string) {
     });
 
     const data = await response.json();
-    let text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     
     if (!text) return [];
     
-    // Safely strip markdown if Gemini accidentally included it
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    
-    const titles = JSON.parse(text);
-    return Array.isArray(titles) ? titles.slice(0, 10) : [];
+    // Extract the JSON array using regex in case Gemini includes conversational text
+    const jsonMatch = text.match(/\[([\s\S]*?)\]/);
+    if (jsonMatch) {
+      try {
+        const titles = JSON.parse(jsonMatch[0]);
+        console.log("AI Search Parsed Titles:", titles);
+        return Array.isArray(titles) ? titles.slice(0, 10) : [];
+      } catch (parseError) {
+        console.error("JSON Parse Error in AI Search:", parseError);
+        return [];
+      }
+    }
+    console.log("AI Search regex failed to match array in:", text);
+    return [];
   } catch (error) {
     console.error("AI Semantic Error:", error);
     return [];

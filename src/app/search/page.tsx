@@ -19,19 +19,20 @@ export default async function SearchPage({
   try {
     let data;
     if (isAi && q) {
+      console.log(`[SearchPage] Triggering AI Search for: "${q}"`);
       const semTitles = await getSmartMovieTitles(q);
+      console.log(`[SearchPage] AI Titles returned:`, semTitles);
       data = await searchSemanticTMDB(semTitles);
+      console.log(`[SearchPage] TMDB Semantic Search returned ${data?.results?.length || 0} results.`);
     } else if (q) {
+      console.log(`[SearchPage] Triggering Regular Search for: "${q}"`);
       data = await searchTMDB(q);
     } else if (genres || region) {
       data = await discoverTMDBAdvanced(genres, region);
     }
     
     if (data && Array.isArray(data.results)) {
-      // Just take the raw results directly from the API. 
-      // If it's a person, it will remain a person object.
       let processedData: any[] = [...data.results];
-      
       const uniqueIds = new Set();
       results = processedData.filter(i => {
         if (!i.id) return false;
@@ -39,6 +40,7 @@ export default async function SearchPage({
         uniqueIds.add(i.id);
         return true;
       });
+      console.log(`[SearchPage] Final processed results count:`, results.length);
     }
   } catch (err) {
     console.error("Search page exception:", err);

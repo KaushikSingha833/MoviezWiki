@@ -23,6 +23,69 @@ const cardItem: Variants = {
   show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 100, damping: 15 } }
 };
 
+function NetworkUserRow({ netUser, currentUser, myProfile, closeModal }: any) {
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    if (currentUser && currentUser.uid !== netUser.uid) {
+      getFollowState(currentUser.uid, netUser.uid).then(state => {
+        setIsFollowing(state);
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
+    }
+  }, [currentUser, netUser]);
+
+  const handleToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!currentUser || loading) return;
+    setLoading(true);
+    if (isFollowing) {
+      await unfollowUser(currentUser.uid, netUser.uid);
+      setIsFollowing(false);
+    } else {
+      await followUser(currentUser.uid, netUser.uid, myProfile?.username);
+      setIsFollowing(true);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="flex items-center justify-between p-2 rounded-2xl hover:bg-white/5 transition border border-transparent hover:border-neutral-800">
+      <Link href={`/u/${netUser.username}`} onClick={closeModal} className="flex items-center gap-4 flex-1">
+        <div className="w-12 h-12 bg-neutral-900 rounded-full overflow-hidden border border-neutral-800 shadow-md shrink-0">
+          {netUser.photoURL ? (
+            <img src={netUser.photoURL} alt={netUser.username} className="w-full h-full object-cover" />
+          ) : (
+            <User className="w-6 h-6 text-neutral-600 m-auto mt-3" />
+          )}
+        </div>
+        <div>
+          <div className="text-sm font-black text-white">{netUser.displayName}</div>
+          <div className="text-xs font-bold text-neutral-500">@{netUser.username}</div>
+        </div>
+      </Link>
+      
+      {currentUser && currentUser.uid !== netUser.uid && (
+        <button 
+          onClick={handleToggle}
+          disabled={loading}
+          className={`text-xs font-bold px-4 py-2 ml-2 rounded-full transition-all border ${
+            isFollowing 
+              ? 'bg-transparent border-neutral-700 text-neutral-400 hover:text-white hover:border-neutral-500' 
+              : 'bg-[#F5C518] border-[#F5C518] text-black hover:bg-yellow-400'
+          }`}
+        >
+          {loading ? '...' : isFollowing ? 'Following' : 'Follow'}
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const resolvedParams = use(params);
   const username = resolvedParams.username;
@@ -243,42 +306,55 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
 
         {/* Premium Stats Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16">
-           <div 
-             className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center md:items-start group hover:bg-white/5 hover:border-white/10 transition-all cursor-pointer shadow-lg relative overflow-hidden"
+           <motion.div 
+             whileHover={{ y: -8, scale: 1.03 }}
+             transition={{ type: "spring", stiffness: 400, damping: 25 }}
+             className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center md:items-start group hover:bg-neutral-900/90 hover:border-[#F5C518]/30 transition-colors cursor-pointer shadow-lg hover:shadow-[0_15px_40px_rgba(245,197,24,0.15)] relative overflow-hidden"
              onClick={() => handleOpenNetwork("followers")}
            >
-             <div className="absolute top-0 right-0 w-20 h-20 bg-[#F5C518]/5 rounded-bl-full group-hover:bg-[#F5C518]/10 transition-colors"></div>
-             <span className="text-3xl md:text-4xl font-black text-white relative z-10">{followersCount}</span>
+             <div className="absolute -top-6 -right-6 w-28 h-28 bg-[#F5C518]/10 rounded-full blur-xl group-hover:scale-150 group-hover:bg-[#F5C518]/20 group-hover:blur-2xl transition-all duration-700 ease-out"></div>
+             <span className="text-3xl md:text-4xl font-black text-white relative z-10 group-hover:text-[#F5C518] transition-colors duration-300">{followersCount}</span>
              <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest mt-2 flex items-center gap-2 relative z-10">
-               <User className="w-3 h-3 text-[#F5C518]" /> Followers
+               <User className="w-4 h-4 text-[#F5C518] group-hover:scale-125 transition-transform duration-300" /> Followers
              </span>
-           </div>
+           </motion.div>
            
-           <div 
-             className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center md:items-start group hover:bg-white/5 hover:border-white/10 transition-all cursor-pointer shadow-lg relative overflow-hidden"
+           <motion.div 
+             whileHover={{ y: -8, scale: 1.03 }}
+             transition={{ type: "spring", stiffness: 400, damping: 25 }}
+             className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center md:items-start group hover:bg-neutral-900/90 hover:border-emerald-500/30 transition-colors cursor-pointer shadow-lg hover:shadow-[0_15px_40px_rgba(16,185,129,0.15)] relative overflow-hidden"
              onClick={() => handleOpenNetwork("following")}
            >
-             <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-500/5 rounded-bl-full group-hover:bg-emerald-500/10 transition-colors"></div>
-             <span className="text-3xl md:text-4xl font-black text-white relative z-10">{followingCount}</span>
+             <div className="absolute -top-6 -right-6 w-28 h-28 bg-emerald-500/10 rounded-full blur-xl group-hover:scale-150 group-hover:bg-emerald-500/20 group-hover:blur-2xl transition-all duration-700 ease-out"></div>
+             <span className="text-3xl md:text-4xl font-black text-white relative z-10 group-hover:text-emerald-400 transition-colors duration-300">{followingCount}</span>
              <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest mt-2 flex items-center gap-2 relative z-10">
-               <UserPlus className="w-3 h-3 text-emerald-400" /> Following
+               <UserPlus className="w-4 h-4 text-emerald-400 group-hover:scale-125 transition-transform duration-300" /> Following
              </span>
-           </div>
+           </motion.div>
 
-           <div className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center md:items-start shadow-lg relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-20 h-20 bg-rose-500/5 rounded-bl-full"></div>
-             <span className="text-3xl md:text-4xl font-black text-white relative z-10">{vaultItems.length}</span>
+           <motion.div 
+             whileHover={{ y: -8, scale: 1.03 }}
+             transition={{ type: "spring", stiffness: 400, damping: 25 }}
+             className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center md:items-start group hover:bg-neutral-900/90 hover:border-rose-500/30 transition-colors shadow-lg hover:shadow-[0_15px_40px_rgba(244,63,94,0.15)] relative overflow-hidden cursor-default"
+           >
+             <div className="absolute -top-6 -right-6 w-28 h-28 bg-rose-500/10 rounded-full blur-xl group-hover:scale-150 group-hover:bg-rose-500/20 group-hover:blur-2xl transition-all duration-700 ease-out"></div>
+             <span className="text-3xl md:text-4xl font-black text-white relative z-10 group-hover:text-rose-400 transition-colors duration-300">{vaultItems.length}</span>
              <span className="text-xs text-neutral-500 font-bold uppercase tracking-widest mt-2 flex items-center gap-2 relative z-10">
-               <FolderHeart className="w-3 h-3 text-rose-500" /> Saved Items
+               <FolderHeart className="w-4 h-4 text-rose-500 group-hover:scale-125 transition-transform duration-300" /> Saved Items
              </span>
-           </div>
+           </motion.div>
            
-           <div className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center justify-center shadow-lg">
-             <div className="w-12 h-12 rounded-full bg-[#F5C518]/10 flex items-center justify-center mb-3 border border-[#F5C518]/20 shadow-[0_0_15px_rgba(245,197,24,0.15)]">
-               <Activity className="w-6 h-6 text-[#F5C518]" />
+           <motion.div 
+             whileHover={{ y: -8, scale: 1.03 }}
+             transition={{ type: "spring", stiffness: 400, damping: 25 }}
+             className="bg-[#121215]/80 backdrop-blur-md border border-white/5 rounded-3xl p-6 flex flex-col items-center justify-center group hover:bg-neutral-900/90 hover:border-indigo-500/30 transition-colors shadow-lg hover:shadow-[0_15px_40px_rgba(99,102,241,0.15)] relative overflow-hidden cursor-default"
+           >
+             <div className="absolute -bottom-6 -left-6 w-28 h-28 bg-indigo-500/10 rounded-full blur-xl group-hover:scale-150 group-hover:bg-indigo-500/20 group-hover:blur-2xl transition-all duration-700 ease-out"></div>
+             <div className="w-12 h-12 rounded-full bg-[#F5C518]/10 group-hover:bg-indigo-500/20 flex items-center justify-center mb-3 border border-[#F5C518]/20 group-hover:border-indigo-500/50 shadow-[0_0_15px_rgba(245,197,24,0.15)] group-hover:shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all duration-300 relative z-10">
+               <Activity className="w-6 h-6 text-[#F5C518] group-hover:text-indigo-400 group-hover:animate-pulse" />
              </div>
-             <span className="text-xs text-[#F5C518] font-bold uppercase tracking-widest text-center">Active Link</span>
-           </div>
+             <span className="text-xs text-[#F5C518] group-hover:text-indigo-400 font-bold uppercase tracking-widest text-center transition-colors duration-300 relative z-10">Active Link</span>
+           </motion.div>
         </div>
       </div>
       
@@ -383,24 +459,13 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
               ) : (
                 <div className="flex flex-col gap-2">
                   {networkUsers.map((netUser) => (
-                    <Link 
-                      key={netUser.uid} 
-                      href={`/u/${netUser.username}`} 
-                      className="flex items-center gap-4 p-3 rounded-2xl hover:bg-white/5 transition border border-transparent hover:border-neutral-800"
-                      onClick={() => setShowNetworkModal(null)}
-                    >
-                      <div className="w-12 h-12 bg-neutral-900 rounded-full overflow-hidden border border-neutral-800 shadow-md shrink-0">
-                        {netUser.photoURL ? (
-                          <img src={netUser.photoURL} alt={netUser.username} className="w-full h-full object-cover" />
-                        ) : (
-                          <User className="w-6 h-6 text-neutral-600 m-auto mt-3" />
-                        )}
-                      </div>
-                      <div>
-                        <div className="text-sm font-black text-white">{netUser.displayName}</div>
-                        <div className="text-xs font-bold text-neutral-500">@{netUser.username}</div>
-                      </div>
-                    </Link>
+                    <NetworkUserRow 
+                      key={netUser.uid}
+                      netUser={netUser}
+                      currentUser={user}
+                      myProfile={myProfile}
+                      closeModal={() => setShowNetworkModal(null)}
+                    />
                   ))}
                 </div>
               )}
