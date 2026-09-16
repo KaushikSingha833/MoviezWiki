@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useWishlist } from "@/context/WishlistContext";
 import { useSettings } from "@/context/SettingsContext";
@@ -392,8 +393,14 @@ export default function Navbar() {
         </Link>
       ) : authLoaded && user ? (
         <>
-          <Link href="/profile" onClick={() => mobile && setIsMobileMenuOpen(false)} className={`flex items-center gap-3 transition-colors md:ml-2 ${pathname === '/profile' || pathname.startsWith('/u/') ? 'text-indigo-400 drop-shadow-[0_0_10px_rgba(99,102,241,0.5)]' : 'text-neutral-500 hover:text-indigo-400'}`} title="My Profile">
-             <User className="w-5 h-5 md:w-6 md:h-6" />
+          <Link href="/profile" onClick={() => mobile && setIsMobileMenuOpen(false)} className={`flex items-center gap-3 transition-colors md:ml-2 ${pathname === '/profile' || pathname.startsWith('/u/') ? 'text-[#F5C518] drop-shadow-[0_0_10px_rgba(245,197,24,0.5)]' : 'text-neutral-500 hover:text-[#F5C518]'}`} title="My Profile">
+             {myProfile?.photoURL ? (
+                <div className="relative w-6 h-6 md:w-7 md:h-7 rounded-full overflow-hidden border border-neutral-700">
+                   <Image src={myProfile.photoURL} alt="DP" fill className="object-cover" />
+                </div>
+             ) : (
+                <User className="w-5 h-5 md:w-6 md:h-6" />
+             )}
              {mobile && <span>Profile</span>}
           </Link>
           <div className={`flex items-center gap-3 ${mobile ? 'mt-6' : 'ml-4'} bg-neutral-900 border border-neutral-700/50 py-1.5 px-3 rounded-full`}>

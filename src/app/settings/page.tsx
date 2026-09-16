@@ -5,7 +5,16 @@ import { Settings, Globe, ShieldAlert, AlertTriangle, RefreshCcw, User, CheckCir
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useWishlist } from "@/context/WishlistContext";
-import { checkUsernameAvailable, claimUsername, getMyProfile } from "@/lib/profiles";
+import { checkUsernameAvailable, claimUsername, getMyProfile, updateProfileAvatar } from "@/lib/profiles";
+import Image from "next/image";
+
+const PRESET_AVATARS = [
+  { id: "knight", url: "/avatars/knight.jpg", label: "The Knight" },
+  { id: "marine", url: "/avatars/marine.jpg", label: "The Marine" },
+  { id: "ninja", url: "/avatars/ninja.jpg", label: "The Ninja" },
+  { id: "wizard", url: "/avatars/wizard.jpg", label: "The Wizard" },
+  { id: "cyberpunk", url: "/avatars/cyberpunk.jpg", label: "The Hacker" },
+];
 
 export default function SettingsPage() {
   const { 
@@ -30,6 +39,8 @@ export default function SettingsPage() {
   const [isChecking, setIsChecking] = useState(false);
   const [isAvailable, setIsAvailable] = useState<boolean | null>(null);
   const [isClaiming, setIsClaiming] = useState(false);
+  const [currentAvatar, setCurrentAvatar] = useState<string | null>(null);
+  const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -37,6 +48,7 @@ export default function SettingsPage() {
     if (user) {
       getMyProfile(user.uid).then(prof => {
         if (prof?.username) setCurrentUsername(prof.username);
+        if (prof?.photoURL) setCurrentAvatar(prof.photoURL);
       });
     }
   }, [user]);
@@ -74,6 +86,18 @@ export default function SettingsPage() {
       alert("Error locking username. It may have just been claimed.");
     }
     setIsClaiming(false);
+  };
+
+  const handleSelectAvatar = async (url: string) => {
+    if (!user) return;
+    setIsUpdatingAvatar(true);
+    const success = await updateProfileAvatar(user.uid, url);
+    if (success) {
+      setCurrentAvatar(url);
+    } else {
+      alert("Error updating avatar.");
+    }
+    setIsUpdatingAvatar(false);
   };
 
   if (!mounted) return null;
@@ -292,6 +316,30 @@ export default function SettingsPage() {
                 <RefreshCcw className="w-3 h-3" /> Reset
               </button>
             </div>
+          </div>
+          
+          <div className="mt-8 border-t border-neutral-800 pt-6">
+            <h3 className="text-sm font-bold text-neutral-300 mb-4">Choose an Avatar (Free)</h3>
+            <div className="flex flex-wrap gap-4">
+              {PRESET_AVATARS.map((avatar) => (
+                <button
+                  key={avatar.id}
+                  disabled={isUpdatingAvatar}
+                  onClick={() => handleSelectAvatar(avatar.url)}
+                  className={`relative w-16 h-16 rounded-full overflow-hidden border-2 transition-all ${
+                    currentAvatar === avatar.url
+                      ? 'border-[#F5C518] scale-110 shadow-[0_0_15px_rgba(245,197,24,0.4)]'
+                      : 'border-transparent hover:border-neutral-500 hover:scale-105 opacity-60 hover:opacity-100'
+                  }`}
+                  title={avatar.label}
+                >
+                  <Image src={avatar.url} alt={avatar.label} fill className="object-cover" />
+                </button>
+              ))}
+            </div>
+            {currentAvatar && (
+              <p className="text-xs text-neutral-500 mt-4">Your avatar is updated instantly across the app.</p>
+            )}
           </div>
         </section>
 

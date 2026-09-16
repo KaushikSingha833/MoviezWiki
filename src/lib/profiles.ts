@@ -185,3 +185,17 @@ export const searchUsers = async (searchQuery: string): Promise<UserProfile[]> =
     return [];
   }
 };
+
+/**
+ * Updates the user's avatar/DP string in their profile.
+ */
+export const updateProfileAvatar = async (uid: string, photoURL: string): Promise<boolean> => {
+  try {
+    const userRef = doc(db, "users", uid);
+    await setDoc(userRef, { photoURL }, { merge: true });
+    return true;
+  } catch (error) {
+    console.error("Error updating profile avatar:", error);
+    return false;
+  }
+};
