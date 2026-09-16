@@ -2,6 +2,7 @@ import Link from "next/link";
 import { fetchTMDB } from "@/lib/tmdb";
 import { ShieldAlert, ArrowLeft } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
+import WatchTracker from "@/components/WatchTracker";
 
 export default async function WatchTvPage({
   params,
@@ -22,6 +23,18 @@ export default async function WatchTvPage({
 
   return (
     <div className="min-h-screen bg-black text-white font-sans overflow-hidden flex flex-col relative">
+      {show && (
+        <WatchTracker 
+          media={{
+            id: show.id,
+            title: title,
+            type: "tv",
+            poster_path: show.poster_path,
+            backdrop_path: show.backdrop_path
+          }} 
+        />
+      )}
+      
       {/* Cinematic Ambient Background */}
       {show?.backdrop_path && (
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">

@@ -20,6 +20,7 @@ import { getMediaCredits } from "@/actions/movieActions";
 import LatestTrailers from "@/components/LatestTrailers";
 import TopTenCarousel from "@/components/TopTenCarousel";
 import MovieCarousel from "@/components/MovieCarousel";
+import RecentlyWatchedRow from "@/components/RecentlyWatchedRow";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
@@ -109,6 +110,8 @@ export default async function HomePage() {
       />
 
       <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8 md:py-12 space-y-10 md:space-y-16 overflow-hidden">
+        
+        <RecentlyWatchedRow />
         
         <CelebrityRow 
           title={`Top Icons in ${regionText}`} 
