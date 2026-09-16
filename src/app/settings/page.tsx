@@ -14,6 +14,12 @@ const PRESET_AVATARS = [
   { id: "ninja", url: "/avatars/ninja.jpg", label: "The Ninja" },
   { id: "wizard", url: "/avatars/wizard.jpg", label: "The Wizard" },
   { id: "cyberpunk", url: "/avatars/cyberpunk.jpg", label: "The Hacker" },
+  { id: "car", url: "/avatars/car.jpg", label: "Neon Sports Car" },
+  { id: "lotus", url: "/avatars/lotus.jpg", label: "Glowing Lotus" },
+  { id: "lion", url: "/avatars/lion.jpg", label: "Majestic Lion" },
+  { id: "panda", url: "/avatars/panda.jpg", label: "Cute Panda" },
+  { id: "wolf", url: "/avatars/wolf.jpg", label: "Fierce Wolf" },
+  { id: "hooded", url: "/avatars/hooded.jpg", label: "Mysterious Figure" },
 ];
 
 export default function SettingsPage() {
