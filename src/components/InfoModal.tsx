@@ -53,6 +53,9 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
 
   const [similarMedia, setSimilarMedia] = useState<any[]>([]);
   const [isLoadingSimilar, setIsLoadingSimilar] = useState(true);
+  const [similarPage, setSimilarPage] = useState(1);
+  const [hasMoreSimilar, setHasMoreSimilar] = useState(true);
+  const [isLoadingMoreSimilar, setIsLoadingMoreSimilar] = useState(false);
 
   // New Cast States
   const [cast, setCast] = useState<any[]>([]);
@@ -90,6 +93,32 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
   };
 
   useEffect(() => {
+    // Prevent background scrolling
+    document.body.style.overflow = "hidden";
+    
+    // Intercept hardware Back Button (mobile)
+    window.history.pushState({ modalOpen: true }, "");
+    const handlePopState = () => {
+      onClose();
+    };
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      document.body.style.overflow = "unset";
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [onClose]);
+
+  const handleManualClose = () => {
+    // If the dummy state is still on the stack, pop it so we don't break the user's history
+    if (window.history.state && window.history.state.modalOpen) {
+      window.history.back(); // This will trigger popstate, which calls onClose()
+    } else {
+      onClose();
+    }
+  };
+
+  useEffect(() => {
     if (isTV) {
       loadTVData();
     }
@@ -103,8 +132,10 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
 
     const loadSimilar = async () => {
       setIsLoadingSimilar(true);
-      const similar = await getSimilarMedia(movie.id, isTV ? "tv" : "movie");
+      const similar = await getSimilarMedia(movie.id, isTV ? "tv" : "movie", 1);
       setSimilarMedia(similar);
+      setHasMoreSimilar(similar.length > 0);
+      setSimilarPage(1);
       setIsLoadingSimilar(false);
     };
 
@@ -143,6 +174,23 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
     setMainTrailerKey(key);
     setShowMainTrailer(true);
     setIsLoadingAction(false);
+  };
+
+  const loadMoreSimilar = async () => {
+    if (!hasMoreSimilar || isLoadingMoreSimilar) return;
+    setIsLoadingMoreSimilar(true);
+    const nextPage = similarPage + 1;
+    const more = await getSimilarMedia(movie.id, isTV ? "tv" : "movie", nextPage);
+    
+    setSimilarMedia(prev => {
+      const existingIds = new Set(prev.map(item => item.id));
+      const newItems = more.filter((item: any) => !existingIds.has(item.id));
+      return [...prev, ...newItems];
+    });
+    
+    setSimilarPage(nextPage);
+    setHasMoreSimilar(more.length > 0);
+    setIsLoadingMoreSimilar(false);
   };
 
   const handleAISummary = async () => {
@@ -249,13 +297,13 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
     <>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 px-0 sm:px-4">
         {/* Backdrop */}
-        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
+        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={handleManualClose} />
         
         {/* Modal Container */}
         <div className="relative w-full max-w-5xl max-h-[90vh] bg-[#141414] rounded-2xl overflow-y-auto shadow-2xl border border-neutral-800 animate-in fade-in zoom-in-95 duration-300 scrollbar-hide">
           
           <button 
-            onClick={onClose}
+            onClick={handleManualClose}
             className="absolute top-4 right-4 z-[110] bg-black/60 hover:bg-white text-white hover:text-black p-2 rounded-full transition-colors backdrop-blur-md border border-neutral-600"
           >
             <X className="w-5 h-5" />
@@ -276,12 +324,21 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
               <h1 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tight drop-shadow-2xl">{title}</h1>
               
               <div className="flex flex-wrap items-center gap-4 text-sm font-semibold mb-6">
-                <span className="text-green-500 font-bold flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-green-500" /> {(movie.vote_average * 10).toFixed(0)}% Match
+                
+                {/* IMDb Rating Badge */}
+                <span className="bg-[#F5C518] text-black px-2 py-0.5 rounded font-black tracking-tight text-xs flex items-center gap-1">
+                  IMDb {movie.vote_average ? movie.vote_average.toFixed(1) : "N/A"}
                 </span>
-                <span className="text-neutral-300 flex items-center gap-1">
+
+                {/* Rotten Tomatoes Rating Badge (Mocked via TMDB) */}
+                <span className="flex items-center gap-1 text-rose-500 font-bold text-xs bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                  🍅 {movie.vote_average ? (movie.vote_average * 10).toFixed(0) : "N/A"}%
+                </span>
+
+                <span className="text-neutral-300 flex items-center gap-1 border-l border-neutral-700 pl-4">
                   <Calendar className="w-4 h-4" /> {movie.release_date ? movie.release_date.split('-')[0] : movie.first_air_date ? movie.first_air_date.split('-')[0] : "N/A"}
                 </span>
+                
                 {isTV && (
                   <span className="border border-neutral-600 px-2 py-0.5 rounded text-neutral-300 text-xs tracking-wider flex items-center gap-1">
                     <Tv className="w-3 h-3" /> SERIES
@@ -289,91 +346,100 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                 )}
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 md:gap-4">
-                <div className="relative flex items-center group">
+              {/* Action Buttons Container */}
+              <div className="flex flex-col gap-3 md:gap-4 mt-2">
+                
+                {/* Primary Actions Row */}
+                <div className="flex flex-wrap items-center gap-2 md:gap-3">
                   <Link
                     href={`/watch/${isTV ? 'tv' : 'movie'}/${movie.id}`}
-                    className="flex items-center gap-2 bg-[#F5C518] hover:bg-[#d4a810] text-black px-6 md:px-8 py-3 rounded-lg font-black transition-all hover:scale-105 shadow-[0_0_20px_rgba(245,197,24,0.3)] text-sm md:text-base mr-3"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#F5C518] hover:bg-[#d4a810] text-black px-4 md:px-8 py-2.5 md:py-3 rounded-lg font-black transition-all hover:scale-105 shadow-[0_0_20px_rgba(245,197,24,0.3)] text-sm md:text-base whitespace-nowrap"
                   >
-                    <Play className="w-5 h-5 fill-black" /> Watch Now
+                    <Play className="w-4 h-4 md:w-5 md:h-5 fill-black" /> Watch Now
                   </Link>
 
                   <button 
                     onClick={handlePlayMainTrailer}
                     disabled={isLoadingAction}
-                    className="flex items-center gap-2 bg-neutral-800/80 hover:bg-white hover:text-black text-white px-5 md:px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl text-sm md:text-base mr-1 backdrop-blur-md border border-neutral-600"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-neutral-800/80 hover:bg-white hover:text-black text-white px-4 md:px-6 py-2.5 md:py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl text-sm md:text-base backdrop-blur-md border border-neutral-600 whitespace-nowrap"
                   >
                     {isLoadingAction ? '...' : 'Trailer'}
                   </button>
                   
-                  {/* Quick Heart Wishlist */}
-                  <button 
-                    onClick={() => toggleWishlist(movie)}
-                    className="p-3 mx-1 bg-black/60 hover:bg-neutral-800 backdrop-blur-md rounded-lg border border-neutral-600 transition-all hover:scale-110 shadow-xl"
-                  >
-                    <Heart className={`w-5 h-5 transition-colors ${isHearted ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
-                  </button>
-                  
-                  {/* Custom List Dropdown */}
-                  <div className="relative">
+                  {/* Icon Group (Heart + List) so they don't break individually */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {/* Quick Heart Wishlist */}
                     <button 
-                      onClick={() => setShowListDropdown(!showListDropdown)}
-                      className={`p-3 mx-1 bg-black/60 hover:bg-neutral-800 backdrop-blur-md rounded-lg border transition-all shadow-xl ${showListDropdown ? 'border-[#F5C518] scale-110' : 'border-neutral-600 hover:scale-110'}`}
+                      onClick={() => toggleWishlist(movie)}
+                      className="p-2.5 md:p-3 bg-black/60 hover:bg-neutral-800 backdrop-blur-md rounded-lg border border-neutral-600 transition-all hover:scale-110 shadow-xl"
                     >
-                      <ListPlus className={`w-5 h-5 ${showListDropdown ? 'text-[#F5C518]' : 'text-white'}`} />
+                      <Heart className={`w-4 h-4 md:w-5 md:h-5 transition-colors ${isHearted ? 'fill-rose-500 text-rose-500' : 'text-white'}`} />
                     </button>
                     
-                    {showListDropdown && (
-                      <div className="absolute top-full left-0 mt-2 w-48 bg-[#121215] border border-neutral-700 rounded-xl shadow-2xl z-[200] overflow-hidden">
-                        <div className="p-2 border-b border-neutral-800/80">
-                          <span className="text-[10px] font-bold tracking-widest text-[#F5C518] uppercase">Add to List</span>
+                    {/* Custom List Dropdown */}
+                    <div className="relative">
+                      <button 
+                        onClick={() => setShowListDropdown(!showListDropdown)}
+                        className={`p-2.5 md:p-3 bg-black/60 hover:bg-neutral-800 backdrop-blur-md rounded-lg border transition-all shadow-xl ${showListDropdown ? 'border-[#F5C518] scale-110' : 'border-neutral-600 hover:scale-110'}`}
+                      >
+                        <ListPlus className={`w-4 h-4 md:w-5 md:h-5 ${showListDropdown ? 'text-[#F5C518]' : 'text-white'}`} />
+                      </button>
+                      
+                      {showListDropdown && (
+                        <div className="absolute top-full left-0 md:left-auto md:right-0 mt-2 w-48 bg-[#121215] border border-neutral-700 rounded-xl shadow-2xl z-[200] overflow-hidden">
+                          <div className="p-2 border-b border-neutral-800/80">
+                            <span className="text-[10px] font-bold tracking-widest text-[#F5C518] uppercase">Add to List</span>
+                          </div>
+                          <div className="max-h-48 overflow-y-auto">
+                            {user && customLists && customLists.length > 0 ? (
+                              customLists.map(list => {
+                                const inList = list.items?.some((i:any) => i.id === movie.id);
+                                return (
+                                  <button 
+                                    key={list.id} 
+                                    onClick={() => handleToggleCustomList(list.id, list.items || [])}
+                                    className="w-full text-left px-3 py-2.5 text-xs text-white hover:bg-neutral-800 flex items-center justify-between transition-colors"
+                                  >
+                                    <span className="truncate pr-2 font-medium">{list.title}</span>
+                                    {inList && <Check className="w-3 h-3 text-emerald-400 shrink-0" />}
+                                  </button>
+                                );
+                              })
+                            ) : (
+                              <div className="px-3 py-3 text-xs text-neutral-500 italic">No lists created.</div>
+                            )}
+                          </div>
                         </div>
-                        <div className="max-h-48 overflow-y-auto">
-                          {user && customLists && customLists.length > 0 ? (
-                            customLists.map(list => {
-                              const inList = list.items?.some((i:any) => i.id === movie.id);
-                              return (
-                                <button 
-                                  key={list.id} 
-                                  onClick={() => handleToggleCustomList(list.id, list.items || [])}
-                                  className="w-full text-left px-3 py-2.5 text-xs text-white hover:bg-neutral-800 flex items-center justify-between transition-colors"
-                                >
-                                  <span className="truncate pr-2 font-medium">{list.title}</span>
-                                  {inList && <Check className="w-3 h-3 text-emerald-400 shrink-0" />}
-                                </button>
-                              );
-                            })
-                          ) : (
-                            <div className="px-3 py-3 text-xs text-neutral-500 italic">No lists created.</div>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
-                <button 
-                  onClick={handleAISummary}
-                  className="flex items-center gap-2 bg-neutral-800/80 hover:bg-neutral-700/80 backdrop-blur-md text-white px-5 md:px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 border border-neutral-600 shadow-xl text-sm md:text-base"
-                >
-                  <Sparkles className="w-5 h-5 text-[#F5C518]" /> Insight Summaries
-                </button>
-                <button 
-                  onClick={handleShowReviews}
-                  className={`flex items-center gap-2 px-5 md:px-6 py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl border text-sm md:text-base ${
-                    showReviews 
-                      ? "bg-[#F5C518] text-black border-[#F5C518]" 
-                      : "bg-black/60 hover:bg-neutral-800/80 backdrop-blur-md text-white border-neutral-600"
-                  }`}
-                >
-                  <MessageCircle className={`w-5 h-5 ${showReviews ? "text-black" : "text-[#F5C518]"}`} /> Audience Reviews
-                </button>
-                <button 
-                  onClick={handleShare}
-                  className="flex items-center gap-2 px-4 md:px-5 py-3 rounded-lg font-bold transition-all hover:scale-105 shadow-xl border bg-black/60 hover:bg-neutral-800/80 backdrop-blur-md text-white border-neutral-600 text-sm md:text-base"
-                >
-                  <Share2 className="w-5 h-5 text-emerald-400" /> Share
-                </button>
+
+                {/* Secondary Features Row */}
+                <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                  <button 
+                    onClick={handleAISummary}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-neutral-800/80 hover:bg-neutral-700/80 backdrop-blur-md text-white px-3 md:px-6 py-2 md:py-2.5 rounded-lg font-bold transition-all hover:scale-105 border border-neutral-600 shadow-xl text-xs md:text-sm whitespace-nowrap"
+                  >
+                    <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-[#F5C518]" /> Insight Summaries
+                  </button>
+                  <button 
+                    onClick={handleShowReviews}
+                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 md:px-6 py-2 md:py-2.5 rounded-lg font-bold transition-all hover:scale-105 shadow-xl border text-xs md:text-sm whitespace-nowrap ${
+                      showReviews 
+                        ? "bg-[#F5C518] text-black border-[#F5C518]" 
+                        : "bg-black/60 hover:bg-neutral-800/80 backdrop-blur-md text-white border-neutral-600"
+                    }`}
+                  >
+                    <MessageCircle className={`w-3 h-3 md:w-4 md:h-4 ${showReviews ? "text-black" : "text-[#F5C518]"}`} /> Audience Reviews
+                  </button>
+                  <button 
+                    onClick={handleShare}
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 md:px-5 py-2 md:py-2.5 rounded-lg font-bold transition-all hover:scale-105 shadow-xl border bg-black/60 hover:bg-neutral-800/80 backdrop-blur-md text-white border-neutral-600 text-xs md:text-sm shrink-0"
+                  >
+                    <Share2 className="w-3 h-3 md:w-4 md:h-4 text-emerald-400" /> Share
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -688,10 +754,25 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                 Finding similar titles...
               </div>
             ) : similarMedia.length > 0 ? (
-              <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 pb-2">
-                {similarMedia.map((media) => (
-                  <MovieCard key={media.id} movie={media} />
-                ))}
+              <div className="flex flex-col items-center">
+                <div className="grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6 pb-2 w-full">
+                  {similarMedia.map((media) => (
+                    <MovieCard key={media.id} movie={media} />
+                  ))}
+                </div>
+                {hasMoreSimilar && (
+                  <button 
+                    onClick={loadMoreSimilar}
+                    disabled={isLoadingMoreSimilar}
+                    className="mt-8 mb-4 bg-neutral-900 border border-neutral-700 hover:border-[#F5C518] hover:text-[#F5C518] text-neutral-300 px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(245,197,24,0.3)] flex items-center justify-center min-w-[250px]"
+                  >
+                    {isLoadingMoreSimilar ? (
+                      <div className="w-5 h-5 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      "Load More Suggestions"
+                    )}
+                  </button>
+                )}
               </div>
             ) : (
               <div className="text-neutral-500 italic bg-neutral-900/40 border border-neutral-800 rounded-xl p-8 text-center text-sm font-medium">

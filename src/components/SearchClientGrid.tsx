@@ -7,6 +7,7 @@ import MovieCard from "./MovieCard";
 import PersonCard from "./PersonCard";
 import Link from "next/link";
 import { GENRE_MAP } from "@/lib/genres";
+import { loadMoreSearchResults } from "@/actions/movieActions";
 
 const gridContainer: Variants = {
   hidden: { opacity: 0 },
@@ -26,15 +27,49 @@ const cardItem: Variants = {
   }
 };
 
-export default function SearchClientGrid({ results, query, initialGenres = [] }: { results: any[], query: string, initialGenres?: number[] }) {
+export default function SearchClientGrid({ 
+  results, 
+  query, 
+  initialGenres = [],
+  searchParams = {}
+}: { 
+  results: any[], 
+  query: string, 
+  initialGenres?: number[],
+  searchParams?: any
+}) {
   const [selectedFilters, setSelectedFilters] = useState<(number | string)[]>(initialGenres);
+  const [allResults, setAllResults] = useState<any[]>(results);
+  const [page, setPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(!searchParams.isAi && results.length >= 20); // AI doesn't paginate well natively currently
+
+  const handleLoadMore = async () => {
+    if (isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+    const more = await loadMoreSearchResults({ ...searchParams, page: nextPage });
+    
+    if (more && more.length > 0) {
+      setAllResults(prev => {
+        const existingIds = new Set(prev.map(i => i.id));
+        const newItems = more.filter((item: any) => !existingIds.has(item.id));
+        return [...prev, ...newItems];
+      });
+      setPage(nextPage);
+      setHasMore(more.length >= 20);
+    } else {
+      setHasMore(false);
+    }
+    setIsLoadingMore(false);
+  };
   
   // Synthesize both media genres and person professions into a unified filter pill system
   const availableFilters = useMemo(() => {
     const genreIds = new Set<number>();
     const professions = new Set<string>();
     
-    results.forEach(item => {
+    allResults.forEach(item => {
       if (item.media_type === 'person' && item.known_for_department) {
         professions.add(item.known_for_department);
       } else if (Array.isArray(item.genre_ids)) {
@@ -52,7 +87,7 @@ export default function SearchClientGrid({ results, query, initialGenres = [] }:
       .sort((a,b) => a.name.localeCompare(b.name));
 
     return [...parsedProfessions, ...parsedGenres];
-  }, [results]);
+  }, [allResults]);
 
   const toggleFilter = (id: number | string) => {
     if (selectedFilters.includes(id)) {
@@ -63,12 +98,12 @@ export default function SearchClientGrid({ results, query, initialGenres = [] }:
   };
 
   const filteredResults = useMemo(() => {
-    if (selectedFilters.length === 0) return results;
+    if (selectedFilters.length === 0) return allResults;
     
     const selectedGenres = selectedFilters.filter(f => typeof f === 'number') as number[];
     const selectedProfessions = selectedFilters.filter(f => typeof f === 'string') as string[];
     
-    return results.filter(item => {
+    return allResults.filter(item => {
       if (item.media_type === 'person') {
         // Person check
         if (selectedProfessions.length === 0) return false; // If only movie genres selected, hide people
@@ -80,7 +115,7 @@ export default function SearchClientGrid({ results, query, initialGenres = [] }:
         return selectedGenres.every(gId => item.genre_ids.includes(gId));
       }
     });
-  }, [results, selectedFilters]);
+  }, [allResults, selectedFilters]);
 
   return (
     <div className="flex flex-col gap-8 w-full">
@@ -132,22 +167,40 @@ export default function SearchClientGrid({ results, query, initialGenres = [] }:
       )}
 
       {filteredResults.length > 0 ? (
-        <motion.div 
-          variants={gridContainer}
-          initial="hidden"
-          animate="show"
-          className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 sm:gap-x-6 gap-y-12 pb-24"
-        >
-          {filteredResults.map((item: any, idx: number) => (
-            <motion.div key={`${item.id}-${idx}`} variants={cardItem} className="flex-shrink-0">
-              {item.media_type === 'person' ? (
-                <PersonCard person={item} />
-              ) : (
-                <MovieCard movie={item} />
-              )}
-            </motion.div>
-          ))}
-        </motion.div>
+        <>
+          <motion.div 
+            variants={gridContainer}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 sm:gap-x-6 gap-y-12 pb-24"
+          >
+            {filteredResults.map((item: any, idx: number) => (
+              <motion.div key={`${item.id}-${idx}`} variants={cardItem} className="flex-shrink-0">
+                {item.media_type === 'person' ? (
+                  <PersonCard person={item} />
+                ) : (
+                  <MovieCard movie={item} />
+                )}
+              </motion.div>
+            ))}
+          </motion.div>
+          
+          {hasMore && (
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={handleLoadMore}
+                disabled={isLoadingMore}
+                className="bg-neutral-900 border border-neutral-700 hover:border-[#F5C518] hover:text-[#F5C518] text-neutral-300 px-8 py-3 rounded-xl font-bold transition-all shadow-lg hover:shadow-[0_0_15px_rgba(245,197,24,0.3)] flex items-center justify-center min-w-[200px]"
+              >
+                {isLoadingMore ? (
+                  <div className="w-5 h-5 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  "Load More Results"
+                )}
+              </button>
+            </div>
+          )}
+        </>
       ) : (
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6 }}

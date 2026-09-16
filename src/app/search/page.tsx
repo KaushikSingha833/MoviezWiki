@@ -88,12 +88,18 @@ export default async function SearchPage({
         </div>
       </header>
 
-      {/* Grid Execution */}
       <main className="max-w-[1400px] mx-auto px-6 py-12 md:py-20 min-h-[60vh]">
         <SearchClientGrid 
+          key={`${q}-${genres}-${region}-${isAi}`}
           results={results} 
           query={q || "Advanced Search"} 
           initialGenres={initialGenres} 
+          searchParams={{
+            q,
+            genres,
+            region,
+            isAi
+          }}
         />
       </main>
 

@@ -112,15 +112,15 @@ export async function getMediaReviews(id: number | string, type: "movie" | "tv" 
   }
 }
 
-export async function getSimilarMedia(id: number | string, type: "movie" | "tv" = "movie") {
+export async function getSimilarMedia(id: number | string, type: "movie" | "tv" = "movie", page: number = 1) {
   try {
     // 1. First attempt to fetch high-quality community recommendations
-    let data = await fetchTMDB(`/${type}/${id}/recommendations`);
+    let data = await fetchTMDB(`/${type}/${id}/recommendations`, `&page=${page}`);
     let results = data.results || [];
 
     // 2. Fallback to basic keyword similarities if no recommendations exist
     if (results.length === 0) {
-      data = await fetchTMDB(`/${type}/${id}/similar`);
+      data = await fetchTMDB(`/${type}/${id}/similar`, `&page=${page}`);
       results = data.results || [];
     }
     
@@ -130,7 +130,7 @@ export async function getSimilarMedia(id: number | string, type: "movie" | "tv" 
       media_type: type
     }));
     
-    return processed.slice(0, 15);
+    return processed;
   } catch (error) {
     console.error(error);
     return [];
@@ -144,6 +144,31 @@ export async function getSearchSuggestions(query: string) {
     return data.results?.slice(0, 5) || [];
   } catch (error) {
     console.error(error);
+    return [];
+  }
+}
+
+export async function loadMoreSearchResults(params: { q?: string, genres?: string, region?: string, isAi?: boolean, page: number }) {
+  try {
+    let data;
+    if (params.isAi) {
+      // AI search returns a specific list of titles, pagination is not natively supported without another AI query.
+      return []; 
+    } else if (params.q) {
+      // searchTMDB now supports page
+      const { searchTMDB } = await import("@/lib/tmdb");
+      data = await searchTMDB(params.q, params.page);
+    } else if (params.genres || params.region) {
+      const { discoverTMDBAdvanced } = await import("@/lib/tmdb");
+      data = await discoverTMDBAdvanced(params.genres, params.region, params.page);
+    }
+    
+    if (data && Array.isArray(data.results)) {
+      return data.results;
+    }
+    return [];
+  } catch (error) {
+    console.error("Error loading more search results:", error);
     return [];
   }
 }

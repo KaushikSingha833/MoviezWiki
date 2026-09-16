@@ -115,7 +115,8 @@ export async function fetchTMDB(endpoint: string, extraParams: string = '') {
   }
 
   const apiKey = process.env.TMDB_API_KEY || "fallback_key";
-  const url = `${TMDB_BASE_URL}${activeEndpoint}?api_key=${apiKey}&language=en-US&page=1${activeParams}`;
+  const hasPageParam = activeParams.includes("&page=");
+  const url = `${TMDB_BASE_URL}${activeEndpoint}?api_key=${apiKey}&language=en-US${hasPageParam ? '' : '&page=1'}${activeParams}`;
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -152,8 +153,8 @@ export const getTrendingReality = () => fetchTMDB('/discover/tv', '&with_genres=
 export const getTrendingAnime = () => fetchTMDB('/discover/tv', '&with_genres=16&with_original_language=ja&sort_by=popularity.desc');
 export const getKoreanDrama = () => fetchTMDB('/discover/tv', '&with_original_language=ko&sort_by=popularity.desc');
 
-export const searchTMDB = async (query: string) => {
-  const data = await fetchTMDB('/search/multi', `&query=${encodeURIComponent(query)}`);
+export const searchTMDB = async (query: string, page: number = 1) => {
+  const data = await fetchTMDB('/search/multi', `&query=${encodeURIComponent(query)}&page=${page}`);
   
   if (!data.results || data.results.length === 0) {
     const cleanQuery = query.trim().toLowerCase();
@@ -170,8 +171,8 @@ export const searchTMDB = async (query: string) => {
   return data;
 };
 
-export const discoverTMDBAdvanced = async (genres?: string, region?: string) => {
-  let params = "&sort_by=popularity.desc";
+export const discoverTMDBAdvanced = async (genres?: string, region?: string, page: number = 1) => {
+  let params = `&sort_by=popularity.desc&page=${page}`;
   if (genres) {
     params += `&with_genres=${genres}`;
   }
