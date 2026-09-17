@@ -16,6 +16,7 @@ import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { approveAccessRequest, dismissNotification, AppNotification } from "@/lib/notifications";
 import { followUser, getFollowState } from "@/lib/network";
+import { motion, AnimatePresence } from "framer-motion";
 
 function getFlagEmoji(countryCode: string) {
   if (!countryCode) return '🌐';
@@ -303,7 +304,16 @@ export default function Navbar() {
       );
       const unsub = onSnapshot(q, async (snapshot) => {
         const notifs = snapshot.docs.map(doc => doc.data() as AppNotification);
-        setNotifications(notifs);
+        
+        setNotifications(prev => {
+          // If we got new notifications, turn the red dot back on
+          if (notifs.length > 0 && prev.length > 0 && notifs[0].id !== prev[0].id) {
+            setHasSeenNotifs(false);
+          } else if (prev.length === 0 && notifs.length > 0) {
+            setHasSeenNotifs(false);
+          }
+          return notifs;
+        });
         
         // Fetch follow states for any 'follow' notifications
         const followNotifs = notifs.filter(n => n.type === 'follow');
@@ -337,7 +347,11 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const unreadCount = notifications.filter(n => n.status === "pending" || n.status === "read").length; // Keeping read to show them until dismissed
+  // Track if user has seen current notifications
+  const [hasSeenNotifs, setHasSeenNotifs] = useState(false);
+
+  // Unread count (pending/read), but we clear the red dot if they open the dropdown
+  const unreadCount = notifications.filter(n => n.status === "pending" || n.status === "read").length; 
 
   const handleApprove = async (notif: AppNotification) => {
     if (!user) return;
@@ -437,18 +451,28 @@ export default function Navbar() {
           {authLoaded && user && (
             <div className="relative" ref={notifRef}>
               <button 
-                onClick={() => setShowNotifs(!showNotifs)}
+                onClick={() => {
+                  setShowNotifs(!showNotifs);
+                  if (!showNotifs) setHasSeenNotifs(true);
+                }}
                 className={`relative p-2 rounded-full transition-colors ${showNotifs ? 'bg-[#F5C518]/20 text-[#F5C518]' : 'text-neutral-400 hover:text-white hover:bg-neutral-800'}`}
               >
                 <Bell className="w-5 h-5" />
-                {unreadCount > 0 && (
+                {unreadCount > 0 && !hasSeenNotifs && (
                   <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full shadow-[0_0_10px_rgba(244,63,94,0.8)]" />
                 )}
               </button>
               
-              {showNotifs && (
-                <div className="absolute top-full right-0 mt-3 w-[340px] bg-[#121215]/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.9)] overflow-hidden z-[100] flex flex-col">
-                  <div className="p-5 border-b border-white/5 flex justify-between items-center bg-[#0a0a0c]/50">
+              <AnimatePresence>
+                {showNotifs && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="absolute top-full right-0 mt-3 w-[300px] sm:w-[340px] bg-[#121215]/95 backdrop-blur-2xl border border-white/10 rounded-3xl shadow-[0_30px_60px_rgba(0,0,0,0.9)] overflow-hidden z-[100] flex flex-col origin-top-right"
+                  >
+                    <div className="p-5 border-b border-white/5 flex justify-between items-center bg-[#0a0a0c]/50">
                     <h3 className="text-sm font-black text-white flex items-center gap-2">
                        <Bell className="w-4 h-4 text-[#F5C518]" /> Notifications
                     </h3>
@@ -509,8 +533,9 @@ export default function Navbar() {
                       ))
                     )}
                   </div>
-                </div>
+                </motion.div>
               )}
+              </AnimatePresence>
             </div>
           )}
 
