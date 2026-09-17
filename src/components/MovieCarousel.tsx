@@ -42,9 +42,9 @@ export default function MovieCarousel({ title, movies }: { title: string, movies
         ref={carouselRef}
         className="flex space-x-4 overflow-x-auto pt-20 pb-16 -mt-12 scrollbar-hide snap-x px-2"
       >
-        {movies.map((movie: any) => (
+        {movies.map((movie: any, idx: number) => (
           <div key={movie.id} className="w-40 md:w-48 lg:w-56 flex-shrink-0 snap-start">
-            <MovieCard movie={movie} />
+            <MovieCard movie={movie} index={idx} />
           </div>
         ))}
       </div>

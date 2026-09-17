@@ -285,6 +285,7 @@ export default function Navbar() {
   const { region } = useSettings();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [showNotifs, setShowNotifs] = useState(false);
@@ -447,6 +448,14 @@ export default function Navbar() {
         <div className="flex items-center gap-2 sm:gap-4">
           <SearchBar />
 
+          {/* Mobile Search Toggle Button */}
+          <button 
+            className="md:hidden text-neutral-400 hover:text-white p-2 hover:bg-neutral-800 rounded-full transition-colors"
+            onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+          >
+            <Search className="w-5 h-5" />
+          </button>
+
           {/* Notifications Center */}
           {authLoaded && user && (
             <div className="relative" ref={notifRef}>
@@ -563,10 +572,25 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Dedicated Mobile Search Space */}
+      <AnimatePresence>
+        {isMobileSearchOpen && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0, overflow: "hidden" }}
+            animate={{ height: "auto", opacity: 1, transitionEnd: { overflow: "visible" } }}
+            exit={{ height: 0, opacity: 0, overflow: "hidden" }}
+            className="md:hidden px-4 bg-[#181818]"
+          >
+            <div className="pb-4">
+              <SearchBar isMobile={true} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-[#181818] border-t border-neutral-800 p-4 flex flex-col space-y-6 shadow-inner absolute w-full left-0 z-50">
-          <SearchBar isMobile={true} />
           <div className="flex flex-col space-y-4 font-semibold text-sm pl-2">
             <NavLinks mobile={true} />
           </div>

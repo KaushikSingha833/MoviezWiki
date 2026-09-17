@@ -30,11 +30,12 @@ export default function RecentlyWatchedRow() {
         </button>
       </div>
 
-      <div className="flex overflow-x-auto gap-4 pb-8 custom-scrollbar snap-x snap-mandatory">
-        {recentlyWatched.map((media) => (
+      <div className="flex overflow-x-auto gap-4 pt-4 -mt-4 pb-8 custom-scrollbar snap-x snap-mandatory">
+        {recentlyWatched.map((media, index) => (
           <div key={`${media.type}-${media.id}`} className="snap-start shrink-0">
             <ContinueWatchingCard 
               media={media} 
+              index={index}
               onRemove={removeWatchedMedia} 
             />
           </div>

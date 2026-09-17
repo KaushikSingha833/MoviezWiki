@@ -174,11 +174,11 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
           <AnimatePresence>
             {isHovered && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: "-50%", x: "-50%" }}
-                animate={{ opacity: 1, scale: 1.25, y: "-50%", x: "-50%" }}
-                exit={{ opacity: 0, scale: 0.95, y: "-50%", x: "-50%" }}
+                initial={{ opacity: 0, scale: 0.95, width: "100%", y: "-50%", x: index === 0 ? "0%" : "-50%" }}
+                animate={{ opacity: 1, scale: 1.15, width: "150%", y: "-50%", x: index === 0 ? "0%" : "-50%" }}
+                exit={{ opacity: 0, scale: 0.95, width: "100%", y: "-50%", x: index === 0 ? "0%" : "-50%" }}
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className="absolute top-1/2 left-1/2 w-full bg-[#141414] rounded-lg overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-neutral-700 z-50 flex flex-col cursor-pointer origin-center"
+                className={`absolute top-1/2 ${index === 0 ? 'left-0 origin-left' : 'left-1/2 origin-center'} bg-[#141414] rounded-lg overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-neutral-700 z-50 flex flex-col cursor-pointer`}
               >
                 {/* Top Image Section (Cropped to aspect-video) */}
                 <div className="relative w-full aspect-video shrink-0 bg-neutral-900 overflow-hidden">

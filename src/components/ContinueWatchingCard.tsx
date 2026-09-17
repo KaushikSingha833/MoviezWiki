@@ -9,10 +9,12 @@ const BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w780";
 
 export default function ContinueWatchingCard({
   media,
-  onRemove
+  onRemove,
+  index
 }: {
   media: WatchedMedia;
   onRemove: (id: string | number, type: "movie" | "tv") => void;
+  index?: number;
 }) {
   const imageUrl = media.backdrop_path 
     ? `${BACKDROP_BASE_URL}${media.backdrop_path}` 
@@ -21,7 +23,7 @@ export default function ContinueWatchingCard({
       : "/placeholder.jpg"; // Provide a fallback if needed
 
   return (
-    <div className="relative group min-w-[280px] sm:min-w-[320px] max-w-[350px] aspect-[16/9] bg-neutral-900 rounded-2xl overflow-hidden cursor-pointer shrink-0 transition-transform hover:scale-105 hover:shadow-[0_0_20px_rgba(245,197,24,0.4)] border border-neutral-800 hover:border-[#F5C518]">
+    <div className={`relative group min-w-[280px] sm:min-w-[320px] max-w-[350px] aspect-[16/9] bg-neutral-900 rounded-2xl overflow-hidden cursor-pointer shrink-0 transition-transform hover:scale-105 hover:shadow-[0_0_20px_rgba(245,197,24,0.4)] border border-neutral-800 hover:border-[#F5C518] ${index === 0 ? 'origin-left' : 'origin-center'}`}>
       <Link href={`/watch/${media.type}/${media.id}`} className="absolute inset-0 z-10 block">
         <img 
           src={imageUrl}
@@ -58,7 +60,7 @@ export default function ContinueWatchingCard({
           e.stopPropagation();
           onRemove(media.id, media.type);
         }}
-        className="absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-neutral-800 border border-transparent hover:border-[#F5C518]/50 text-neutral-400 hover:text-white flex items-center justify-center backdrop-blur-md transition-all opacity-0 group-hover:opacity-100"
+        className="absolute top-2 right-2 z-20 w-8 h-8 rounded-full bg-black/60 hover:bg-neutral-800 border border-transparent hover:border-[#F5C518]/50 text-neutral-400 hover:text-white flex items-center justify-center backdrop-blur-md transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
         title="Remove from history"
       >
         <X className="w-4 h-4" />
