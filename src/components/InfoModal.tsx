@@ -386,7 +386,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                       </button>
                       
                       {showListDropdown && (
-                        <div className="absolute top-full left-0 md:left-auto md:right-0 mt-2 w-48 bg-[#121215] border border-neutral-700 rounded-xl shadow-2xl z-[200] overflow-hidden">
+                        <div className="absolute top-full right-0 mt-2 w-48 bg-[#121215] border border-neutral-700 rounded-xl shadow-2xl z-[200] overflow-hidden">
                           <div className="p-2 border-b border-neutral-800/80">
                             <span className="text-[10px] font-bold tracking-widest text-[#F5C518] uppercase">Add to List</span>
                           </div>
@@ -416,30 +416,32 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                 </div>
 
                 {/* Secondary Features Row */}
-                <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                <div className="flex flex-row items-center gap-2 md:gap-3">
                   <button 
                     onClick={handleAISummary}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-neutral-800/80 hover:bg-neutral-700/80 backdrop-blur-md text-white px-3 md:px-6 py-2 md:py-2.5 rounded-lg font-bold transition-all hover:scale-105 border border-neutral-600 shadow-xl text-xs md:text-sm whitespace-nowrap"
+                    className="flex-1 flex items-center justify-center gap-2 bg-neutral-800/80 hover:bg-neutral-700/80 backdrop-blur-md text-white px-2 sm:px-4 md:px-6 py-2.5 rounded-lg font-bold transition-all hover:scale-105 border border-neutral-600 shadow-xl text-xs md:text-sm whitespace-nowrap"
                   >
-                    <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-[#F5C518]" /> Insight Summaries
+                    <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-[#F5C518] shrink-0" /> <span className="truncate">Insight Summaries</span>
                   </button>
                   <button 
                     onClick={handleShowReviews}
-                    className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 md:px-6 py-2 md:py-2.5 rounded-lg font-bold transition-all hover:scale-105 shadow-xl border text-xs md:text-sm whitespace-nowrap ${
+                    className={`flex-1 flex items-center justify-center gap-2 px-2 sm:px-4 md:px-6 py-2.5 rounded-lg font-bold transition-all hover:scale-105 shadow-xl border text-xs md:text-sm whitespace-nowrap ${
                       showReviews 
                         ? "bg-[#F5C518] text-black border-[#F5C518]" 
                         : "bg-black/60 hover:bg-neutral-800/80 backdrop-blur-md text-white border-neutral-600"
                     }`}
                   >
-                    <MessageCircle className={`w-3 h-3 md:w-4 md:h-4 ${showReviews ? "text-black" : "text-[#F5C518]"}`} /> Audience Reviews
-                  </button>
-                  <button 
-                    onClick={handleShare}
-                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 md:px-5 py-2 md:py-2.5 rounded-lg font-bold transition-all hover:scale-105 shadow-xl border bg-black/60 hover:bg-neutral-800/80 backdrop-blur-md text-white border-neutral-600 text-xs md:text-sm shrink-0"
-                  >
-                    <Share2 className="w-3 h-3 md:w-4 md:h-4 text-emerald-400" /> Share
+                    <MessageCircle className={`w-3 h-3 md:w-4 md:h-4 shrink-0 ${showReviews ? "text-black" : "text-[#F5C518]"}`} /> <span className="truncate">Audience Reviews</span>
                   </button>
                 </div>
+                
+                {/* Share Button Row */}
+                <button 
+                  onClick={handleShare}
+                  className="w-full flex items-center justify-center gap-2 px-3 md:px-5 py-2.5 rounded-lg font-bold transition-all hover:scale-105 shadow-xl border bg-black/60 hover:bg-neutral-800/80 backdrop-blur-md text-white border-neutral-600 text-xs md:text-sm"
+                >
+                  <Share2 className="w-3 h-3 md:w-4 md:h-4 text-emerald-400 shrink-0" /> Share
+                </button>
               </div>
             </div>
           </div>
