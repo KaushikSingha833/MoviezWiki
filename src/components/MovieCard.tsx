@@ -121,11 +121,11 @@ export default function MovieCard({ movie, index }: { movie: any, index?: number
           {/* MOBILE FALLBACK OVERLAY (Visible only on touch screens / below md breakpoint) */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent opacity-100 md:opacity-0 flex flex-col justify-end p-2.5 md:hidden pointer-events-none">
             <div className="pointer-events-auto flex flex-col w-full relative z-30">
-              <span className="text-white text-xs font-bold mb-1 line-clamp-2 drop-shadow-md">
+              <span className="text-white text-xs font-bold mb-1 line-clamp-2 drop-shadow-md pr-10">
                 {movie.title || movie.name}
               </span>
               {genres.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-2">
+                <div className="flex flex-wrap gap-1 mb-2 pr-10">
                   {genres.slice(0, 2).map((genre, idx) => (
                     <span key={idx} className="px-1.5 py-0.5 rounded text-[9px] font-medium bg-black/60 text-[#F5C518] border border-[#F5C518]/30 backdrop-blur-sm">
                       {genre}

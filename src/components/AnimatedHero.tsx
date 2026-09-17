@@ -51,7 +51,7 @@ export default function AnimatedHero({ movies, badgeText = "Trending Worldwide" 
       <div className="absolute inset-0 bg-gradient-to-r from-[#121212] via-[#121212]/80 to-transparent z-10" />
 
       {/* Main Content Area */}
-      <div className="relative z-20 flex flex-col items-start space-y-5 px-4 sm:px-8 md:px-16 max-w-4xl mt-12 md:mt-24 w-full">
+      <div className="relative z-20 flex flex-col items-start space-y-5 px-4 sm:px-8 md:px-16 max-w-4xl mt-12 md:mt-24 w-full pb-16 md:pb-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentMovie.id}
@@ -102,18 +102,18 @@ export default function AnimatedHero({ movies, badgeText = "Trending Worldwide" 
       </div>
 
       {/* Manual Carousel Controls */}
-      <div className="absolute z-20 bottom-8 right-4 sm:right-8 md:right-16 flex gap-3">
+      <div className="absolute z-30 flex gap-2 md:gap-3 bottom-4 right-4 md:bottom-8 md:right-8 lg:right-16">
         <button 
           onClick={() => setActiveIndex(prev => prev === 0 ? movies.length - 1 : prev - 1)}
-          className="w-12 h-12 rounded-full border border-neutral-700 bg-black/50 hover:bg-[#F5C518] hover:text-black hover:border-transparent text-white transition-all flex items-center justify-center backdrop-blur-md"
+          className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-neutral-700 bg-black/50 hover:bg-[#F5C518] hover:text-black hover:border-transparent text-white transition-all flex items-center justify-center backdrop-blur-md shadow-lg"
         >
-          <ChevronLeft className="w-6 h-6" />
+          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
         </button>
         <button 
           onClick={() => setActiveIndex(prev => (prev + 1) % movies.length)}
-          className="w-12 h-12 rounded-full border border-neutral-700 bg-black/50 hover:bg-[#F5C518] hover:text-black hover:border-transparent text-white transition-all flex items-center justify-center backdrop-blur-md"
+          className="w-10 h-10 md:w-12 md:h-12 rounded-full border border-neutral-700 bg-black/50 hover:bg-[#F5C518] hover:text-black hover:border-transparent text-white transition-all flex items-center justify-center backdrop-blur-md shadow-lg"
         >
-          <ChevronRight className="w-6 h-6" />
+          <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
         </button>
       </div>
       

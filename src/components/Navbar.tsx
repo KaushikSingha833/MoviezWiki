@@ -390,11 +390,11 @@ export default function Navbar() {
       </Link>
       <Link href="/country" onClick={() => mobile && setIsMobileMenuOpen(false)} className={`flex items-center gap-3 transition-colors ${pathname === '/country' ? 'text-[#F5C518]' : 'text-neutral-500 hover:text-white'}`} title="By Country">
          <Map className="w-5 h-5 md:w-6 md:h-6" />
-         {mobile && <span>World Map</span>}
+         {mobile && <span>Countries</span>}
       </Link>
-      <Link href="/welcome" onClick={() => mobile && setIsMobileMenuOpen(false)} className={`flex items-center gap-3 transition-all ${pathname === '/welcome' ? 'text-[#F5C518] drop-shadow-[0_0_10px_rgba(245,197,24,0.5)] scale-110' : 'text-neutral-500 hover:text-[#F5C518] hover:scale-110'}`} title="Discover V2">
+      <Link href="/welcome" onClick={() => mobile && setIsMobileMenuOpen(false)} className={`flex items-center gap-3 transition-all ${pathname === '/welcome' ? 'text-[#F5C518] drop-shadow-[0_0_10px_rgba(245,197,24,0.5)] scale-110' : 'text-neutral-500 hover:text-[#F5C518] hover:scale-110'}`} title="Explore">
          <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
-         {mobile && <span>Discover</span>}
+         {mobile && <span>Explore</span>}
       </Link>
       {mobile && (
         <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-neutral-300 transition-colors flex items-center gap-3 text-neutral-500">
