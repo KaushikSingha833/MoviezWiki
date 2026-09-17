@@ -7,6 +7,7 @@ export interface CommunityComment {
   mediaType: "movie" | "tv";
   userId: string;
   userName: string;
+  userPhotoURL?: string;
   text: string;
   rating: number;
   createdAt: Date;
@@ -21,7 +22,8 @@ export const addCommunityComment = async (
   userId: string,
   userName: string,
   text: string,
-  rating: number
+  rating: number,
+  userPhotoURL?: string
 ): Promise<CommunityComment | null> => {
   try {
     const commentsRef = collection(db, "comments");
@@ -32,6 +34,7 @@ export const addCommunityComment = async (
       mediaType,
       userId,
       userName,
+      userPhotoURL: userPhotoURL || null,
       text,
       rating,
       createdAt: Timestamp.now()
@@ -45,6 +48,7 @@ export const addCommunityComment = async (
       mediaType,
       userId,
       userName,
+      userPhotoURL,
       text,
       rating,
       createdAt: new Date()
@@ -84,6 +88,7 @@ export const getCommunityComments = async (
           mediaType: data.mediaType,
           userId: data.userId,
           userName: data.userName,
+          userPhotoURL: data.userPhotoURL,
           text: data.text,
           rating: data.rating,
           createdAt: data.createdAt.toDate(),

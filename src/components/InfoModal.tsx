@@ -69,7 +69,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
   const [selectedActorId, setSelectedActorId] = useState<number | null>(null);
 
   // Native Comments State
-  const { user, customLists, toggleWishlist, isInWishlist } = useWishlist();
+  const { user, profile, customLists, toggleWishlist, isInWishlist } = useWishlist();
   const [nativeComments, setNativeComments] = useState<CommunityComment[]>([]);
   const [isFetchingNative, setIsFetchingNative] = useState(false);
   const [newCommentText, setNewCommentText] = useState("");
@@ -233,7 +233,8 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
     }
 
     setIsSubmittingComment(true);
-    const userName = user.displayName || user.email?.split("@")[0] || "Anonymous Master";
+    const userName = profile?.username || user.displayName || user.email?.split("@")[0] || "Anonymous Master";
+    const userPhotoURL = profile?.photoURL || user.photoURL || undefined;
     
     const newComment = await addCommunityComment(
       movie.id,
@@ -241,7 +242,8 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
       user.uid,
       userName,
       newCommentText,
-      newCommentRating
+      newCommentRating,
+      userPhotoURL
     );
 
     if (newComment) {
@@ -601,12 +603,18 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                        
                        <div className="flex justify-between items-start mb-4 relative z-10">
                          <div className="flex items-center gap-3">
-                           <div className="w-10 h-10 rounded-full bg-black border border-[#F5C518]/50 flex items-center justify-center shrink-0">
-                             <User className="w-5 h-5 text-[#F5C518]" />
-                           </div>
+                           <Link href={`/u/${nc.userName}`} className="w-10 h-10 rounded-full bg-black border border-[#F5C518]/50 overflow-hidden flex items-center justify-center shrink-0 hover:border-[#F5C518] hover:scale-105 transition-all">
+                             {nc.userPhotoURL ? (
+                               <img src={nc.userPhotoURL} alt={nc.userName} className="w-full h-full object-cover" onError={(e) => e.currentTarget.style.display = 'none'} />
+                             ) : (
+                               <User className="w-5 h-5 text-[#F5C518]" />
+                             )}
+                           </Link>
                            <div>
                              <p className="text-white text-sm font-bold line-clamp-1 flex items-center gap-2">
-                               {nc.userName}
+                               <Link href={`/u/${nc.userName}`} className="hover:text-[#F5C518] hover:underline transition-colors">
+                                 {nc.userName}
+                               </Link>
                                <span className="text-neutral-500 font-normal text-[10px] whitespace-nowrap">
                                  {nc.createdAt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                                </span>
