@@ -70,3 +70,12 @@ body {
   scrollbar-width: thin;
   scrollbar-color: #333333 #0a0a0a;
 }
+
+/* Custom Yellow Arrow Cursor */
+body, html {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><path d="M4 2L20 12.5L11.5 14L14 21.5L10.5 23L8 15.5L2 22L4 2Z" fill="%23F5C518" stroke="%23000000" stroke-width="1" stroke-linejoin="round"/></svg>') 4 2, auto !important;
+}
+
+button, a, input, select, [role="button"], label {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24"><path d="M4 2L20 12.5L11.5 14L14 21.5L10.5 23L8 15.5L2 22L4 2Z" fill="%23ffffff" stroke="%23F5C518" stroke-width="1.5" stroke-linejoin="round"/></svg>') 4 2, pointer !important;
+}
