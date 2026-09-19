@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits, getMediaReviews } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
 import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2, Trash2, Heart, ListPlus, Check } from "lucide-react";
@@ -14,6 +14,9 @@ import { useWishlist } from "@/context/WishlistContext";
 import { addCommunityComment, getCommunityComments, deleteCommunityComment, CommunityComment } from "@/lib/comments";
 import { addToList, removeFromList } from "@/lib/lists";
 import { FastAverageColor } from "fast-average-color";
+
+// Global stack to track the order of open modals for nested closing
+let activeModalsStack: string[] = [];
 
 const getDirectPlatformLink = (providerName: string, title: string) => {
   const query = encodeURIComponent(title);
@@ -117,43 +120,56 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
     }
   };
 
+  const modalIdRef = useRef<string | null>(null);
+
   useEffect(() => {
+    // Generate a unique ID for this specific modal instance
+    const modalId = "modal-" + Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
+    modalIdRef.current = modalId;
+    
+    // Push this modal to the global stack
+    activeModalsStack.push(modalId);
+    
     // Prevent background scrolling
     document.body.style.overflow = "hidden";
-    
-    // Intercept hardware Back Button (mobile)
-    window.history.pushState({ modalOpen: true }, "");
-    const handlePopState = () => {
-      onClose();
-    };
-    window.addEventListener("popstate", handlePopState);
 
     // Close on Escape key press (desktop)
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        if (window.history.state && window.history.state.modalOpen) {
-          window.history.back();
-        } else {
+        // Only the TOPMOST modal in the stack should react to Escape
+        if (activeModalsStack[activeModalsStack.length - 1] === modalId) {
           onClose();
         }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
 
+    // Listen for global close event
+    const handleCloseAll = () => {
+      onClose();
+    };
+    window.addEventListener("closeAllModals", handleCloseAll);
+
     return () => {
-      document.body.style.overflow = "unset";
-      window.removeEventListener("popstate", handlePopState);
+      // Remove this modal from the global stack
+      activeModalsStack = activeModalsStack.filter(id => id !== modalId);
+      
+      // When unmounting, only restore background scroll if no other modals are active
+      if (activeModalsStack.length === 0) {
+        document.body.style.overflow = "unset";
+      }
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("closeAllModals", handleCloseAll);
     };
   }, [onClose]);
 
   const handleManualClose = () => {
-    // If the dummy state is still on the stack, pop it so we don't break the user's history
-    if (window.history.state && window.history.state.modalOpen) {
-      window.history.back(); // This will trigger popstate, which calls onClose()
-    } else {
-      onClose();
-    }
+    onClose();
+  };
+
+  const handleBackdropClick = () => {
+    // Dispatch event to close all modals instantly
+    window.dispatchEvent(new Event("closeAllModals"));
   };
 
   useEffect(() => {
@@ -339,7 +355,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
         {/* Backdrop */}
         <div 
           className="absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity duration-300"
-          onClick={handleManualClose} 
+          onClick={handleBackdropClick} 
         />
         
         {/* Modal Container */}
@@ -365,12 +381,19 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
               className="absolute inset-0 w-full h-full object-cover"
               alt={title}
             />
+            {/* Dynamic Seamless Fade Gradients */}
             <div 
               className="absolute inset-0 transition-colors duration-1000" 
-              style={{ background: `linear-gradient(to top, #141414 0%, ${dominantColor ? dominantColor + '40' : 'transparent'} 50%, transparent 100%)` }}
+              style={{ 
+                background: `linear-gradient(to top, ${dominantColor ? `color-mix(in srgb, ${dominantColor} 12%, #141414)` : '#141414'} 0%, ${dominantColor ? `color-mix(in srgb, ${dominantColor} 12%, #141414)` : '#141414'} 10%, transparent 80%)` 
+              }}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/80 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#141414] via-transparent to-transparent" />
+            <div 
+              className="absolute inset-0 transition-colors duration-1000"
+              style={{
+                background: `linear-gradient(to right, ${dominantColor ? `color-mix(in srgb, ${dominantColor} 12%, #141414)` : '#141414'} 0%, transparent 50%)`
+              }}
+            />
             
             {/* Overlay Info */}
             <div className="relative z-10 p-6 pt-24 md:p-12 w-full max-w-3xl">

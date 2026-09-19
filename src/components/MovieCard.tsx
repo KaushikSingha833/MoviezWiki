@@ -21,11 +21,34 @@ export default function MovieCard({ movie, index }: { movie: any, index?: number
   const [isLoadingTrailer, setIsLoadingTrailer] = useState(false);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   
-  // Custom hover logic to prevent accidental flickers
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [hoverPosition, setHoverPosition] = useState<'left' | 'right' | 'center'>('center');
 
   const handleMouseEnter = () => {
+    if (cardRef.current) {
+      const rect = cardRef.current.getBoundingClientRect();
+      const container = cardRef.current.closest('.overflow-y-auto, .overflow-x-auto, .snap-x') as HTMLElement;
+      
+      const containerLeft = container ? container.getBoundingClientRect().left : 0;
+      const containerRight = container ? container.getBoundingClientRect().right : window.innerWidth;
+      const containerWidth = container ? container.getBoundingClientRect().width : window.innerWidth;
+      
+      // Calculate position relative to container
+      const relativeLeft = rect.left - containerLeft;
+      const relativeRight = containerRight - rect.right;
+      const threshold = containerWidth * 0.20; // 20% of container width
+
+      if (relativeLeft < threshold) {
+        setHoverPosition('left');
+      } else if (relativeRight < threshold) {
+        setHoverPosition('right');
+      } else {
+        setHoverPosition('center');
+      }
+    }
+    
     hoverTimeout.current = setTimeout(() => {
       setIsHovered(true);
     }, 400); // 400ms delay for Netflix-style intent
@@ -70,6 +93,7 @@ export default function MovieCard({ movie, index }: { movie: any, index?: number
   return (
     <>
       <div 
+        ref={cardRef}
         className={`relative w-full aspect-[2/3] transition-z duration-300 ${isHovered ? 'z-50' : 'z-10'}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
@@ -163,11 +187,32 @@ export default function MovieCard({ movie, index }: { movie: any, index?: number
         <AnimatePresence>
           {isHovered && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, width: "100%", y: "-50%", x: index === 0 ? "0%" : "-50%" }}
-              animate={{ opacity: 1, scale: 1.15, width: "150%", y: "-50%", x: index === 0 ? "0%" : "-50%" }}
-              exit={{ opacity: 0, scale: 0.95, width: "100%", y: "-50%", x: index === 0 ? "0%" : "-50%" }}
+              initial={{ 
+                opacity: 0, 
+                scale: 0.95, 
+                width: "100%", 
+                y: "-50%", 
+                x: hoverPosition === 'left' ? "0%" : hoverPosition === 'right' ? "-100%" : "-50%",
+                left: hoverPosition === 'left' ? "0%" : hoverPosition === 'right' ? "100%" : "50%"
+              }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1.15, 
+                width: "150%", 
+                y: "-50%", 
+                x: hoverPosition === 'left' ? "0%" : hoverPosition === 'right' ? "-100%" : "-50%",
+                left: hoverPosition === 'left' ? "0%" : hoverPosition === 'right' ? "100%" : "50%"
+              }}
+              exit={{ 
+                opacity: 0, 
+                scale: 0.95, 
+                width: "100%", 
+                y: "-50%", 
+                x: hoverPosition === 'left' ? "0%" : hoverPosition === 'right' ? "-100%" : "-50%",
+                left: hoverPosition === 'left' ? "0%" : hoverPosition === 'right' ? "100%" : "50%"
+              }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className={`absolute top-1/2 ${index === 0 ? 'left-0 origin-left' : 'left-1/2 origin-center'} bg-[#141414] rounded-lg overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-neutral-700 z-50 flex flex-col cursor-pointer`}
+              className={`absolute top-1/2 ${hoverPosition === 'left' ? 'origin-left' : hoverPosition === 'right' ? 'origin-right' : 'origin-center'} bg-[#141414] rounded-lg overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-neutral-700 z-50 flex flex-col cursor-pointer`}
             >
               {/* Top Image Section (Cropped to aspect-video on hover to save space) */}
               <div className="relative w-full aspect-video shrink-0 bg-neutral-900 overflow-hidden">
