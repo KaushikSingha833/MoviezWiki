@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useWishlist } from "@/context/WishlistContext";
 import { checkUsernameAvailable, claimUsername, getMyProfile, updateProfileAvatar } from "@/lib/profiles";
 import Image from "next/image";
+import Link from "next/link";
 
 const PRESET_AVATARS = [
   { id: "knight", url: "/avatars/knight.jpg", label: "The Knight" },
@@ -123,7 +124,7 @@ export default function SettingsPage() {
 
         {/* Phase 1: Digital Identity */}
         <section className="bg-[#121215] border border-neutral-800 rounded-2xl p-6 mb-8 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-full blur-[80px]" />
+          <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-500/5 rounded-full blur-[80px] pointer-events-none" />
           
           <h2 className="text-lg font-black mb-4 flex items-center gap-2">
             <User className="w-5 h-5 text-indigo-400" /> Digital Identity & Social
@@ -135,14 +136,14 @@ export default function SettingsPage() {
           {!authLoaded ? (
             <div className="text-sm text-neutral-500 animate-pulse">Synchronizing auth layer...</div>
           ) : !user ? (
-            <div className="bg-black border border-neutral-800 p-4 rounded-xl flex items-center justify-between text-sm">
+            <div className="bg-black border border-neutral-800 p-4 rounded-xl flex items-center justify-between text-sm relative z-10">
               <span className="text-neutral-400">You must be logged in to claim an identity.</span>
-              <button 
-                onClick={() => router.push("/login")}
+              <Link 
+                href="/login"
                 className="bg-white text-black font-bold px-4 py-2 rounded shadow hover:bg-neutral-200 transition"
               >
                 Connect Auth
-              </button>
+              </Link>
             </div>
           ) : (
             <div className="flex flex-col gap-4 relative z-10">
