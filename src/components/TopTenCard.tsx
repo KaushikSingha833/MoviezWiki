@@ -9,7 +9,7 @@ import { getGenreNames } from "@/lib/genres";
 import Link from "next/link";
 import AISummaryModal from "@/components/AISummaryModal";
 import InfoModal from "@/components/InfoModal";
-import { Info, Play } from "lucide-react";
+import { Info, Play, Sparkles, Video } from "lucide-react";
 
 export default function TopTenCard({ item, index }: { item: any, index: number }) {
   const genres = getGenreNames(item.genre_ids);
@@ -127,13 +127,20 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                 <Info className="w-4 h-4 md:w-5 md:h-5" />
               </button>
               
-              <Link 
-                href={`/watch/${item.name && !item.title ? 'tv' : 'movie'}/${item.id}`}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-black/60 p-2 rounded-full hover:bg-white hover:text-black transition-colors flex items-center justify-center text-white shadow-lg border border-white/20"
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePlayTrailer(e);
+                }}
+                disabled={isLoading}
+                className="bg-black/60 p-2 rounded-full hover:bg-white hover:text-black transition-colors flex items-center justify-center text-white shadow-lg border border-white/20 disabled:opacity-50"
               >
-                <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-              </Link>
+                {isLoading ? (
+                  <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Video className="w-4 h-4 md:w-5 md:h-5" />
+                )}
+              </button>
             </div>
 
             {/* MOBILE FALLBACK OVERLAY (Visible only on touch screens / below md breakpoint) */}
@@ -143,18 +150,18 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                   {item.title || item.name}
                 </span>
                 <div className="flex flex-col space-y-1.5">
-                  <button 
-                    onClick={handlePlayTrailer}
-                    disabled={isLoading}
+                  <Link 
+                    href={`/watch/${item.name && !item.title ? 'tv' : 'movie'}/${item.id}`}
+                    onClick={(e) => e.stopPropagation()}
                     className="bg-[#F5C518] hover:bg-yellow-500 text-black text-[10px] font-bold py-1.5 px-2 rounded w-full transition-colors flex items-center justify-center gap-1.5"
                   >
-                    {isLoading ? '...' : <><Play className="w-3 h-3 fill-current" /> Trailer</>}
-                  </button>
+                    <Play className="w-3 h-3 fill-current" /> Watch Now
+                  </Link>
                   <button 
                     onClick={handleAISummary}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold py-1.5 px-2 rounded w-full transition-colors flex items-center justify-center gap-1.5"
+                    className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient text-white text-[10px] font-bold py-1.5 px-2 rounded w-full transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(79,70,229,0.4)]"
                   >
-                    ✨ AI Summary
+                    <Sparkles className="w-3 h-3 text-[#F5C518] animate-pulse" /> AI Summary
                   </button>
                 </div>
               </div>
@@ -206,13 +213,20 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                       <Info className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
                     
-                    <Link 
-                      href={`/watch/${item.name && !item.title ? 'tv' : 'movie'}/${item.id}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="bg-black/60 p-2 rounded-full hover:bg-white hover:text-black transition-colors flex items-center justify-center text-white shadow-lg border border-white/20"
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePlayTrailer(e);
+                      }}
+                      disabled={isLoading}
+                      className="bg-black/60 p-2 rounded-full hover:bg-white hover:text-black transition-colors flex items-center justify-center text-white shadow-lg border border-white/20 disabled:opacity-50"
                     >
-                      <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-                    </Link>
+                      {isLoading ? (
+                        <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Video className="w-4 h-4 md:w-5 md:h-5" />
+                      )}
+                    </button>
                   </div>
                 </div>
 
@@ -240,19 +254,24 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                   </p>
                   
                   {/* Bottom Action Buttons */}
-                  <div className="flex gap-2 mt-auto shrink-0">
-                    <button 
-                      onClick={handlePlayTrailer} 
-                      disabled={isLoading}
-                      className="bg-white hover:bg-neutral-200 text-black text-[10px] font-bold py-2 px-2 rounded-md flex-1 transition-colors flex items-center justify-center gap-1.5"
+                  <div className="flex gap-2 mt-auto shrink-0 h-[28px]">
+                    <Link 
+                      href={`/watch/${item.name && !item.title ? 'tv' : 'movie'}/${item.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="bg-white hover:bg-neutral-200 text-black text-[10px] font-bold rounded-md flex-1 transition-colors flex items-center justify-center gap-1.5"
                     >
-                      {isLoading ? '...' : <><Play className="w-3 h-3 fill-current" /> Trailer</>}
-                    </button>
+                      <Play className="w-3 h-3 fill-current" /> Watch Now
+                    </Link>
                     <button 
                       onClick={handleAISummary}
-                      className="bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-bold py-2 px-2 rounded-md flex-1 transition-colors flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(79,70,229,0.3)]"
+                      className="relative group bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-right rounded-md flex-1 overflow-hidden shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all duration-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] border border-white/5 hover:border-white/20"
                     >
-                      ✨ AI Summary
+                      <div className="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-translate-y-full group-hover:opacity-0 group-hover:scale-50">
+                        <span className="text-white text-[10px] font-bold flex items-center gap-1"><Sparkles className="w-3 h-3 text-[#F5C518]" /> AI Summary</span>
+                      </div>
+                      <div className="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] translate-y-full opacity-0 scale-50 group-hover:translate-y-0 group-hover:opacity-100 group-hover:scale-100 bg-gradient-to-r from-purple-600 to-indigo-600">
+                        <Sparkles className="w-4 h-4 text-[#F5C518] animate-spin-slow drop-shadow-[0_0_8px_rgba(245,197,24,0.8)]" />
+                      </div>
                     </button>
                   </div>
                 </div>

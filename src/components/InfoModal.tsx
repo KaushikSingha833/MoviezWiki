@@ -13,6 +13,7 @@ import ActorModal from "./ActorModal";
 import { useWishlist } from "@/context/WishlistContext";
 import { addCommunityComment, getCommunityComments, deleteCommunityComment, CommunityComment } from "@/lib/comments";
 import { addToList, removeFromList } from "@/lib/lists";
+import { FastAverageColor } from "fast-average-color";
 
 const getDirectPlatformLink = (providerName: string, title: string) => {
   const query = encodeURIComponent(title);
@@ -82,6 +83,30 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
   const [showListDropdown, setShowListDropdown] = useState(false);
   const isHearted = isInWishlist(movie.id);
 
+  // Dynamic Theming State
+  const [dominantColor, setDominantColor] = useState<string | null>(null);
+
+  useEffect(() => {
+    const imgUrl = `${THUMB_BASE_URL}${movie.poster_path || movie.backdrop_path}`;
+    if (imgUrl) {
+      const fac = new FastAverageColor();
+      const img = new Image();
+      img.crossOrigin = "Anonymous";
+      
+      img.onload = () => {
+        try {
+          const color = fac.getColor(img);
+          setDominantColor(color.hex);
+        } catch (e) {
+          console.error("Color extraction failed", e);
+        }
+      };
+      
+      // Bypass cache to prevent CORS tainted canvas error from previously cached non-CORS images
+      img.src = `${imgUrl}?c=${Date.now()}`;
+    }
+  }, [movie]);
+
   const handleToggleCustomList = async (listId: string, currentItems: any[]) => {
     if (!user) return;
     const exists = currentItems.some(i => i.id === movie.id);
@@ -103,9 +128,22 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
     };
     window.addEventListener("popstate", handlePopState);
 
+    // Close on Escape key press (desktop)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (window.history.state && window.history.state.modalOpen) {
+          window.history.back();
+        } else {
+          onClose();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
     return () => {
       document.body.style.overflow = "unset";
       window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, [onClose]);
 
@@ -299,10 +337,19 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
     <>
       <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 px-0 sm:px-4">
         {/* Backdrop */}
-        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm" onClick={handleManualClose} />
+        <div 
+          className="absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity duration-300"
+          onClick={handleManualClose} 
+        />
         
         {/* Modal Container */}
-        <div className="relative w-full max-w-5xl max-h-[90vh] bg-[#141414] rounded-2xl overflow-y-auto shadow-2xl border border-neutral-800 animate-in fade-in zoom-in-95 duration-300 scrollbar-hide">
+        <div 
+          className="relative w-full max-w-5xl max-h-[90vh] rounded-2xl overflow-y-auto shadow-2xl border border-neutral-800 animate-in fade-in zoom-in-95 duration-300 scrollbar-hide transition-all duration-1000"
+          style={{ 
+            backgroundColor: dominantColor ? `color-mix(in srgb, ${dominantColor} 12%, #141414)` : '#141414',
+            boxShadow: dominantColor ? `0 0 80px -20px ${dominantColor}` : undefined 
+          }}
+        >
           
           <button 
             onClick={handleManualClose}
@@ -318,7 +365,11 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
               className="absolute inset-0 w-full h-full object-cover"
               alt={title}
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/60 to-transparent" />
+            <div 
+              className="absolute inset-0 transition-colors duration-1000" 
+              style={{ background: `linear-gradient(to top, #141414 0%, ${dominantColor ? dominantColor + '40' : 'transparent'} 50%, transparent 100%)` }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#141414] via-[#141414]/80 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-r from-[#141414] via-transparent to-transparent" />
             
             {/* Overlay Info */}
@@ -546,7 +597,8 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
 
           {/* Collapsible Reviews Section */}
           <div className={`overflow-hidden transition-all duration-500 ease-in-out ${showReviews ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"}`}>
-            <div className="px-6 md:px-12 pb-8 bg-black/40 border-y border-neutral-800/50 py-8">
+            <div className="px-6 md:px-12 pb-8 py-8 relative">
+              <div className="absolute top-0 left-12 right-12 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
               <div className="flex items-center gap-4 mb-6">
                 <h3 className="text-2xl font-black text-white flex items-center gap-2">
                   <MessageCircle className="w-6 h-6 text-[#F5C518]" /> Audience Reviews
@@ -555,7 +607,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
               </div>
 
               {/* Native Comment Input Box */}
-              <div className="mb-10 bg-[#1a1a1a] border border-neutral-800 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+              <div className="mb-10 rounded-2xl p-6 shadow-xl relative overflow-hidden">
                 {!user && (
                   <div className="absolute inset-0 z-10 backdrop-blur-md bg-black/40 flex flex-col items-center justify-center rounded-2xl">
                     <p className="text-white font-bold mb-3 text-lg">Join the Discussion</p>
@@ -752,7 +804,8 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
           )}
 
           {/* Similar Media Section - Placed properly INSIDE the scroll view container */}
-          <div className="p-6 md:p-12 bg-[#0a0a0c] border-t border-neutral-800 relative z-20">
+          <div className="p-6 md:p-12 relative z-20">
+            <div className="absolute top-0 left-12 right-12 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
             <div className="flex items-center gap-4 mb-6">
               <h3 className="text-2xl font-black text-white">More Like This</h3>
               <div className="h-px bg-neutral-800 flex-1" />

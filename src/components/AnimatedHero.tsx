@@ -70,7 +70,7 @@ export default function AnimatedHero({ movies, badgeText = "Trending Worldwide" 
             </div>
 
             {/* Title */}
-            <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter text-white drop-shadow-2xl leading-[0.9]">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter text-white drop-shadow-2xl leading-[1.1] line-clamp-2 md:line-clamp-3 max-w-3xl">
               {currentMovie.title || currentMovie.name}
             </h1>
 
@@ -89,7 +89,7 @@ export default function AnimatedHero({ movies, badgeText = "Trending Worldwide" 
             )}
 
             {/* Overview */}
-            <p className="text-sm sm:text-base md:text-lg text-neutral-400 max-w-2xl line-clamp-3 leading-relaxed drop-shadow-md">
+            <p className="text-sm sm:text-base md:text-lg text-neutral-400 max-w-2xl line-clamp-2 md:line-clamp-3 leading-relaxed drop-shadow-md">
               {currentMovie.overview}
             </p>
 

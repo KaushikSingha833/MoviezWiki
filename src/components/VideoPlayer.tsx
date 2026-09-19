@@ -11,20 +11,30 @@ type ServerOption = {
 
 const servers: ServerOption[] = [
   {
-    name: "Server 1 (Multi-Audio)",
-    description: "AutoEmbed - Often has dual audio (Hindi/Tamil) built-in",
+    name: "Server 1 (Vidsrc.cc)",
+    description: "Alternative player. Sometimes includes multi-audio.",
+    url: (id, type) => `https://vidsrc.cc/v2/embed/${type}/${id}`,
+  },
+  {
+    name: "Server 2 (AutoEmbed)",
+    description: "Standard dual audio support. Check the gear icon ⚙️.",
     url: (id, type) => `https://autoembed.co/${type}/tmdb/${id}`,
   },
   {
-    name: "Server 2 (Multi-Audio)",
-    description: "VidLink - Check the gear icon ⚙️ in the player for language options",
+    name: "Server 3 (VidLink)",
+    description: "Check the settings icon in the player for audio tracks.",
     url: (id, type) => `https://vidlink.pro/${type}/${id}`,
   },
   {
-    name: "Server 3 (Fast / English)",
-    description: "VidSrc - High speed, but usually English only",
-    url: (id, type) => `https://vidsrc.to/embed/${type}/${id}`,
+    name: "Server 4 (VidSrc.me - Fast)",
+    description: "High speed, but usually English only.",
+    url: (id, type) => `https://vidsrc.me/embed/${type}?tmdb=${id}`,
   },
+  {
+    name: "Server 5 (VidSrc.to)",
+    description: "Alternative fast server.",
+    url: (id, type) => `https://vidsrc.to/embed/${type}/${id}`,
+  }
 ];
 
 export default function VideoPlayer({

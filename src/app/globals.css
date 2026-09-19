@@ -49,3 +49,24 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Custom Cinematic Global Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0a;
+}
+::-webkit-scrollbar-thumb {
+  background: #333333;
+  border-radius: 5px;
+  border: 2px solid #0a0a0a;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555555;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #333333 #0a0a0a;
+}
