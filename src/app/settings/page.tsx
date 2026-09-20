@@ -21,6 +21,21 @@ const PRESET_AVATARS = [
   { id: "panda", url: "/avatars/panda.jpg", label: "Cute Panda" },
   { id: "wolf", url: "/avatars/wolf.jpg", label: "Fierce Wolf" },
   { id: "hooded", url: "/avatars/hooded.jpg", label: "Mysterious Figure" },
+  { id: "spiderman", url: "/avatars/spiderman.png", label: "Spider-Man" },
+  { id: "spidergwen", url: "/avatars/spidergwen.png", label: "Spider-Gwen" },
+  { id: "ironman", url: "/avatars/ironman.png", label: "Iron Man" },
+  { id: "thor", url: "/avatars/thor.png", label: "Thor" },
+  { id: "batman", url: "/avatars/batman.png", label: "Batman" },
+  { id: "superman", url: "/avatars/superman.png", label: "Superman" },
+  { id: "hulk", url: "/avatars/hulk.png", label: "The Hulk" },
+  { id: "blackpanther", url: "/avatars/blackpanther.png", label: "Black Panther" },
+  { id: "daredevil", url: "/avatars/daredevil.png", label: "Daredevil" },
+  { id: "coolcat", url: "/avatars/coolcat.png", label: "Cool Cat" },
+  { id: "dogcigar", url: "/avatars/dogcigar.png", label: "Boss Dog" },
+  { id: "dogninja", url: "/avatars/dogninja.png", label: "Ninja Dog" },
+  { id: "dogknife", url: "/avatars/dogknife.png", label: "Sus Dog" },
+  { id: "bearcoffee", url: "/avatars/bearcoffee.png", label: "Coffee Bear" },
+  { id: "pandawink", url: "/avatars/pandawink.png", label: "Winking Panda" },
 ];
 
 export default function SettingsPage() {
