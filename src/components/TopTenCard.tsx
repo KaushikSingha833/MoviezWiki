@@ -149,19 +149,21 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                 <span className="text-white text-xs font-bold mb-2 line-clamp-2 drop-shadow-md pr-10">
                   {item.title || item.name}
                 </span>
-                <div className="flex flex-col space-y-1.5">
+                <div className="flex flex-row gap-2 mt-1">
                   <Link 
                     href={`/watch/${item.name && !item.title ? 'tv' : 'movie'}/${item.id}`}
                     onClick={(e) => e.stopPropagation()}
-                    className="bg-[#F5C518] hover:bg-yellow-500 text-black text-[10px] font-bold py-1.5 px-2 rounded w-full transition-colors flex items-center justify-center gap-1.5"
+                    title="Watch Now"
+                    className="bg-[#F5C518] hover:bg-yellow-500 text-black py-2 rounded flex-1 transition-colors flex items-center justify-center"
                   >
-                    <Play className="w-3 h-3 fill-current" /> Watch Now
+                    <Play className="w-4 h-4 fill-current ml-1" />
                   </Link>
                   <button 
                     onClick={handleAISummary}
-                    className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient text-white text-[10px] font-bold py-1.5 px-2 rounded w-full transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(79,70,229,0.4)]"
+                    title="AI Summary"
+                    className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient text-white py-2 rounded flex-1 transition-all flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.4)]"
                   >
-                    <Sparkles className="w-3 h-3 text-[#F5C518] animate-pulse" /> AI Summary
+                    <Sparkles className="w-4 h-4 text-[#F5C518] animate-pulse" />
                   </button>
                 </div>
               </div>
