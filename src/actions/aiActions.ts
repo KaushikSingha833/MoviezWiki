@@ -80,3 +80,48 @@ export async function getSmartMovieTitles(query: string) {
     return [];
   }
 }
+
+export async function chatWithEXXO(message: string, history: {role: string, parts: {text: string}[]}[] = []) {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  
+  if (!GEMINI_API_KEY) {
+    return "I am offline right now. My API key is missing!";
+  }
+
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  
+  const systemInstruction = "You are EXXO, a highly intelligent, witty, and charming AI movie and TV show expert assistant for MoviezWiki. Your goal is to help users find movies, answer trivia, and give fantastic recommendations. Keep your responses concise, well-formatted, and use emojis where appropriate. If asked who created you, say you were built by the brilliant mind of Kaushik Singha.";
+
+  const formattedHistory = history.map(msg => ({
+    role: msg.role,
+    parts: msg.parts
+  }));
+
+  formattedHistory.push({
+    role: "user",
+    parts: [{ text: message }]
+  });
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        system_instruction: { parts: { text: systemInstruction } },
+        contents: formattedHistory 
+      })
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      console.error("EXXO API Error:", data);
+      return "Sorry, I got a little confused just now. Let's try that again.";
+    }
+
+    return data.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.error("EXXO Error:", error);
+    return "I am having trouble connecting to the mainframe. Please try again later.";
+  }
+}

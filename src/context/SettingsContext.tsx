@@ -8,10 +8,12 @@ interface SettingsContextType {
   region: string;
   preferenceMode: "global" | "national";
   childMode: boolean;
+  useCustomRecommendations: boolean;
   setCookieConsent: (consent: boolean) => void;
   setRegion: (region: string) => void;
   setPreferenceMode: (mode: "global" | "national") => void;
   setChildMode: (enabled: boolean) => void;
+  setUseCustomRecommendations: (enabled: boolean) => void;
   resetToDefaults: () => void;
 }
 
@@ -22,6 +24,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [region, setRegionState] = useState<string>("US");
   const [preferenceMode, setPreferenceModeState] = useState<"global" | "national">("global");
   const [childMode, setChildModeState] = useState<boolean>(false);
+  const [useCustomRecommendationsState, setUseCustomRecommendationsState] = useState<boolean>(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Initialize from cookies on mount
@@ -33,10 +36,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       const savedRegion = Cookies.get("region");
       const savedPref = Cookies.get("preferenceMode") as "global" | "national";
       const savedChild = Cookies.get("childMode");
+      const savedRecs = Cookies.get("useCustomRecommendations");
       
       if (savedRegion) setRegionState(savedRegion);
       if (savedPref) setPreferenceModeState(savedPref);
       if (savedChild === "true") setChildModeState(true);
+      if (savedRecs === "true") setUseCustomRecommendationsState(true);
     } else if (rawConsent === "false") {
       setCookieConsentState(false);
     }
@@ -53,9 +58,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       Cookies.remove("region");
       Cookies.remove("preferenceMode");
       Cookies.remove("childMode");
+      Cookies.remove("useCustomRecommendations");
       setRegionState("US"); // Global fallback
       setPreferenceModeState("global");
       setChildModeState(false);
+      setUseCustomRecommendationsState(false);
     }
   };
 
@@ -80,14 +87,23 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const setUseCustomRecommendations = (enabled: boolean) => {
+    setUseCustomRecommendationsState(enabled);
+    if (cookieConsent) {
+      Cookies.set("useCustomRecommendations", String(enabled), { expires: 365, path: "/" });
+    }
+  };
+
   const resetToDefaults = () => {
     setRegionState("US");
     setPreferenceModeState("global");
     setChildModeState(false);
+    setUseCustomRecommendationsState(false);
     if (cookieConsent) {
       Cookies.remove("region");
       Cookies.remove("preferenceMode");
       Cookies.remove("childMode");
+      Cookies.remove("useCustomRecommendations");
     }
   };
 
@@ -116,10 +132,12 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       region,
       preferenceMode,
       childMode,
+      useCustomRecommendations: useCustomRecommendationsState,
       setCookieConsent,
       setRegion,
       setPreferenceMode,
       setChildMode,
+      setUseCustomRecommendations,
       resetToDefaults
     }}>
       {children}

@@ -6,6 +6,7 @@ import { SettingsProvider } from "@/context/SettingsContext";
 import Navbar from "@/components/Navbar";
 import AuthWarningModal from "@/components/AuthWarningModal";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
+import WikiBot from "@/components/WikiBot";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -28,6 +29,7 @@ export default function RootLayout({
             {children}
             <AuthWarningModal />
             <CookieConsentBanner />
+            <WikiBot />
           </WishlistProvider>
         </SettingsProvider>
       </body>

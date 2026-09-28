@@ -44,9 +44,11 @@ export default function SettingsPage() {
     region, 
     preferenceMode, 
     childMode, 
+    useCustomRecommendations,
     setRegion, 
     setPreferenceMode, 
     setChildMode,
+    setUseCustomRecommendations,
     resetToDefaults,
     setCookieConsent
   } = useSettings();
@@ -296,6 +298,31 @@ export default function SettingsPage() {
               className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${childMode ? 'bg-amber-500' : 'bg-neutral-700'}`}
             >
               <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${childMode ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+          </div>
+        </section>
+
+        {/* Custom Recommendation Engine */}
+        <section className="bg-[#121215] border border-neutral-800 rounded-2xl p-6 mb-8 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-[60px]" />
+          
+          <h2 className="text-lg font-black mb-4 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-purple-400"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
+            Personalized Engine
+          </h2>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex-1 pr-6">
+              <h3 className="font-bold text-neutral-300 mb-1">Custom Recommendations</h3>
+              <p className="text-xs text-neutral-500">
+                Turn this on to have our algorithm dynamically analyze your Wishlist and generate a personalized "Recommended for You" carousel on the home page.
+              </p>
+            </div>
+            <button 
+              onClick={() => setUseCustomRecommendations(!useCustomRecommendations)}
+              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors ${useCustomRecommendations ? 'bg-purple-500' : 'bg-neutral-700'}`}
+            >
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${useCustomRecommendations ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
         </section>
