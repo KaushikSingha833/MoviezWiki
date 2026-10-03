@@ -11,6 +11,7 @@ import MovieCard from "./MovieCard";
 import { getSimilarMedia } from "@/actions/movieActions";
 import ActorModal from "./ActorModal";
 import { useWishlist } from "@/context/WishlistContext";
+import { useTaste } from "@/context/TasteContext";
 import { addCommunityComment, getCommunityComments, deleteCommunityComment, CommunityComment } from "@/lib/comments";
 import { addToList, removeFromList } from "@/lib/lists";
 import { FastAverageColor } from "fast-average-color";
@@ -88,6 +89,15 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
 
   // Dynamic Theming State
   const [dominantColor, setDominantColor] = useState<string | null>(null);
+
+  const { logInteraction } = useTaste();
+
+  useEffect(() => {
+    // Log explicit interest (2 points) when they open a movie's info modal
+    if (movie.genre_ids) {
+      logInteraction(movie.genre_ids, 2.0);
+    }
+  }, [movie]);
 
   useEffect(() => {
     const imgUrl = `${THUMB_BASE_URL}${movie.poster_path || movie.backdrop_path}`;

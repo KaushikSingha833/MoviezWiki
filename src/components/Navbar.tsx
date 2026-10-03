@@ -436,10 +436,10 @@ export default function Navbar() {
   );
 
   return (
-    <header className="bg-[#181818] border-b border-neutral-800 sticky top-0 z-40">
-      <div className="flex items-center justify-between p-4">
+    <header className="sticky top-0 z-50 bg-[#050505]/70 backdrop-blur-2xl border-b border-white/5 shadow-2xl">
+      <div className="flex items-center justify-between p-4 max-w-[1600px] mx-auto">
         <div className="flex items-center space-x-4 md:space-x-8">
-          <Link href="/" className="text-xl md:text-2xl font-black text-[#F5C518]">MoviezWiki</Link>
+          <Link href="/" className="text-xl md:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-yellow-200 drop-shadow-[0_0_10px_rgba(250,204,21,0.5)] tracking-tighter">MoviezWiki</Link>
           <nav className="hidden lg:flex space-x-6 font-semibold text-sm items-center">
             <NavLinks />
           </nav>

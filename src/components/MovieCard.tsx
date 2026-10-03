@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { getMovieTrailer } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
 import { useWishlist } from "@/context/WishlistContext";
+import { useTaste } from "@/context/TasteContext";
 import { getGenreNames } from "@/lib/genres";
 import Link from "next/link";
 import AISummaryModal from "./AISummaryModal";
@@ -12,6 +13,7 @@ import InfoModal from "./InfoModal";
 import { Info, Play, Sparkles, Video } from "lucide-react";
 
 export default function MovieCard({ movie, index }: { movie: any, index?: number }) {
+  const { logInteraction } = useTaste();
   const genres = getGenreNames(movie.genre_ids);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
   const [showTrailerModal, setShowTrailerModal] = useState(false);
@@ -51,6 +53,10 @@ export default function MovieCard({ movie, index }: { movie: any, index?: number
     
     hoverTimeout.current = setTimeout(() => {
       setIsHovered(true);
+      // Log implicit interaction (0.5 points) when they hover long enough
+      if (movie.genre_ids) {
+        logInteraction(movie.genre_ids, 0.5);
+      }
     }, 400); // 400ms delay for Netflix-style intent
   };
 

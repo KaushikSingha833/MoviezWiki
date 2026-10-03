@@ -22,6 +22,7 @@ import TopTenCarousel from "@/components/TopTenCarousel";
 import MovieCarousel from "@/components/MovieCarousel";
 import RecentlyWatchedRow from "@/components/RecentlyWatchedRow";
 import CustomRecommendationsRow from "@/components/CustomRecommendationsRow";
+import TasteRecommendationsRow from "@/components/TasteRecommendationsRow";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
@@ -114,6 +115,7 @@ export default async function HomePage() {
         
         <RecentlyWatchedRow />
         <CustomRecommendationsRow />
+        <TasteRecommendationsRow />
         
         <CelebrityRow 
           title={`Top Icons in ${regionText}`} 
