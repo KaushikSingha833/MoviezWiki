@@ -14,6 +14,8 @@ const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "700",
 export const metadata: Metadata = {
   title: "MoviezWiki",
   description: "Your dynamic destination for movies and shows",
+  manifest: "/manifest.json",
+  themeColor: "#050505",
 };
 
 export default function RootLayout({
@@ -23,7 +25,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+      </head>
       <body className={`${outfit.className} antialiased bg-[#050505] selection:bg-purple-500/30 selection:text-white relative`}>
+        {/* Register Service Worker for PWA */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
+            `,
+          }}
+        />
         {/* Global Ambient Aurora Background */}
         <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
           <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[120px] mix-blend-screen" />

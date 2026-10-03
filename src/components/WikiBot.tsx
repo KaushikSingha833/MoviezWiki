@@ -57,31 +57,37 @@ export default function WikiBot() {
   return (
     <>
       {/* Floating Action Button */}
-      <motion.button
-        initial={{ scale: 0 }}
-        animate={{ scale: isOpen ? 0 : 1 }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-[9000] w-14 h-14 bg-gradient-to-tr from-purple-600 to-indigo-500 rounded-full shadow-[0_0_20px_rgba(99,102,241,0.5)] flex items-center justify-center text-white border border-white/20"
-      >
-        <Bot className="w-7 h-7" />
-      </motion.button>
+      <div className="fixed bottom-6 right-6 z-[9000]">
+        {!isOpen && (
+          <span className="absolute inset-0 rounded-full bg-indigo-500 opacity-50 animate-ping" />
+        )}
+        <motion.button
+          initial={{ scale: 0, rotate: -180 }}
+          animate={{ scale: isOpen ? 0 : 1, rotate: isOpen ? 180 : 0 }}
+          whileHover={{ scale: 1.1, rotate: 10 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => setIsOpen(true)}
+          className="relative w-14 h-14 bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-500 rounded-full shadow-[0_0_30px_rgba(99,102,241,0.6)] flex items-center justify-center text-white border-2 border-white/20"
+        >
+          <Bot className="w-7 h-7" />
+        </motion.button>
+      </div>
 
       {/* Chat Window */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 50, scale: 0.9 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-[9000] w-full sm:w-[400px] h-[100dvh] sm:h-[500px] sm:max-h-[80vh] bg-neutral-900/95 backdrop-blur-xl sm:border border-neutral-700/50 sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+            initial={{ opacity: 0, y: 40, scale: 0.95, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
+            exit={{ opacity: 0, y: 40, scale: 0.95, filter: "blur(10px)" }}
+            transition={{ type: "spring", damping: 25, stiffness: 350, mass: 0.8 }}
+            className="fixed bottom-0 right-0 sm:bottom-6 sm:right-6 z-[9000] w-full sm:w-[400px] h-[100dvh] sm:h-[550px] sm:max-h-[85vh] bg-neutral-900/90 backdrop-blur-2xl sm:border border-white/10 sm:rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-900/50 to-indigo-900/50 border-b border-white/10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-tr from-purple-500 to-indigo-500 rounded-full flex items-center justify-center shadow-lg">
+            <div className="relative flex items-center justify-between p-5 bg-gradient-to-r from-purple-900/40 via-indigo-900/40 to-black border-b border-white/5 overflow-hidden">
+              <div className="absolute top-[-50%] left-[-20%] w-[150%] h-[200%] bg-indigo-500/10 rounded-full blur-3xl pointer-events-none animate-pulse" />
+              <div className="relative flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-tr from-purple-500 to-indigo-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.4)] border border-white/20">
                   <Bot className="w-6 h-6 text-white" />
                 </div>
                 <div>
@@ -102,29 +108,45 @@ export default function WikiBot() {
             {/* Messages Area */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
               {messages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.3, type: "spring", bounce: 0.4 }}
+                  key={idx} 
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
                   <div 
-                    className={`max-w-[85%] p-3 rounded-2xl ${
+                    className={`max-w-[85%] p-3.5 rounded-2xl shadow-sm ${
                       msg.role === 'user' 
-                        ? 'bg-indigo-600 text-white rounded-br-sm' 
-                        : 'bg-neutral-800 text-neutral-200 border border-neutral-700/50 rounded-bl-sm prose prose-invert prose-sm'
+                        ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-br-sm' 
+                        : 'bg-neutral-800/80 backdrop-blur-sm text-neutral-200 border border-white/5 rounded-bl-sm prose prose-invert prose-sm'
                     }`}
                   >
                     {msg.role === 'user' ? (
-                      <p className="text-sm whitespace-pre-wrap">{msg.parts[0].text}</p>
+                      <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.parts[0].text}</p>
                     ) : (
-                      <ReactMarkdown>{msg.parts[0].text}</ReactMarkdown>
+                      <div className="leading-relaxed">
+                        <ReactMarkdown>{msg.parts[0].text}</ReactMarkdown>
+                      </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
               ))}
               {isLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-neutral-800 border border-neutral-700/50 p-4 rounded-2xl rounded-bl-sm flex items-center gap-2">
-                    <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
-                    <span className="text-xs text-neutral-400">EXXO is thinking...</span>
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex justify-start"
+                >
+                  <div className="bg-neutral-800/80 backdrop-blur-sm border border-white/5 px-4 py-3.5 rounded-2xl rounded-bl-sm flex items-center gap-2">
+                    <span className="flex gap-1">
+                      <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-1.5 h-1.5 bg-indigo-400 rounded-full" />
+                      <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-purple-400 rounded-full" />
+                      <motion.span animate={{ y: [0, -5, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
+                    </span>
+                    <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-widest ml-1">Thinking</span>
                   </div>
-                </div>
+                </motion.div>
               )}
               <div ref={messagesEndRef} />
             </div>

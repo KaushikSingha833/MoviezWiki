@@ -8,7 +8,7 @@ export async function getAISummary(title: string, overview: string) {
     return "API Key is missing. Check .env.local and restart server.";
   }
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
   
   const prompt = `Write a short, engaging, and spoiler-free summary for the movie "${title}". Here is the plot overview to base it on: ${overview}. Keep it under 3 sentences and make it sound like a professional movie critic.`;
 
@@ -45,7 +45,7 @@ export async function getSmartMovieTitles(query: string) {
     return [];
   }
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
   
   const prompt = `The user is looking for a movie or TV show based on this semantic description: "${query}". Provide exactly 10 real, existing, well-known movie or TV show titles that perfectly match this description. Output YOUR ENTIRE RESPONSE as a strict JSON array of strings ONLY. Do not include markdown blocks like \`\`\`json or any other conversational text. \nExample exactly like this: ["Interstellar", "Arrival", "The Martian"]`;
 
@@ -88,7 +88,7 @@ export async function chatWithEXXO(message: string, history: {role: string, part
     return "I am offline right now. My API key is missing!";
   }
 
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${GEMINI_API_KEY}`;
   
   const systemInstruction = "You are EXXO, a highly intelligent, witty, and charming AI movie and TV show expert assistant for MoviezWiki. Your goal is to help users find movies, answer trivia, and give fantastic recommendations. Keep your responses concise, well-formatted, and use emojis where appropriate. If asked who created you, say you were built by the brilliant mind of Kaushik Singha.";
 
@@ -107,7 +107,7 @@ export async function chatWithEXXO(message: string, history: {role: string, part
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ 
-        system_instruction: { parts: { text: systemInstruction } },
+        system_instruction: { parts: [{ text: systemInstruction }] },
         contents: formattedHistory 
       })
     });

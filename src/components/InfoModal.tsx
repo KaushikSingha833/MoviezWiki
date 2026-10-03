@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits, getMediaReviews } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
-import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2, Trash2, Heart, ListPlus, Check } from "lucide-react";
+import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2, Trash2, Heart, ListPlus, Check, Info } from "lucide-react";
 import Link from "next/link";
 import { getGenreNames } from "@/lib/genres";
 import AISummaryModal from "./AISummaryModal";
@@ -532,21 +532,26 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
             </div>
           </div>
 
-          {/* Details Section */}
-          <div className="p-6 md:p-12 md:pt-4 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
+          {/* Bento Box Dashboard Details */}
+          <div className="p-4 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            
+            {/* Bento Tile 1: Synopsis */}
+            <div className="md:col-span-2 bg-neutral-900/40 backdrop-blur-xl border border-neutral-800 rounded-3xl p-6 shadow-2xl flex flex-col justify-center transition-all hover:bg-neutral-900/60 hover:border-neutral-700">
+              <h3 className="text-[#F5C518] text-xs font-black uppercase tracking-widest mb-3 flex items-center gap-2">
+                <Info className="w-4 h-4" /> Synopsis
+              </h3>
               <p className="text-lg md:text-xl text-neutral-300 leading-relaxed font-light">
                 {movie.overview}
               </p>
             </div>
             
-            {/* Right Side Stats & Providers */}
-            <div className="flex flex-col gap-6 text-sm">
+            {/* Bento Tile 2: Stats & Providers */}
+            <div className="md:col-span-1 bg-neutral-900/40 backdrop-blur-xl border border-neutral-800 rounded-3xl p-6 shadow-2xl flex flex-col gap-6 transition-all hover:bg-neutral-900/60 hover:border-neutral-700">
               <div>
-                <span className="text-neutral-500 block mb-2">Genres:</span>
+                <span className="text-neutral-500 font-bold text-xs uppercase tracking-wider block mb-3">Genres</span>
                 <div className="flex flex-wrap gap-2">
                   {genres.map((g, idx) => (
-                    <span key={idx} className="bg-neutral-800 text-neutral-300 px-3 py-1 rounded-full text-xs font-semibold border border-neutral-700">
+                    <span key={idx} className="bg-neutral-800/80 text-white px-3 py-1.5 rounded-full text-xs font-bold border border-neutral-700 shadow-sm">
                       {g}
                     </span>
                   ))}
@@ -554,7 +559,9 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
               </div>
               
               <div>
-                <span className="text-neutral-500 block mb-2">Where to Watch:</span>
+                <span className="text-neutral-500 font-bold text-xs uppercase tracking-wider block mb-3 flex items-center gap-2">
+                   <Tv className="w-4 h-4" /> Watch Now
+                </span>
                 {isLoadingProviders ? (
                   <div className="text-neutral-400 text-xs flex items-center gap-2">
                     <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div> Scanning platforms...
@@ -574,7 +581,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                         <img 
                           src={`https://image.tmdb.org/t/p/w200${p.logo_path}`} 
                           alt={platformName}
-                          className="w-10 h-10 rounded-xl shadow-[0_4px_15px_rgba(0,0,0,0.5)] border border-neutral-700 hover:scale-110 hover:border-emerald-400 transition-all duration-300 pointer-events-auto"
+                          className="w-12 h-12 rounded-[14px] shadow-lg border-2 border-neutral-800 hover:scale-110 hover:border-emerald-400 transition-all duration-300 pointer-events-auto"
                         />
                         <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black text-white text-[10px] font-bold tracking-wide whitespace-nowrap px-2 py-1 rounded shadow-lg border border-neutral-800 opacity-0 group-hover/provider:opacity-100 pointer-events-none z-[150] transition-opacity">
                           Stream on {platformName}
@@ -583,7 +590,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                     )})}
                   </div>
                 ) : (
-                  <span className="inline-block bg-neutral-900 border border-neutral-800 text-neutral-400 text-xs px-3 py-1.5 rounded-full font-medium">
+                  <span className="inline-block bg-neutral-900 border border-neutral-800 text-neutral-400 text-xs px-3 py-1.5 rounded-full font-medium shadow-inner">
                     Not Currently Streaming
                   </span>
                 )}
