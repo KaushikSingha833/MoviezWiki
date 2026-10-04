@@ -6,7 +6,7 @@ import { motion, AnimatePresence, useInView, useMotionTemplate, useMotionValue }
 import CinematicScroll from "@/components/CinematicScroll";
 import {
   Sparkles, Globe2, Bookmark, MonitorPlay, Zap, ShieldCheck,
-  Film, Trophy, Star, ChevronRight, CheckCircle, Cpu, Layers, Play, Award
+  Film, Trophy, Star, ChevronRight, CheckCircle, Cpu, Layers, Play, Award, Compass
 } from "lucide-react";
 import CircularCarousel from "@/components/CircularCarousel";
 
@@ -777,8 +777,23 @@ export default function WelcomeLandingPage() {
       </section>
 
       {/* Footer minimal signature */}
-      <footer className="py-8 text-center text-[10px] font-bold text-neutral-600 bg-black border-t border-white/5 uppercase tracking-widest">
-        <p>© {new Date().getFullYear()} MoviezWiki Architecture. Crafted for enthusiasts.</p>
+      <footer className="py-8 px-6 bg-black border-t border-white/5">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-[10px] font-bold text-neutral-600 uppercase tracking-widest text-center md:text-left">
+            © {new Date().getFullYear()} MoviezWiki Architecture. Crafted for enthusiasts.
+          </p>
+          <div className="flex justify-center md:justify-end">
+            <a 
+              href="https://wanderhub-pi.vercel.app/landing" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-xs font-medium text-neutral-500 hover:text-emerald-400 transition-colors flex items-center gap-1.5 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-full border border-white/5 hover:border-emerald-500/30"
+            >
+              <Compass className="w-3.5 h-3.5 text-emerald-500" />
+              Explore <span className="font-bold text-neutral-300">AERO</span>
+            </a>
+          </div>
+        </div>
       </footer>
     </div>
   );

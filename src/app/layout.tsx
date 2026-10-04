@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import AuthWarningModal from "@/components/AuthWarningModal";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import WikiBot from "@/components/WikiBot";
+import Footer from "@/components/Footer";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "700", "900"] });
 
@@ -56,6 +57,7 @@ export default function RootLayout({
             <TasteProvider>
               <Navbar />
               {children}
+              <Footer />
               <AuthWarningModal />
               <CookieConsentBanner />
               <WikiBot />
