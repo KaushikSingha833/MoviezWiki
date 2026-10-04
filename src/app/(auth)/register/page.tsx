@@ -1,11 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup, setPersistence, inMemoryPersistence, browserLocalPersistence, signOut, deleteUser } from "firebase/auth";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
+import { sendOtpEmail } from "@/actions/authActions";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, Circle } from "lucide-react";
+import CodeSlots, { CodeSlotsStatus } from "@/components/CodeSlots";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -15,6 +18,12 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  
+  // OTP States
+  const [showOtp, setShowOtp] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [otpStatus, setOtpStatus] = useState<CodeSlotsStatus>("idle");
+  const [otpLoading, setOtpLoading] = useState(false);
   
   // Password Validation State
   const [pwdValid, setPwdValid] = useState({
@@ -40,6 +49,28 @@ export default function RegisterPage() {
 
   const isPasswordSecure = Object.values(pwdValid).every(Boolean);
 
+  const checkRateLimit = async (email: string) => {
+    const rateRef = doc(db, "rate_limits", email);
+    const rateDoc = await getDoc(rateRef);
+    const now = Date.now();
+    
+    if (rateDoc.exists()) {
+      const data = rateDoc.data();
+      if (now - data.lastAttempt > 15 * 60 * 1000) {
+        await setDoc(rateRef, { attempts: 1, lastAttempt: now });
+        return true;
+      }
+      if (data.attempts >= 3) {
+        return false;
+      }
+      await setDoc(rateRef, { attempts: data.attempts + 1, lastAttempt: now }, { merge: true });
+      return true;
+    } else {
+      await setDoc(rateRef, { attempts: 1, lastAttempt: now });
+      return true;
+    }
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isPasswordSecure) return;
@@ -48,16 +79,68 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      const isAllowed = await checkRateLimit(email);
+      if (!isAllowed) {
+        throw new Error("Too many attempts. Please try again in 15 minutes.");
+      }
+
+      await setPersistence(auth, inMemoryPersistence);
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      
       if (name.trim()) {
         await updateProfile(userCredential.user, { displayName: name.trim() });
       }
-      router.push("/");
+
+      const generatedCode = Math.floor(100000 + Math.random() * 900000).toString();
+      await setDoc(doc(db, "otps", email), {
+        code: generatedCode,
+        timestamp: serverTimestamp()
+      });
+      
+      const res = await sendOtpEmail(email, generatedCode);
+      if (!res.success) {
+        throw new Error("Failed to send verification email.");
+      }
+      
+      setShowOtp(true);
     } catch (err: any) {
       setError(err.message || "Failed to create account. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const verifyOtp = async (code: string): Promise<boolean> => {
+    setError("");
+    setOtpLoading(true);
+
+    try {
+      const otpDoc = await getDoc(doc(db, "otps", email));
+      
+      if (!otpDoc.exists() || otpDoc.data().code !== code) {
+        throw new Error("Invalid or expired OTP code.");
+      }
+      
+      await signOut(auth);
+      await setPersistence(auth, browserLocalPersistence);
+      // Wait, since we already created the user, we just sign them in again!
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      router.push("/");
+      return true;
+    } catch (err: any) {
+      setError(err.message || "Invalid OTP code.");
+      return false;
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const cancelRegistration = async () => {
+    if (auth.currentUser) {
+      await deleteUser(auth.currentUser);
+    }
+    setShowOtp(false);
   };
 
   const handleGoogleSignIn = async () => {
@@ -157,6 +240,59 @@ export default function RegisterPage() {
             </div>
           )}
 
+          {showOtp ? (
+            <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 flex flex-col items-center">
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#F5C518]/10 text-[#F5C518] mb-4 shadow-[0_0_30px_rgba(245,197,24,0.15)]">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-black text-white tracking-wide">Verify Your Email</h3>
+                <p className="text-xs text-neutral-400 mt-2">
+                  We've sent a 6-digit verification code to <strong className="text-white">{email}</strong>.
+                </p>
+              </div>
+
+              <div className="w-full flex justify-center py-4">
+                <CodeSlots
+                  length={6}
+                  status={otpStatus}
+                  value={otp}
+                  onChange={(code) => { setOtp(code); setOtpStatus('idle'); }}
+                  onComplete={async (code) => {
+                    const ok = await verifyOtp(code);
+                    setOtpStatus(ok ? 'success' : 'error');
+                  }}
+                  accentColor="#F5C518"
+                  inkColor="#f5f5f5"
+                  slotColor="#1a1a1a"
+                  digitColor="#18181b"
+                  dangerColor="#ff3b30"
+                  slotSize={44}
+                  gap={8}
+                  radius={12}
+                  bounce={0.2}
+                  settle={0.3}
+                  rise={8}
+                  cascade={20}
+                  mask={false}
+                  caret
+                  disabled={otpLoading}
+                />
+              </div>
+
+              <div className="w-full text-center pt-2">
+                <button
+                  type="button"
+                  onClick={cancelRegistration}
+                  className="text-xs text-neutral-500 hover:text-red-400 transition-colors underline"
+                >
+                  Cancel Registration
+                </button>
+              </div>
+            </div>
+          ) : (
           <form onSubmit={handleRegister} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-neutral-300 uppercase tracking-wider mb-2">
@@ -272,13 +408,14 @@ export default function RegisterPage() {
               {loading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
-                  <span>Creating Account...</span>
+                  <span>Sending Code...</span>
                 </>
               ) : (
-                <span>Create Free Account ➔</span>
+                <span>Sign Up & Verify ➔</span>
               )}
             </button>
           </form>
+          )}
 
           <div className="flex items-center gap-4 my-6">
             <div className="h-px bg-neutral-800 flex-1"></div>

@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   title: "MoviezWiki",
   description: "Your dynamic destination for movies and shows",
   manifest: "/manifest.json",
+};
+
+export const viewport = {
   themeColor: "#050505",
 };
 
@@ -24,11 +27,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
       </head>
-      <body className={`${outfit.className} antialiased bg-[#050505] selection:bg-purple-500/30 selection:text-white relative`}>
+      <body suppressHydrationWarning className={`${outfit.className} antialiased bg-[#050505] selection:bg-purple-500/30 selection:text-white relative`}>
         {/* Register Service Worker for PWA */}
         <script
           dangerouslySetInnerHTML={{

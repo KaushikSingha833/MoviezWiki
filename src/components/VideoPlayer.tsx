@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Server, Settings2 } from "lucide-react";
+import { Server, Settings2, Lightbulb, X } from "lucide-react";
 
 type ServerOption = {
   name: string;
@@ -45,11 +45,40 @@ export default function VideoPlayer({
   type: "movie" | "tv";
 }) {
   const [activeServer, setActiveServer] = useState<number>(0);
+  const [isTheaterMode, setIsTheaterMode] = useState(false);
 
   return (
-    <div className="w-full flex flex-col gap-4">
-      {/* Video Player */}
-      <div className="w-full aspect-video bg-neutral-950 rounded-xl overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.9)] border border-neutral-800 relative">
+    <>
+      {/* Theater Mode Dark Overlay */}
+      {isTheaterMode && (
+        <div 
+          className="fixed inset-0 bg-black/95 z-[9000] backdrop-blur-md transition-all duration-700" 
+          onClick={() => setIsTheaterMode(false)}
+        />
+      )}
+
+      <div className={`w-full flex flex-col gap-4 transition-all duration-700 ${isTheaterMode ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-6xl z-[9010]' : 'relative'}`}>
+        
+        {/* Theater Mode Toggle Button */}
+        <div className="flex justify-end absolute -top-12 right-0 z-[9020]">
+          <button 
+            onClick={() => setIsTheaterMode(!isTheaterMode)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+              isTheaterMode 
+                ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 hover:bg-rose-500 hover:text-white' 
+                : 'bg-black/60 text-[#F5C518] border-[#F5C518]/30 hover:bg-[#F5C518] hover:text-black backdrop-blur-md'
+            }`}
+          >
+            {isTheaterMode ? (
+              <><X className="w-4 h-4" /> Exit Theater Mode</>
+            ) : (
+              <><Lightbulb className="w-4 h-4" /> Lights Out</>
+            )}
+          </button>
+        </div>
+
+        {/* Video Player */}
+        <div className={`w-full aspect-video bg-neutral-950 rounded-xl overflow-hidden border border-neutral-800 relative transition-shadow duration-700 ${isTheaterMode ? 'shadow-[0_0_150px_-20px_rgba(255,255,255,0.15)] ring-1 ring-white/10' : 'shadow-[0_0_60px_rgba(0,0,0,0.9)]'}`}>
         <iframe
           src={servers[activeServer].url(tmdbId, type)}
           className="w-full h-full border-0 absolute inset-0"
@@ -97,5 +126,6 @@ export default function VideoPlayer({
         </p>
       </div>
     </div>
+    </>
   );
 }

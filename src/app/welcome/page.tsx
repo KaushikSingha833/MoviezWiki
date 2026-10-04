@@ -8,6 +8,7 @@ import {
   Sparkles, Globe2, Bookmark, MonitorPlay, Zap, ShieldCheck,
   Film, Trophy, Star, ChevronRight, CheckCircle, Cpu, Layers, Play, Award
 } from "lucide-react";
+import CircularCarousel from "@/components/CircularCarousel";
 
 // =======================================================================
 // DATA CONSTANTS (Preserved)
@@ -199,6 +200,59 @@ export default function WelcomeLandingPage() {
           SECTION 1: SCROLL-DRIVEN 3D PARALLAX HERO
       ======================================================================= */}
       <CinematicScroll />
+
+      {/* =======================================================================
+          SECTION 1.5: 3D CIRCULAR CAROUSEL
+      ======================================================================= */}
+      <section className="relative w-full py-20 bg-black overflow-hidden border-t border-neutral-900/50">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(245,197,24,0.05),transparent_70%)] pointer-events-none" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-10"
+          >
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest shadow-inner mb-4">
+              <Film className="w-4 h-4 text-[#F5C518]" />
+              <span>Interactive Cinematic Gallery</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tighter">
+              A 3D Experience.
+            </h2>
+          </motion.div>
+          
+          <div style={{ width: '100%', height: '560px', position: 'relative' }}>
+            <CircularCarousel
+              preset="cylinder"
+              intro="spin"
+              cardWidth={220}
+              aspectRatio={0.66}
+              speed={12}
+              captions
+              gap={25}
+              tilt={-5}
+              curve={1}
+              perspective={2500}
+              autoplay="drift"
+              interval={3}
+              direction="left"
+              momentum={0.6}
+              snap
+              pauseOnHover
+              focusOnClick
+              draggable
+              parallax={0.3}
+              stretch={0.5}
+              fadeColor="#000000"
+              depthFade={0.55}
+              innerShade={0.6}
+              cornerRadius={12}
+            />
+          </div>
+        </div>
+      </section>
 
       {/* =======================================================================
           SECTION 2: PRO-LEVEL INTERACTIVE AI SHOWCASE (#ai-demo)
