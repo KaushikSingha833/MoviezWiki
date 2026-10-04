@@ -113,10 +113,10 @@ const SearchBar = ({ isMobile = false }) => {
 
   return (
     <div className={`relative ${isMobile ? 'w-full flex' : 'hidden md:flex'}`} ref={containerRef}>
-      <form onSubmit={handleSearchSubmit} className={`flex relative items-center shadow-lg rounded-full overflow-hidden group transition-all duration-500 border ${isAiMode ? 'border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.4)]' : 'border-neutral-800 focus-within:border-[#F5C518]/50 focus-within:shadow-[0_0_20px_rgba(245,197,24,0.25)]'} ${isMobile ? 'w-full' : 'w-[280px] focus-within:w-[380px]'}`}>
+      <form onSubmit={handleSearchSubmit} className={`flex relative items-center shadow-lg rounded-full overflow-hidden group transition-all duration-500 border ${isAiMode ? 'bg-[#1a1a2e] border-indigo-500/50 shadow-[0_0_20px_rgba(99,102,241,0.4)]' : 'bg-[#0a0a0c] hover:bg-[#121215] focus-within:bg-[#121215] border-neutral-800 focus-within:border-[#F5C518]/50 focus-within:shadow-[0_0_20px_rgba(245,197,24,0.25)]'} ${isMobile ? 'w-full' : 'w-[280px] focus-within:w-[380px]'}`}>
         
         {/* Animated Search Icon inside input */}
-        <div className={`pl-4 flex items-center justify-center transition-colors duration-300 ${isAiMode ? 'bg-[#1a1a2e] text-indigo-400' : 'bg-[#0a0a0c] text-neutral-500 group-focus-within:text-[#F5C518] group-hover:bg-[#121215] group-focus-within:bg-[#121215]'}`}>
+        <div className={`pl-4 pr-2 flex items-center justify-center transition-colors duration-300 ${isAiMode ? 'text-indigo-400' : 'text-neutral-500 group-focus-within:text-[#F5C518]'}`}>
            <Search className="w-4 h-4 transition-transform group-focus-within:scale-110" />
         </div>
 
@@ -127,7 +127,7 @@ const SearchBar = ({ isMobile = false }) => {
           onChange={(e) => { setQuery(e.target.value); setShowDropdown(true); setShowFilters(false); }}
           onFocus={() => { if (query.length >= 2) setShowDropdown(true); }}
           placeholder={isAiMode ? "Describe a movie (e.g. funny heist)..." : "Search movies, tv, people..."} 
-          className={`bg-[#0a0a0c] text-white px-3 py-2.5 focus:outline-none text-sm group-hover:bg-[#121215] focus:bg-[#121215] transition-colors w-full`}
+          className="bg-transparent text-white py-2.5 focus:outline-none text-sm w-full placeholder:text-neutral-600"
           autoComplete="off"
         />
         
@@ -135,17 +135,17 @@ const SearchBar = ({ isMobile = false }) => {
         <button 
           type="button"
           onClick={() => { setIsAiMode(!isAiMode); setShowDropdown(false); setShowFilters(false); }}
-          className={`px-3 py-2.5 transition-all flex items-center justify-center ${isAiMode ? 'bg-[#1a1a2e] text-indigo-400' : 'bg-[#0a0a0c] text-neutral-400 hover:text-[#F5C518] group-hover:bg-[#121215] focus:bg-[#121215]'}`}
+          className={`px-2 py-2.5 transition-all flex items-center justify-center bg-transparent ${isAiMode ? 'text-indigo-400' : 'text-neutral-400 hover:text-[#F5C518]'}`}
           title="Deep AI Semantic Search"
         >
-          <span className="text-sm transition-transform hover:scale-125">✨</span>
+          <span className="text-base transition-transform hover:scale-125">✨</span>
         </button>
 
         {/* Toggle Filters Button */}
         <button 
           type="button"
           onClick={() => { setShowFilters(!showFilters); setShowDropdown(false); }}
-          className={`px-4 py-2.5 text-neutral-400 hover:text-[#F5C518] transition-colors flex items-center justify-center ${showFilters ? 'bg-[#F5C518]/10 text-[#F5C518]' : 'bg-[#0a0a0c] group-hover:bg-[#121215] focus:bg-[#121215]'}`}
+          className={`pl-2 pr-4 py-2.5 transition-colors flex items-center justify-center bg-transparent ${showFilters ? 'text-[#F5C518]' : 'text-neutral-400 hover:text-[#F5C518]'}`}
           title="Advanced Filters"
         >
           <SlidersHorizontal className="w-4 h-4 transition-transform hover:rotate-90" />
