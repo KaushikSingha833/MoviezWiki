@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits, getMediaReviews } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
 import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2, Trash2, Heart, ListPlus, Check, Info } from "lucide-react";
@@ -89,10 +90,12 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
 
   // Dynamic Theming State
   const [dominantColor, setDominantColor] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const { logInteraction } = useTaste();
 
   useEffect(() => {
+    setMounted(true);
     // Log explicit interest (2 points) when they open a movie's info modal
     if (movie.genre_ids) {
       logInteraction(movie.genre_ids, 2.0);
@@ -359,9 +362,11 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
     return `https://image.tmdb.org/t/p/w200${path}`;
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <>
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-10 px-0 sm:px-4">
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-10 px-0 sm:px-4">
         {/* Backdrop */}
         <div 
           className="absolute inset-0 bg-black/90 backdrop-blur-sm transition-opacity duration-300"
@@ -947,6 +952,7 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
           </div>
         </div>
       )}
-    </>
+    </>,
+    document.body
   );
 }

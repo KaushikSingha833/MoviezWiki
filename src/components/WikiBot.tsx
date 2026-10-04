@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bot, Send, X, Loader2 } from "lucide-react";
 import { chatWithEXXO } from "@/actions/aiActions";
 import ReactMarkdown from 'react-markdown';
+import { usePathname } from "next/navigation";
 
 type Message = {
   role: "user" | "model";
@@ -12,6 +13,10 @@ type Message = {
 };
 
 export default function WikiBot() {
+  const pathname = usePathname();
+  
+  const hiddenPaths = ["/login", "/register", "/forgot-password", "/welcome"];
+  const shouldHide = hiddenPaths.includes(pathname);
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     { role: "model", parts: [{ text: "Hi there! I'm **EXXO**, your AI movie expert! What kind of movie or show are you looking for today?" }] }
@@ -19,7 +24,6 @@ export default function WikiBot() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -53,6 +57,8 @@ export default function WikiBot() {
       setIsLoading(false);
     }
   };
+
+  if (shouldHide) return null;
 
   return (
     <>

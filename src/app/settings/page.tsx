@@ -36,6 +36,7 @@ const PRESET_AVATARS = [
   { id: "dogknife", url: "/avatars/dogknife.png", label: "Sus Dog" },
   { id: "bearcoffee", url: "/avatars/bearcoffee.png", label: "Coffee Bear" },
   { id: "pandawink", url: "/avatars/pandawink.png", label: "Winking Panda" },
+  { id: "squidgame", url: "/avatars/frontman.png", label: "Front Man" },
 ];
 
 export default function SettingsPage() {
