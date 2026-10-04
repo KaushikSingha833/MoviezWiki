@@ -558,16 +558,14 @@ export default function Navbar() {
           )}
 
           <button 
-            className="md:hidden text-white p-2 hover:bg-neutral-800 rounded-md transition-colors"
+            className="md:hidden relative w-10 h-10 flex items-center justify-center text-white hover:bg-neutral-800 rounded-md transition-colors"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-              {isMobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 12h18M3 6h18M3 18h18" />
-              )}
-            </svg>
+            <div className="flex flex-col items-center justify-center w-5 h-5 gap-1.5 relative">
+              <span className={`block w-5 h-0.5 bg-white transition-all duration-300 ease-out origin-center ${isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+              <span className={`block w-5 h-0.5 bg-white transition-all duration-300 ease-out ${isMobileMenuOpen ? 'opacity-0 translate-x-2' : 'opacity-100'}`} />
+              <span className={`block w-5 h-0.5 bg-white transition-all duration-300 ease-out origin-center ${isMobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+            </div>
           </button>
         </div>
       </div>
@@ -589,13 +587,26 @@ export default function Navbar() {
       </AnimatePresence>
 
       {/* Mobile Menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden bg-[#181818] border-t border-neutral-800 p-4 flex flex-col space-y-6 shadow-inner absolute w-full left-0 z-50">
-          <div className="flex flex-col space-y-4 font-semibold text-sm pl-2">
-            <NavLinks mobile={true} />
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="md:hidden bg-[#0a0a0c]/95 backdrop-blur-2xl border-t border-white/5 p-4 flex flex-col shadow-[0_20px_40px_rgba(0,0,0,0.8)] absolute w-full left-0 z-40 overflow-hidden"
+          >
+            <motion.div 
+              initial={{ y: -10, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1, duration: 0.2 }}
+              className="flex flex-col space-y-5 font-semibold text-sm pl-2 py-2"
+            >
+              <NavLinks mobile={true} />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }
