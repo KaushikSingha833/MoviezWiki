@@ -15,13 +15,14 @@ interface SettingsContextType {
   setChildMode: (enabled: boolean) => void;
   setUseCustomRecommendations: (enabled: boolean) => void;
   resetToDefaults: () => void;
+  revokeConsent: () => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [cookieConsent, setCookieConsentState] = useState<boolean | null>(null);
-  const [region, setRegionState] = useState<string>("US");
+  const [region, setRegionState] = useState<string>("IN");
   const [preferenceMode, setPreferenceModeState] = useState<"global" | "national">("global");
   const [childMode, setChildModeState] = useState<boolean>(false);
   const [useCustomRecommendationsState, setUseCustomRecommendationsState] = useState<boolean>(false);
@@ -55,11 +56,22 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     
     if (!consent) {
       // If they deny consent, we wipe their personalized cookies to remain compliant
+      Cookies.remove("region", { path: "/" });
       Cookies.remove("region");
+      Cookies.remove("preferenceMode", { path: "/" });
       Cookies.remove("preferenceMode");
+      Cookies.remove("childMode", { path: "/" });
       Cookies.remove("childMode");
+      Cookies.remove("useCustomRecommendations", { path: "/" });
       Cookies.remove("useCustomRecommendations");
-      setRegionState("US"); // Global fallback
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.removeItem("moviez_taste_dna");
+        } catch (e) {
+          console.error("Failed to clear taste profile:", e);
+        }
+      }
+      setRegionState("IN"); // Default fallback
       setPreferenceModeState("global");
       setChildModeState(false);
       setUseCustomRecommendationsState(false);
@@ -95,16 +107,61 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetToDefaults = () => {
-    setRegionState("US");
+    setRegionState("IN");
     setPreferenceModeState("global");
     setChildModeState(false);
     setUseCustomRecommendationsState(false);
+
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("moviez_taste_dna");
+      } catch (e) {
+        console.error("Failed to clear taste DNA:", e);
+      }
+    }
+
     if (cookieConsent) {
+      Cookies.set("region", "IN", { expires: 365, path: "/" });
+      Cookies.set("preferenceMode", "global", { expires: 365, path: "/" });
+      Cookies.set("childMode", "false", { expires: 365, path: "/" });
+      Cookies.set("useCustomRecommendations", "false", { expires: 365, path: "/" });
+    } else {
+      Cookies.remove("region", { path: "/" });
       Cookies.remove("region");
+      Cookies.remove("preferenceMode", { path: "/" });
       Cookies.remove("preferenceMode");
+      Cookies.remove("childMode", { path: "/" });
       Cookies.remove("childMode");
+      Cookies.remove("useCustomRecommendations", { path: "/" });
       Cookies.remove("useCustomRecommendations");
     }
+  };
+
+  const revokeConsent = () => {
+    Cookies.remove("cookieConsent", { path: "/" });
+    Cookies.remove("cookieConsent");
+    Cookies.remove("region", { path: "/" });
+    Cookies.remove("region");
+    Cookies.remove("preferenceMode", { path: "/" });
+    Cookies.remove("preferenceMode");
+    Cookies.remove("childMode", { path: "/" });
+    Cookies.remove("childMode");
+    Cookies.remove("useCustomRecommendations", { path: "/" });
+    Cookies.remove("useCustomRecommendations");
+
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem("moviez_taste_dna");
+      } catch (e) {
+        console.error("Failed to clear taste DNA:", e);
+      }
+    }
+
+    setCookieConsentState(null);
+    setRegionState("IN");
+    setPreferenceModeState("global");
+    setChildModeState(false);
+    setUseCustomRecommendationsState(false);
   };
 
   // If initialized and cookieConsent is true, but no region exists, automatically resolve geo-IP
@@ -119,7 +176,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           }
         } catch (error) {
           console.error("GeoIP resolution failed:", error);
-          setRegion("US"); // Graceful fallback
+          setRegion("IN"); // Graceful fallback
         }
       };
       lockInGeoIP();
@@ -138,7 +195,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       setPreferenceMode,
       setChildMode,
       setUseCustomRecommendations,
-      resetToDefaults
+      resetToDefaults,
+      revokeConsent
     }}>
       {children}
     </SettingsContext.Provider>

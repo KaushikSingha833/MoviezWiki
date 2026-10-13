@@ -2,10 +2,11 @@
 
 import { fetchTMDB } from "@/lib/tmdb";
 
-export async function getMoviesByCountry(countryCode: string) {
+export async function getMoviesByCountry(countryCode: string, sortBy: string = "popularity.desc") {
   try {
-    const data = await fetchTMDB(`/discover/movie`, `&with_origin_country=${countryCode}&sort_by=popularity.desc`);
-    return data.results?.slice(0, 10) || [];
+    const voteFilter = sortBy === "vote_average.desc" ? "&vote_count.gte=50" : "&vote_count.gte=10";
+    const data = await fetchTMDB(`/discover/movie`, `&with_origin_country=${countryCode}&sort_by=${sortBy}${voteFilter}`);
+    return data.results || [];
   } catch (error) {
     console.error(error);
     return [];

@@ -29,7 +29,7 @@ export default async function HomePage() {
   const cookieStore = await cookies();
   const prefMode = cookieStore.get("preferenceMode")?.value || "global";
   const childMode = cookieStore.get("childMode")?.value === "true";
-  const region = cookieStore.get("region")?.value || "US";
+  const region = cookieStore.get("region")?.value || "IN";
   const isNational = prefMode === "national" && !childMode;
   
   const regionText = isNational ? region : "the World";
