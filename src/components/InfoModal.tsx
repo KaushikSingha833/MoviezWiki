@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits, getMediaReviews } from "@/actions/movieActions";
+import { getMovieTrailer, getTVDetails, getTVSeasonTrailer, getStreamingProviders, getMediaCredits, getMediaReviews, getMediaAudioLanguages } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
-import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2, Trash2, Heart, ListPlus, Check, Info } from "lucide-react";
+import { X, Play, Sparkles, Star, Calendar, Tv, MessageCircle, User, Share2, Trash2, Heart, ListPlus, Check, Info, Volume2, Mic, Globe, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { getGenreNames } from "@/lib/genres";
 import AISummaryModal from "./AISummaryModal";
@@ -56,6 +56,11 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
 
   const [providersData, setProvidersData] = useState<{ providers: any[], watchLink: string } | null>(null);
   const [isLoadingProviders, setIsLoadingProviders] = useState(true);
+
+  const [audioData, setAudioData] = useState<any>(null);
+  const [isLoadingAudio, setIsLoadingAudio] = useState(true);
+  const [audioTab, setAudioTab] = useState<"moviezwiki" | "ott">("moviezwiki");
+  const [showAllDubs, setShowAllDubs] = useState(false);
 
   const [similarMedia, setSimilarMedia] = useState<any[]>([]);
   const [isLoadingSimilar, setIsLoadingSimilar] = useState(true);
@@ -212,10 +217,18 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
       setCast(castData.slice(0, 15)); // Top 15 actors for the scroll UI
       setIsLoadingCast(false);
     };
+
+    const loadAudio = async () => {
+      setIsLoadingAudio(true);
+      const data = await getMediaAudioLanguages(movie.id, isTV ? "tv" : "movie");
+      setAudioData(data);
+      setIsLoadingAudio(false);
+    };
     
     loadProviders();
     loadCast();
     loadSimilar();
+    loadAudio();
   }, [movie.id, isTV]);
 
   const loadTVData = async () => {
@@ -600,6 +613,202 @@ export default function InfoModal({ movie, onClose }: { movie: any, onClose: () 
                   </span>
                 )}
               </div>
+            </div>
+
+            {/* Bento Tile 3: Available Audio & Dubbed Voice Languages */}
+            <div className="md:col-span-3 bg-neutral-900/40 backdrop-blur-xl border border-neutral-800 rounded-3xl p-5 md:p-6 shadow-2xl flex flex-col gap-4 transition-all hover:bg-neutral-900/60 hover:border-neutral-700">
+              
+              {/* Header with Segmented Switcher */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-800/80 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 bg-[#F5C518]/10 rounded-xl border border-[#F5C518]/20 text-[#F5C518]">
+                    <Volume2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-white text-base md:text-lg font-black tracking-tight flex items-center gap-2">
+                      Audio & Dubbing Languages
+                    </h3>
+                    <p className="text-neutral-400 text-xs">
+                      Official spoken voices across MoviezWiki & streaming platforms
+                    </p>
+                  </div>
+                </div>
+
+                {/* Segmented Tab Switcher */}
+                <div className="flex items-center gap-1.5 bg-black/60 p-1 rounded-xl border border-neutral-800 self-start sm:self-auto">
+                  <button
+                    onClick={() => setAudioTab("moviezwiki")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      audioTab === "moviezwiki"
+                        ? "bg-[#F5C518] text-black shadow-md"
+                        : "text-neutral-400 hover:text-white"
+                    }`}
+                  >
+                    <Play className="w-3 h-3 fill-current" />
+                    <span>MoviezWiki Player</span>
+                    {audioData?.moviezWikiTracks && (
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                        audioTab === "moviezwiki" ? "bg-black/20 text-black" : "bg-neutral-800 text-neutral-300"
+                      }`}>
+                        {audioData.moviezWikiTracks.length}
+                      </span>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={() => setAudioTab("ott")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                      audioTab === "ott"
+                        ? "bg-[#F5C518] text-black shadow-md"
+                        : "text-neutral-400 hover:text-white"
+                    }`}
+                  >
+                    <Globe className="w-3 h-3" />
+                    <span>Global OTT Dubs</span>
+                    {audioData && (
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                        audioTab === "ott" ? "bg-black/20 text-black" : "bg-neutral-800 text-neutral-300"
+                      }`}>
+                        {audioData.totalCount || 1}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {isLoadingAudio ? (
+                <div className="flex items-center justify-center gap-3 py-6 text-neutral-400 text-xs font-bold">
+                  <div className="w-4 h-4 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" />
+                  Analyzing audio streams & dubbing tracks...
+                </div>
+              ) : audioData ? (
+                <div>
+                  {/* TAB 1: MOVIEZWIKI PLAYER AUDIO */}
+                  {audioTab === "moviezwiki" && (
+                    <div className="flex flex-col gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+                        {audioData.moviezWikiTracks?.map((track: any, idx: number) => (
+                          <div 
+                            key={idx}
+                            className="bg-black/40 border border-neutral-800 hover:border-neutral-700 rounded-xl p-3 flex items-center justify-between transition-all"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className="text-xl leading-none shrink-0">{track.flag}</span>
+                              <div className="min-w-0">
+                                <p className="text-xs font-bold text-white truncate flex items-center gap-1.5">
+                                  {track.language}
+                                  <span className="text-[10px] text-[#F5C518] font-semibold">({track.label})</span>
+                                </p>
+                                <p className="text-[10px] text-neutral-400 truncate">{track.note}</p>
+                              </div>
+                            </div>
+                            <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-neutral-900 border border-neutral-700 text-emerald-400 shrink-0 ml-2">
+                              {track.badge}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="p-2.5 rounded-xl bg-black/40 border border-neutral-800 text-[11px] text-neutral-400 flex items-center justify-between gap-3 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <span className="text-amber-400 text-xs">💡</span>
+                          <span>
+                            <strong className="text-white">To change voice:</strong> In the video player, click the <span className="text-[#F5C518] font-bold">⚙️ Settings icon</span> or select <span className="text-white font-semibold">Server 1 / Server 2</span>.
+                          </span>
+                        </div>
+                        <span className="text-[10px] font-semibold text-neutral-500">
+                          Voice Tracks Only • Subtitles Managed Separately
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 2: GLOBAL STREAMING PLATFORMS (OTT) */}
+                  {audioTab === "ott" && (
+                    <div className="flex flex-col gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        {/* Original Language Chip */}
+                        {audioData.originalLanguage && (
+                          <div className="bg-[#F5C518]/10 border border-[#F5C518]/40 text-[#F5C518] px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm">
+                            <span className="text-base leading-none">{audioData.originalLanguage.flag}</span>
+                            <span>{audioData.originalLanguage.name}</span>
+                            <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-[#F5C518] text-black font-black">
+                              Original Voice
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Top Popular Dubs (Clean and uncluttered) */}
+                        {(audioData.popularDubs || audioData.streamingDubs || [])
+                          .map((dub: any) => (
+                            <div 
+                              key={dub.code}
+                              className="bg-black/50 hover:bg-neutral-800/80 border border-neutral-800 hover:border-neutral-600 text-neutral-200 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-2 transition-all shadow-sm"
+                            >
+                              <span className="text-base leading-none">{dub.flag}</span>
+                              <span>{dub.name}</span>
+                              <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-neutral-900 text-emerald-400 font-extrabold border border-emerald-500/20">
+                                Dub
+                              </span>
+                            </div>
+                          ))}
+
+                        {/* Show More Dubs Toggle if extra regional dubs exist */}
+                        {audioData.otherDubs && audioData.otherDubs.length > 0 && !showAllDubs && (
+                          <button
+                            onClick={() => setShowAllDubs(true)}
+                            className="bg-neutral-900 hover:bg-neutral-800 border border-dashed border-neutral-700 text-neutral-400 hover:text-white px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5"
+                          >
+                            <span>+ {audioData.otherDubs.length} More Dubs</span>
+                            <ChevronDown className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Expanded Extended Dubs Grid */}
+                      {showAllDubs && audioData.otherDubs && audioData.otherDubs.length > 0 && (
+                        <div className="mt-2 p-3 bg-black/40 border border-neutral-800/80 rounded-2xl flex flex-col gap-2 animate-in fade-in duration-200">
+                          <div className="flex items-center justify-between text-[11px] text-neutral-400 font-bold border-b border-neutral-800/80 pb-2">
+                            <span>Extended International Dubs ({audioData.otherDubs.length})</span>
+                            <button
+                              onClick={() => setShowAllDubs(false)}
+                              className="text-[#F5C518] hover:underline flex items-center gap-1"
+                            >
+                              <span>Hide</span>
+                              <ChevronUp className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                          <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                            {audioData.otherDubs.map((dub: any) => (
+                              <div 
+                                key={dub.code}
+                                className="bg-neutral-900/80 border border-neutral-800 text-neutral-300 px-2.5 py-1 rounded-lg text-xs flex items-center gap-1.5"
+                              >
+                                <span>{dub.flag}</span>
+                                <span>{dub.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="p-2.5 rounded-xl bg-black/40 border border-neutral-800 text-[11px] text-neutral-400 flex items-center justify-between gap-2 flex-wrap">
+                        <span className="flex items-center gap-1.5">
+                          <span>🌐</span>
+                          <span>Available on <strong>Netflix, Prime Video, Disney+, Apple TV+</strong> (region-dependent).</span>
+                        </span>
+                        <span className="text-[10px] text-amber-400/90 font-medium">
+                          Strictly Voice Dubbing • Subtitles are separate
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-neutral-500 text-xs italic p-4 text-center">
+                  Language and dubbing metadata unavailable for this title.
+                </div>
+              )}
             </div>
           </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, Calendar, MapPin, Film, User, Heart, ListPlus, Check } from "lucide-react";
 import { getPersonDetails } from "@/actions/movieActions";
 import MovieCard from "./MovieCard";
@@ -11,6 +12,7 @@ export default function ActorModal({ personId, onClose }: { personId: number, on
   const [actor, setActor] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showFullBio, setShowFullBio] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // List Management State
   const [showListDropdown, setShowListDropdown] = useState(false);
@@ -34,28 +36,82 @@ export default function ActorModal({ personId, onClose }: { personId: number, on
   };
 
   useEffect(() => {
+    setMounted(true);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown, true);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown, true);
+    };
+  }, [onClose]);
+
+  useEffect(() => {
+    let isCurrent = true;
     const fetchActor = async () => {
       setIsLoading(true);
       const data = await getPersonDetails(personId);
-      setActor(data);
-      setIsLoading(false);
+      if (isCurrent) {
+        setActor(data);
+        setIsLoading(false);
+      }
     };
     fetchActor();
+    return () => {
+      isCurrent = false;
+    };
   }, [personId]);
 
+  if (!mounted) return null;
+
   if (isLoading) {
-    return (
-      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-black/95 backdrop-blur-md" onClick={onClose} />
+    return createPortal(
+      <div className="fixed inset-0 z-[10050] flex items-center justify-center p-4">
+        <div 
+          className="absolute inset-0 bg-black/95 backdrop-blur-md" 
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }} 
+        />
         <div className="relative bg-[#141414] w-[300px] h-[300px] rounded-2xl border border-neutral-800 flex flex-col items-center justify-center z-10 shadow-2xl">
           <div className="w-8 h-8 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin mb-4" />
           <p className="text-white font-bold animate-pulse text-sm">Extracting Archives...</p>
         </div>
-      </div>
+      </div>,
+      document.body
     );
   }
 
-  if (!actor) return null;
+  if (!actor) {
+    return createPortal(
+      <div className="fixed inset-0 z-[10050] flex items-center justify-center p-4">
+        <div 
+          className="absolute inset-0 bg-black/95 backdrop-blur-md" 
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }} 
+        />
+        <div className="relative bg-[#141414] p-6 rounded-2xl border border-neutral-800 text-center z-10 shadow-2xl max-w-sm">
+          <p className="text-neutral-300 text-sm mb-4">Actor profile details could not be loaded.</p>
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              onClose();
+            }} 
+            className="px-4 py-2 bg-[#F5C518] text-black font-bold rounded-lg text-xs"
+          >
+            Close
+          </button>
+        </div>
+      </div>,
+      document.body
+    );
+  }
 
   const credits = actor.combined_credits?.cast || [];
   // Dedup credits by id to avoid overlapping keys from TMDB quirks
@@ -68,17 +124,26 @@ export default function ActorModal({ personId, onClose }: { personId: number, on
 
   const IMAGE_BASE = "https://image.tmdb.org/t/p/h632"; // High res
 
-  return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 md:p-8 px-0 sm:px-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[10050] flex items-center justify-center p-4 md:p-8 px-0 sm:px-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/90 backdrop-blur-md" onClick={onClose} />
+      <div 
+        className="absolute inset-0 bg-black/90 backdrop-blur-md" 
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }} 
+      />
       
       {/* Modal Container */}
-      <div className="relative w-full max-w-5xl max-h-[95vh] bg-[#141414] rounded-2xl overflow-y-auto shadow-2xl border border-neutral-700/50 animate-in fade-in zoom-in-95 duration-300 custom-scrollbar flex flex-col">
+      <div className="relative w-full max-w-5xl max-h-[95vh] bg-[#141414] rounded-2xl overflow-y-auto shadow-2xl border border-neutral-700/50 animate-in fade-in zoom-in-95 duration-300 custom-scrollbar flex flex-col z-10">
         
         <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 z-[210] bg-black/50 hover:bg-neutral-800 text-white p-2 md:p-2.5 rounded-full transition-all backdrop-blur-md border border-neutral-600 hover:scale-110 shadow-xl"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          className="absolute top-4 right-4 z-[10060] bg-black/50 hover:bg-neutral-800 text-white p-2 md:p-2.5 rounded-full transition-all backdrop-blur-md border border-neutral-600 hover:scale-110 shadow-xl"
         >
           <X className="w-5 h-5" />
         </button>
@@ -288,6 +353,7 @@ export default function ActorModal({ personId, onClose }: { personId: number, on
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

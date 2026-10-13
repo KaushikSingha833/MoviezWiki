@@ -27,7 +27,7 @@ function getFlagEmoji(countryCode: string) {
   return String.fromCodePoint(...codePoints);
 }
 
-const SearchBar = ({ isMobile = false }) => {
+const SearchBar = ({ isMobile = false }: { isMobile?: boolean }) => {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -446,7 +446,7 @@ export default function Navbar() {
         </div>
         
         <div className="flex items-center gap-2 sm:gap-4">
-          <SearchBar />
+          <SearchBar isMobile={false} />
 
           {/* Mobile Search Toggle Button */}
           <button 
@@ -577,9 +577,9 @@ export default function Navbar() {
             initial={{ height: 0, opacity: 0, overflow: "hidden" }}
             animate={{ height: "auto", opacity: 1, transitionEnd: { overflow: "visible" } }}
             exit={{ height: 0, opacity: 0, overflow: "hidden" }}
-            className="md:hidden px-4 bg-[#181818]"
+            className="md:hidden px-4 py-3 bg-[#0a0a0c]/95 border-b border-white/5 backdrop-blur-2xl flex items-center justify-center shadow-lg"
           >
-            <div className="pb-4">
+            <div className="w-full">
               <SearchBar isMobile={true} />
             </div>
           </motion.div>
