@@ -1,8 +1,24 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
 import MovieCard from "./MovieCard";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+
+function getExploreHref(title: string): string {
+  const t = title.toLowerCase();
+  if (t.includes("anime")) return "/search?genres=16";
+  if (t.includes("korean") || t.includes("k-drama")) return "/search?region=KR";
+  if (t.includes("tv series") || t.includes("binge")) return "/search?q=TV+Series";
+  if (t.includes("reality")) return "/search?q=Reality";
+  if (t.includes("kids") || t.includes("family") || t.includes("cartoon")) return "/search?genres=10751";
+  if (t.includes("now playing")) return "/search?q=Now+Playing";
+  if (t.includes("top rated") || t.includes("fan favorites")) return "/search?q=Top+Rated";
+  if (t.includes("upcoming")) return "/search?q=Upcoming";
+  
+  const cleaned = title.replace(/[^\w\s]/gi, '').trim();
+  return `/search?q=${encodeURIComponent(cleaned || "Popular")}`;
+}
 
 export default function MovieCarousel({ title, movies }: { title: string, movies: any[] }) {
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -26,10 +42,13 @@ export default function MovieCarousel({ title, movies }: { title: string, movies
             {title}
           </h2>
         </div>
-        <div className="hidden sm:flex items-center gap-1 text-xs font-bold text-neutral-400 group-hover/carousel:text-[#F5C518] transition-colors cursor-pointer select-none">
+        <Link 
+          href={getExploreHref(title)}
+          className="flex items-center gap-1.5 text-xs font-bold text-neutral-400 hover:text-[#F5C518] group-hover/carousel:text-[#F5C518] transition-colors cursor-pointer select-none bg-white/[0.04] hover:bg-white/[0.08] px-3 py-1.5 rounded-full border border-white/5 hover:border-[#F5C518]/30 backdrop-blur-md"
+        >
           <span>Explore All</span>
-          <ChevronRight className="w-3.5 h-3.5 transform group-hover/carousel:translate-x-1 transition-transform" />
-        </div>
+          <ChevronRight className="w-3.5 h-3.5 transform group-hover/carousel:translate-x-0.5 transition-transform" />
+        </Link>
       </div>
       
       <button 
