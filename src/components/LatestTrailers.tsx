@@ -17,18 +17,16 @@ export default function LatestTrailers({ movies }: { movies: any[] }) {
   const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
   const BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w780";
 
-  // Preload initial movie trailer
+  // Preload initial movie trailer silently in the background
   useEffect(() => {
     let isCurrent = true;
     async function loadInitial() {
       if (!activeMovie) return;
-      setIsLoading(true);
       const mediaType = activeMovie.name && !activeMovie.title ? "tv" : "movie";
       const key = await getMovieTrailer(activeMovie.id, mediaType);
-      if (isCurrent) {
+      if (isCurrent && key) {
         setTrailersCache((prev) => ({ ...prev, [activeMovie.id]: key }));
         setTrailerKey(key);
-        setIsLoading(false);
       }
     }
     loadInitial();
@@ -44,7 +42,7 @@ export default function LatestTrailers({ movies }: { movies: any[] }) {
     setIsPlaying(true);
 
     // If this trailer is already cached, switch instantly!
-    if (trailersCache[movie.id] !== undefined) {
+    if (trailersCache[movie.id]) {
       setTrailerKey(trailersCache[movie.id]);
       setIsLoading(false);
       return;
@@ -52,7 +50,6 @@ export default function LatestTrailers({ movies }: { movies: any[] }) {
 
     // Show loading state and fetch trailer
     setIsLoading(true);
-    setTrailerKey(null);
 
     try {
       const mediaType = movie.name && !movie.title ? "tv" : "movie";
@@ -84,7 +81,7 @@ export default function LatestTrailers({ movies }: { movies: any[] }) {
         </div>
 
         <div className="w-full aspect-video relative group bg-neutral-950">
-          {isLoading ? (
+          {isPlaying && isLoading ? (
             <div className="absolute inset-0 bg-black/90 backdrop-blur-md z-30 flex flex-col items-center justify-center p-4">
               <Loader2 className="w-10 h-10 text-[#F5C518] animate-spin mb-3 drop-shadow-[0_0_12px_rgba(245,197,24,0.6)]" />
               <p className="text-white text-xs sm:text-sm font-bold uppercase tracking-wider">
@@ -99,7 +96,7 @@ export default function LatestTrailers({ movies }: { movies: any[] }) {
               key={`trailer-${activeMovie?.id}-${trailerKey}`}
               width="100%"
               height="100%"
-              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=0&controls=1&rel=0`}
+              src={`https://www.youtube.com/embed/${trailerKey}?autoplay=1&mute=1&controls=1&rel=0`}
               title={activeMovie?.title || activeMovie?.name}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
