@@ -26,6 +26,11 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
   const hoverTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const handleMouseEnter = () => {
+    // Disable hover popup logic completely on touch screens for max 60/120fps scrolling
+    if (typeof window !== "undefined" && window.matchMedia && window.matchMedia('(hover: none)').matches) {
+      return;
+    }
+
     hoverTimeout.current = setTimeout(() => {
       setIsHovered(true);
     }, 400); // 400ms delay for Netflix-style intent
@@ -45,6 +50,7 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
   const { wishlist, toggleWishlist } = useWishlist();
   const isInWishlist = wishlist.some((w: any) => w.id === item.id);
   
+  const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
   const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
 
   const handlePlayTrailer = async (e: React.MouseEvent) => {
@@ -95,9 +101,11 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
           {/* BASE CARD (Always visible underneath) */}
           <div className="absolute inset-0 rounded-md bg-neutral-900 overflow-hidden shadow-md">
             <img 
-              src={`${IMAGE_BASE_URL}${item.poster_path}`} 
+              src={item.poster_path ? `${POSTER_BASE_URL}${item.poster_path}` : 'https://via.placeholder.com/342x513?text=No+Poster'} 
               alt={item.title || item.name}
               className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
             />
             
             {/* Action Buttons Overlay (Always visible) */}
@@ -161,9 +169,9 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                   <button 
                     onClick={handleAISummary}
                     title="AI Summary"
-                    className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] animate-gradient text-white py-2 rounded flex-1 transition-all flex items-center justify-center shadow-[0_0_15px_rgba(79,70,229,0.4)]"
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 active:scale-95 text-white py-2 rounded flex-1 transition-transform flex items-center justify-center shadow-md border border-purple-500/30"
                   >
-                    <Sparkles className="w-4 h-4 text-[#F5C518] animate-pulse" />
+                    <Sparkles className="w-4 h-4 text-[#F5C518]" />
                   </button>
                 </div>
               </div>
@@ -186,6 +194,8 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                     src={`${IMAGE_BASE_URL}${item.backdrop_path || item.poster_path}`} 
                     alt={item.title || item.name}
                     className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                   />
                   
                   {/* Fade gradient */}

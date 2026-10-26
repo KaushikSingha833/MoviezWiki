@@ -3,11 +3,14 @@
 import { useState, useEffect } from "react";
 import { getMovieTrailer } from "@/actions/movieActions";
 import { getGenreNames } from "@/lib/genres";
+import { Play } from "lucide-react";
 
 export default function LatestTrailers({ movies }: { movies: any[] }) {
   const [activeMovie, setActiveMovie] = useState(movies[0]);
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
-  const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
+  const [isPlaying, setIsPlaying] = useState(false);
+  const POSTER_BASE_URL = "https://image.tmdb.org/t/p/w342";
+  const BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w780";
 
   useEffect(() => {
     let isCurrent = true;
@@ -27,11 +30,16 @@ export default function LatestTrailers({ movies }: { movies: any[] }) {
     };
   }, [activeMovie]);
 
+  const handleSelectMovie = (movie: any) => {
+    setActiveMovie(movie);
+    setIsPlaying(true); // User explicitly clicked a movie, start playing
+  };
+
   return (
-    <div className="flex flex-col lg:flex-row gap-4 bg-[#1a1a1a] p-4 rounded-xl border border-neutral-800">
+    <div className="flex flex-col lg:flex-row gap-4 bg-[#1a1a1a] p-4 rounded-xl border border-neutral-800 content-auto">
       <div className="w-full lg:w-[70%] flex flex-col bg-black rounded-lg overflow-hidden relative shadow-2xl">
-        <div className="w-full aspect-video relative">
-          {trailerKey ? (
+        <div className="w-full aspect-video relative group">
+          {isPlaying && trailerKey ? (
             <iframe
               width="100%"
               height="100%"
@@ -41,11 +49,23 @@ export default function LatestTrailers({ movies }: { movies: any[] }) {
               allowFullScreen
             ></iframe>
           ) : (
-            <img
-              src={`${IMAGE_BASE_URL}${activeMovie?.backdrop_path}`}
-              className="w-full h-full object-cover opacity-50"
-              alt={activeMovie?.title}
-            />
+            <div 
+              className="w-full h-full relative cursor-pointer"
+              onClick={() => setIsPlaying(true)}
+            >
+              <img
+                src={activeMovie?.backdrop_path ? `${BACKDROP_BASE_URL}${activeMovie.backdrop_path}` : 'https://via.placeholder.com/780x439?text=No+Backdrop'}
+                className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-500"
+                alt={activeMovie?.title}
+                loading="lazy"
+                decoding="async"
+              />
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-[#F5C518] hover:bg-yellow-400 text-black flex items-center justify-center shadow-[0_0_30px_rgba(245,197,24,0.6)] transform group-hover:scale-110 transition-transform">
+                  <Play className="w-7 h-7 fill-current ml-1" />
+                </div>
+              </div>
+            </div>
           )}
         </div>
         
@@ -71,7 +91,7 @@ export default function LatestTrailers({ movies }: { movies: any[] }) {
         {movies.map((movie) => (
           <button
             key={movie.id}
-            onClick={() => setActiveMovie(movie)}
+            onClick={() => handleSelectMovie(movie)}
             className={`flex items-start gap-3 p-2 rounded-lg transition-colors text-left w-full ${
               activeMovie.id === movie.id 
                 ? 'bg-neutral-800 border border-[#F5C518]' 
@@ -79,9 +99,11 @@ export default function LatestTrailers({ movies }: { movies: any[] }) {
             }`}
           >
             <img
-              src={`${IMAGE_BASE_URL}${movie.poster_path}`}
+              src={movie.poster_path ? `${POSTER_BASE_URL}${movie.poster_path}` : 'https://via.placeholder.com/150x225'}
               className="w-20 h-28 object-cover rounded-md shadow-md shrink-0"
               alt={movie.title}
+              loading="lazy"
+              decoding="async"
             />
             <div className="flex-1 overflow-hidden">
               <h4 className="font-bold text-sm text-white line-clamp-1">{movie.title}</h4>

@@ -45,11 +45,11 @@ export default function RootLayout({
             `,
           }}
         />
-        {/* Global Ambient Aurora Background */}
-        <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden">
-          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/10 rounded-full blur-[120px] mix-blend-screen" />
-          <div className="absolute top-[20%] right-[-10%] w-[40%] h-[60%] bg-purple-600/10 rounded-full blur-[120px] mix-blend-screen" />
-          <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[50%] bg-blue-600/10 rounded-full blur-[120px] mix-blend-screen" />
+        {/* Global Ambient Aurora Background (GPU accelerated without expensive mix-blend re-rasterization) */}
+        <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden gpu-accelerated">
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/[0.07] rounded-full blur-[80px]" />
+          <div className="absolute top-[20%] right-[-10%] w-[40%] h-[60%] bg-purple-600/[0.07] rounded-full blur-[80px]" />
+          <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[50%] bg-blue-600/[0.07] rounded-full blur-[80px]" />
         </div>
         
         <SettingsProvider>

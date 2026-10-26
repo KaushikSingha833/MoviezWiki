@@ -7,11 +7,22 @@ import HeroButtons from "./HeroButtons";
 import { getGenreNames } from "@/lib/genres";
 
 const IMAGE_BASE_URL = "https://image.tmdb.org/t/p/w500";
-const BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/original";
+const BACKDROP_BASE_URL = "https://image.tmdb.org/t/p/w1280";
 
 export default function AnimatedHero({ movies, badgeText = "Trending Worldwide" }: { movies: any[], badgeText?: string }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+
+  // Preload upcoming backdrops so transitions are instant
+  useEffect(() => {
+    if (!movies || movies.length <= 1) return;
+    const nextIndex = (activeIndex + 1) % movies.length;
+    const nextMovie = movies[nextIndex];
+    if (nextMovie?.backdrop_path) {
+      const img = new Image();
+      img.src = `${BACKDROP_BASE_URL}${nextMovie.backdrop_path}`;
+    }
+  }, [activeIndex, movies]);
 
   useEffect(() => {
     if (!movies || movies.length === 0 || isPaused) return;
@@ -32,16 +43,19 @@ export default function AnimatedHero({ movies, badgeText = "Trending Worldwide" 
       <AnimatePresence mode="wait">
         <motion.div
           key={currentMovie.id}
-          initial={{ opacity: 0, scale: 1.05 }}
-          animate={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          className="absolute inset-0 z-0"
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          className="absolute inset-0 z-0 transform-gpu"
+          style={{ willChange: "opacity" }}
         >
           <img 
             src={`${BACKDROP_BASE_URL}${currentMovie.backdrop_path}`}
             alt={currentMovie.title || currentMovie.name}
-            className="w-full h-full object-cover opacity-60"
+            className="w-full h-full object-cover opacity-60 pointer-events-none select-none"
+            decoding="async"
+            fetchPriority={activeIndex === 0 ? "high" : "auto"}
           />
         </motion.div>
       </AnimatePresence>

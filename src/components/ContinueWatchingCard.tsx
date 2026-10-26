@@ -29,6 +29,8 @@ export default function ContinueWatchingCard({
           src={imageUrl}
           alt={media.title}
           className="w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity"
+          loading="lazy"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
         

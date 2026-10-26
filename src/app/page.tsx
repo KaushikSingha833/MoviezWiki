@@ -111,7 +111,7 @@ export default async function HomePage() {
         badgeText={childMode ? "Top Kids Movie" : isNational ? `Trending in ${region}` : "Trending Worldwide"}
       />
 
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8 md:py-12 space-y-10 md:space-y-16 overflow-hidden">
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8 md:py-12 space-y-10 md:space-y-16 overflow-x-clip">
         
         <RecentlyWatchedRow />
         <CustomRecommendationsRow />
