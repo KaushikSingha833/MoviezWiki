@@ -151,7 +151,7 @@ export default async function HomePage() {
                 🎬 Official Releases
               </span>
             </div>
-            <LatestTrailers movies={upcoming.results.slice(0, 5)} />
+            <LatestTrailers movies={upcoming.results.slice(0, 8)} />
           </section>
         </SectionReveal>
 
