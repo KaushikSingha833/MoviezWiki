@@ -40,6 +40,15 @@ body {
   100% { transform: translateX(200%) skewX(-15deg); }
 }
 
+@keyframes heroProgress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+.animate-hero-progress {
+  animation: heroProgress 8s linear infinite;
+}
+
 /* Cinematic UI Utilities */
 .scrollbar-hide::-webkit-scrollbar {
   display: none;

@@ -23,6 +23,8 @@ import MovieCarousel from "@/components/MovieCarousel";
 import RecentlyWatchedRow from "@/components/RecentlyWatchedRow";
 import CustomRecommendationsRow from "@/components/CustomRecommendationsRow";
 import TasteRecommendationsRow from "@/components/TasteRecommendationsRow";
+import CinematicSpotlight from "@/components/CinematicSpotlight";
+import QuickVibeBar from "@/components/QuickVibeBar";
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
@@ -78,61 +80,83 @@ export default async function HomePage() {
     }
   }
 
-  let movieSections = [
-    { title: `Now Playing in ${regionText}`, data: nowPlaying.results },
-    { title: `Binge-Worthy TV Series in ${regionText}`, data: popularTv.results },
-    { title: `Trending Reality Shows in ${regionText}`, data: reality.results },
-    { title: "Trending Japanese Anime", data: anime.results },
-    { title: "K-Dramas & Korean Cinema", data: kDrama.results },
-    { title: `Upcoming Cinematic Releases in ${regionText}`, data: upcoming.results },
-    { title: `Fan Favorites in ${regionText}`, data: topRated.results },
+  let movieSectionsPart1 = [
+    { title: `Now Playing in ${regionText}`, data: nowPlaying.results, id: "nowplaying" },
+    { title: `Binge-Worthy TV Series in ${regionText}`, data: popularTv.results, id: "tvseries" },
+    { title: `Trending Reality Shows in ${regionText}`, data: reality.results, id: "reality" },
+  ];
+
+  let movieSectionsPart2 = [
+    { title: "Trending Japanese Anime", data: anime.results, id: "anime" },
+    { title: "K-Dramas & Korean Cinema", data: kDrama.results, id: "kdrama" },
+    { title: `Upcoming Cinematic Releases in ${regionText}`, data: upcoming.results, id: "upcoming" },
+    { title: `Fan Favorites in ${regionText}`, data: topRated.results, id: "toprated" },
   ];
 
   if (childMode) {
-    movieSections = [
-      { title: "🌟 Magical Family Movies", data: popular.results },
-      { title: "🎨 Amazing Animated Series", data: popularTv.results },
-      { title: "🪁 Fun Kids TV Adventures", data: reality.results },
-      { title: "🐼 Playful Cartoons", data: anime.results },
-      { title: "🎵 Bedtime Favorites", data: kDrama.results },
-      { title: "🎈 Coming Soon to Theaters!", data: upcoming.results },
-      { title: "🏆 Greatest Family Classics", data: topRated.results },
+    movieSectionsPart1 = [
+      { title: "🌟 Magical Family Movies", data: popular.results, id: "nowplaying" },
+      { title: "🎨 Amazing Animated Series", data: popularTv.results, id: "tvseries" },
+      { title: "🪁 Fun Kids TV Adventures", data: reality.results, id: "reality" },
+    ];
+    movieSectionsPart2 = [
+      { title: "🐼 Playful Cartoons", data: anime.results, id: "anime" },
+      { title: "🎵 Bedtime Favorites", data: kDrama.results, id: "kdrama" },
+      { title: "🎈 Coming Soon to Theaters!", data: upcoming.results, id: "upcoming" },
+      { title: "🏆 Greatest Family Classics", data: topRated.results, id: "toprated" },
     ];
   }
 
   const topTenMovieTitle = childMode ? "Top 10 Kids Movies Right Now!" : `Top 10 Movies in ${regionText} Right Now`;
   const topTenTvTitle = childMode ? "Top 10 Cartoons Right Now!" : `Top 10 TV Shows in ${regionText} Right Now`;
 
+  // Select top spotlight feature
+  const spotlightMovie = topRated.results?.[0] || upcoming.results?.[0] || trending.results?.[0];
+
   return (
-    <div className="min-h-screen bg-[#121212] text-white font-sans overflow-x-hidden">
+    <div className="min-h-screen bg-[#050505] text-white font-sans overflow-x-hidden selection:bg-[#F5C518] selection:text-black">
       
       <AnimatedHero 
         movies={trending.results.slice(0, 5)} 
         badgeText={childMode ? "Top Kids Movie" : isNational ? `Trending in ${region}` : "Trending Worldwide"}
       />
 
-      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8 md:py-12 space-y-10 md:space-y-16 overflow-x-clip">
+      <QuickVibeBar />
+
+      <main className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 md:py-10 space-y-12 md:space-y-16 overflow-x-clip">
         
-        <RecentlyWatchedRow />
-        <CustomRecommendationsRow />
-        <TasteRecommendationsRow />
+        <div id="highlights" className="space-y-12">
+          <RecentlyWatchedRow />
+          <CustomRecommendationsRow />
+          <TasteRecommendationsRow />
+        </div>
         
-        <CelebrityRow 
-          title={`Top Icons in ${regionText}`} 
-          celebrities={finalCelebrities} 
-        />
+        <div id="celebrities">
+          <CelebrityRow 
+            title={`Top Icons in ${regionText}`} 
+            celebrities={finalCelebrities} 
+          />
+        </div>
 
         <SectionReveal>
-          <section>
-            <h2 className="text-2xl font-bold mb-6 flex items-center border-l-4 border-[#F5C518] pl-3">
-              Latest Trailers & Clips
-            </h2>
+          <section id="trailers">
+            <div className="flex items-center justify-between mb-4 md:mb-6 px-1">
+              <div className="flex items-center gap-3">
+                <div className="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#F5C518] to-amber-600 shadow-[0_0_12px_rgba(245,197,24,0.6)]" />
+                <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
+                  Latest Trailers & Clips
+                </h2>
+              </div>
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-neutral-300 bg-white/5 border border-white/10 backdrop-blur-md">
+                🎬 Official Releases
+              </span>
+            </div>
             <LatestTrailers movies={upcoming.results.slice(0, 5)} />
           </section>
         </SectionReveal>
 
         <SectionReveal>
-          <div className="py-8 bg-black/30 rounded-2xl border border-neutral-900/50">
+          <div id="top10" className="py-8 md:py-10 px-2 sm:px-4 bg-gradient-to-b from-white/[0.04] via-black/40 to-black/60 rounded-3xl border border-white/10 backdrop-blur-2xl shadow-[0_20px_60px_rgba(0,0,0,0.85)]">
             <TopTenCarousel 
               title={topTenMovieTitle} 
               items={trending.results} 
@@ -146,9 +170,31 @@ export default async function HomePage() {
           </div>
         </SectionReveal>
 
-        {movieSections.map((section, index) => (
-          <SectionReveal key={index}>
-            <MovieCarousel title={section.title} movies={section.data} />
+        {/* First Half of Movie Sections */}
+        {movieSectionsPart1.map((section, index) => (
+          <SectionReveal key={`part1-${index}`}>
+            <div id={section.id}>
+              <MovieCarousel title={section.title} movies={section.data} />
+            </div>
+          </SectionReveal>
+        ))}
+
+        {/* 16:9 IMAX Cinematic Spotlight Showcase Banner */}
+        {spotlightMovie && (
+          <SectionReveal>
+            <CinematicSpotlight 
+              movie={spotlightMovie} 
+              spotlightBadge={childMode ? "🌟 Family Choice Premiere" : "✨ IMAX Spotlight Premiere"}
+            />
+          </SectionReveal>
+        )}
+
+        {/* Second Half of Movie Sections */}
+        {movieSectionsPart2.map((section, index) => (
+          <SectionReveal key={`part2-${index}`}>
+            <div id={section.id}>
+              <MovieCarousel title={section.title} movies={section.data} />
+            </div>
           </SectionReveal>
         ))}
 

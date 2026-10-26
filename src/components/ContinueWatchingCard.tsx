@@ -23,7 +23,7 @@ export default function ContinueWatchingCard({
       : "/placeholder.jpg"; // Provide a fallback if needed
 
   return (
-    <div className={`relative group min-w-[280px] sm:min-w-[320px] max-w-[350px] aspect-[16/9] bg-neutral-900 rounded-2xl overflow-hidden cursor-pointer shrink-0 transition-transform hover:scale-105 hover:shadow-[0_0_20px_rgba(245,197,24,0.4)] border border-neutral-800 hover:border-[#F5C518] ${index === 0 ? 'origin-left' : 'origin-center'}`}>
+    <div className={`relative group min-w-[280px] sm:min-w-[320px] max-w-[350px] aspect-[16/9] bg-gradient-to-b from-neutral-900 to-black rounded-3xl overflow-hidden cursor-pointer shrink-0 transition-transform duration-300 hover:scale-[1.03] shadow-xl hover:shadow-[0_12px_35px_rgba(245,197,24,0.25)] border border-white/10 hover:border-[#F5C518]/70 ${index === 0 ? 'origin-left' : 'origin-center'}`}>
       <Link href={`/watch/${media.type}/${media.id}`} className="absolute inset-0 z-10 block">
         <img 
           src={imageUrl}

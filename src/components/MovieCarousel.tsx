@@ -19,9 +19,18 @@ export default function MovieCarousel({ title, movies }: { title: string, movies
 
   return (
     <section className="relative group/carousel mb-8 md:mb-12 content-auto">
-      <h2 className="text-2xl font-bold mb-4 md:mb-6 flex items-center border-l-4 border-[#F5C518] pl-3 relative z-20">
-        {title}
-      </h2>
+      <div className="flex items-center justify-between mb-4 md:mb-6 px-1 relative z-20">
+        <div className="flex items-center gap-3">
+          <div className="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#F5C518] to-amber-600 shadow-[0_0_12px_rgba(245,197,24,0.6)]" />
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
+            {title}
+          </h2>
+        </div>
+        <div className="hidden sm:flex items-center gap-1 text-xs font-bold text-neutral-400 group-hover/carousel:text-[#F5C518] transition-colors cursor-pointer select-none">
+          <span>Explore All</span>
+          <ChevronRight className="w-3.5 h-3.5 transform group-hover/carousel:translate-x-1 transition-transform" />
+        </div>
+      </div>
       
       <button 
         onClick={() => scroll('left')}

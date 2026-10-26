@@ -77,17 +77,51 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
     }
   };
   
+  // Metallic 3D gradient styles for ranks
+  const getNumberStyle = (idx: number) => {
+    if (idx === 0) {
+      return {
+        background: "linear-gradient(135deg, #FFF7AA 0%, #F5C518 45%, #926002 100%)",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        WebkitTextStroke: "2.5px rgba(245, 197, 24, 0.6)",
+        filter: "drop-shadow(0 6px 18px rgba(245, 197, 24, 0.45))",
+      };
+    }
+    if (idx === 1) {
+      return {
+        background: "linear-gradient(135deg, #FFFFFF 0%, #D1D5DB 50%, #4B5563 100%)",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        WebkitTextStroke: "2px rgba(255, 255, 255, 0.4)",
+        filter: "drop-shadow(0 6px 14px rgba(255, 255, 255, 0.25))",
+      };
+    }
+    if (idx === 2) {
+      return {
+        background: "linear-gradient(135deg, #FDBA74 0%, #EA580C 50%, #7C2D12 100%)",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        WebkitTextStroke: "2px rgba(234, 88, 12, 0.4)",
+        filter: "drop-shadow(0 6px 14px rgba(234, 88, 12, 0.3))",
+      };
+    }
+    return {
+      background: "linear-gradient(180deg, rgba(255,255,255,0.7) 0%, rgba(120,120,120,0.6) 60%, rgba(20,20,20,0.95) 100%)",
+      WebkitBackgroundClip: "text",
+      WebkitTextFillColor: "transparent",
+      WebkitTextStroke: "2px rgba(255, 255, 255, 0.18)",
+      filter: "drop-shadow(0 4px 12px rgba(0, 0, 0, 0.85))",
+    };
+  };
+
   return (
     <>
       <div className="relative flex-shrink-0 snap-start flex items-center h-48 md:h-64 mt-4 overflow-visible">
-        {/* Massive Background Number */}
+        {/* Massive 3D Metallic Background Number */}
         <span 
-          className="absolute left-0 -translate-x-8 md:-translate-x-12 text-[8rem] md:text-[12rem] font-black leading-none select-none z-0"
-          style={{
-            WebkitTextStroke: "4px #555",
-            color: "#121212", 
-            textShadow: "4px 4px 10px rgba(0,0,0,0.8)",
-          }}
+          className="absolute left-0 -translate-x-8 md:-translate-x-12 text-[8rem] md:text-[12rem] font-black leading-none select-none z-0 tracking-tighter"
+          style={getNumberStyle(index)}
         >
           {index + 1}
         </span>
@@ -99,18 +133,24 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
           onMouseLeave={handleMouseLeave}
         >
           {/* BASE CARD (Always visible underneath) */}
-          <div className="absolute inset-0 rounded-md bg-neutral-900 overflow-hidden shadow-md">
+          <div className="absolute inset-0 rounded-2xl bg-neutral-900 overflow-hidden shadow-xl border border-white/10 hover:border-[#F5C518]/70 hover:shadow-[0_12px_32px_rgba(245,197,24,0.2)] transition-all duration-300 group">
             <img 
               src={item.poster_path ? `${POSTER_BASE_URL}${item.poster_path}` : 'https://via.placeholder.com/342x513?text=No+Poster'} 
               alt={item.title || item.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
               loading="lazy"
               decoding="async"
             />
+
+            {/* Top-Left Rating Pill */}
+            <div className="absolute top-2.5 left-2.5 z-20 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[10px] font-bold text-amber-300 shadow-md pointer-events-none">
+              <span className="text-[#F5C518]">★</span>
+              <span>{item.vote_average ? item.vote_average.toFixed(1) : "8.0"}</span>
+            </div>
             
             {/* Action Buttons Overlay (Always visible) */}
             <div 
-              className="absolute top-2 right-2 flex flex-col gap-2 z-20"
+              className="absolute top-2.5 right-2.5 flex flex-col gap-1.5 z-20"
               onMouseEnter={cancelHover}
             >
               <button 
@@ -118,7 +158,7 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                   e.stopPropagation();
                   toggleWishlist(item);
                 }}
-                className="bg-black/60 p-2 rounded-full hover:bg-white hover:text-black transition-colors shadow-lg border border-white/20"
+                className="bg-black/50 backdrop-blur-md p-2 rounded-full hover:bg-white hover:text-black transition-all shadow-lg border border-white/20 hover:scale-110 active:scale-95"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 md:w-5 md:h-5 transition-colors ${isInWishlist ? 'text-red-500 hover:text-red-600' : 'text-white hover:text-black'}`} viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
@@ -130,7 +170,7 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                   e.stopPropagation();
                   setShowInfoModal(true);
                 }}
-                className="bg-black/60 p-2 rounded-full hover:bg-white hover:text-black transition-colors flex items-center justify-center text-white shadow-lg border border-white/20"
+                className="bg-black/50 backdrop-blur-md p-2 rounded-full hover:bg-white hover:text-black transition-all flex items-center justify-center text-white shadow-lg border border-white/20 hover:scale-110 active:scale-95"
               >
                 <Info className="w-4 h-4 md:w-5 md:h-5" />
               </button>
@@ -141,7 +181,7 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                   handlePlayTrailer(e);
                 }}
                 disabled={isLoading}
-                className="bg-black/60 p-2 rounded-full hover:bg-white hover:text-black transition-colors flex items-center justify-center text-white shadow-lg border border-white/20 disabled:opacity-50"
+                className="bg-black/50 backdrop-blur-md p-2 rounded-full hover:bg-[#F5C518] hover:text-black transition-all flex items-center justify-center text-white shadow-lg border border-white/20 disabled:opacity-50 hover:scale-110 active:scale-95"
               >
                 {isLoading ? (
                   <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -162,14 +202,14 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                     href={`/watch/${item.name && !item.title ? 'tv' : 'movie'}/${item.id}`}
                     onClick={(e) => e.stopPropagation()}
                     title="Watch Now"
-                    className="bg-[#F5C518] hover:bg-yellow-500 text-black py-2 rounded flex-1 transition-colors flex items-center justify-center"
+                    className="bg-[#F5C518] hover:bg-yellow-400 text-black py-2 rounded-xl flex-1 transition-colors flex items-center justify-center font-bold text-xs"
                   >
                     <Play className="w-4 h-4 fill-current ml-1" />
                   </Link>
                   <button 
                     onClick={handleAISummary}
                     title="AI Summary"
-                    className="bg-gradient-to-r from-indigo-600 to-purple-600 active:scale-95 text-white py-2 rounded flex-1 transition-transform flex items-center justify-center shadow-md border border-purple-500/30"
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 active:scale-95 text-white py-2 rounded-xl flex-1 transition-transform flex items-center justify-center shadow-md border border-purple-500/30 font-bold text-xs"
                   >
                     <Sparkles className="w-4 h-4 text-[#F5C518]" />
                   </button>
@@ -186,7 +226,7 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                 animate={{ opacity: 1, scale: 1.15, width: "150%", y: "-50%", x: index === 0 ? "0%" : "-50%" }}
                 exit={{ opacity: 0, scale: 0.95, width: "100%", y: "-50%", x: index === 0 ? "0%" : "-50%" }}
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className={`absolute top-1/2 ${index === 0 ? 'left-0 origin-left' : 'left-1/2 origin-center'} bg-[#141414] rounded-lg overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.9)] border border-neutral-700 z-50 flex flex-col cursor-pointer`}
+                className={`absolute top-1/2 ${index === 0 ? 'left-0 origin-left' : 'left-1/2 origin-center'} bg-neutral-950/95 backdrop-blur-2xl rounded-2xl overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.95)] border border-white/20 z-50 flex flex-col cursor-pointer`}
               >
                 {/* Top Image Section (Cropped to aspect-video) */}
                 <div className="relative w-full aspect-video shrink-0 bg-neutral-900 overflow-hidden">
@@ -243,7 +283,7 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                 </div>
 
                 {/* Bottom Info Section */}
-                <div className="p-3 flex flex-col w-full relative z-20 bg-[#141414]">
+                <div className="p-3.5 flex flex-col w-full relative z-20 bg-neutral-950/90">
                   <h3 className="font-bold text-white text-[13px] mb-1.5 truncate tracking-wide">
                     {item.title || item.name}
                   </h3>
@@ -252,7 +292,7 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                   {genres.length > 0 && (
                     <div className="flex flex-nowrap overflow-hidden gap-1.5 mb-2 shrink-0">
                       {genres.slice(0, 3).map((genre, idx) => (
-                        <span key={idx} className="inline-flex items-center text-[9px] font-semibold text-neutral-400 whitespace-nowrap">
+                        <span key={idx} className="inline-flex items-center text-[9px] font-semibold text-neutral-300 bg-white/5 px-2 py-0.5 rounded-full border border-white/10 whitespace-nowrap">
                           <span className="w-1 h-1 rounded-full bg-[#F5C518] mr-1.5 opacity-80 shrink-0"></span>
                           {genre}
                         </span>
@@ -266,17 +306,17 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
                   </p>
                   
                   {/* Bottom Action Buttons */}
-                  <div className="flex gap-2 mt-auto shrink-0 h-[28px]">
+                  <div className="flex gap-2 mt-auto shrink-0 h-[30px]">
                     <Link 
                       href={`/watch/${item.name && !item.title ? 'tv' : 'movie'}/${item.id}`}
                       onClick={(e) => e.stopPropagation()}
-                      className="bg-white hover:bg-neutral-200 text-black text-[10px] font-bold rounded-md flex-1 transition-colors flex items-center justify-center gap-1.5"
+                      className="bg-white hover:bg-neutral-200 text-black text-[10px] font-bold rounded-xl flex-1 transition-colors flex items-center justify-center gap-1.5 shadow-md"
                     >
                       <Play className="w-3 h-3 fill-current" /> Watch Now
                     </Link>
                     <button 
                       onClick={handleAISummary}
-                      className="relative group bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-right rounded-md flex-1 overflow-hidden shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all duration-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] border border-white/5 hover:border-white/20"
+                      className="relative group bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-right rounded-xl flex-1 overflow-hidden shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all duration-500 hover:shadow-[0_0_25px_rgba(168,85,247,0.5)] border border-white/10 hover:border-white/30"
                     >
                       <div className="absolute inset-0 flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:-translate-y-full group-hover:opacity-0 group-hover:scale-50">
                         <span className="text-white text-[10px] font-bold flex items-center gap-1"><Sparkles className="w-3 h-3 text-[#F5C518]" /> AI Summary</span>

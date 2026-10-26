@@ -19,9 +19,22 @@ export default function TopTenCarousel({ items, title, type }: { items: any[], t
 
   return (
     <section className="mb-8 md:mb-12 relative group/carousel content-auto">
-      <h2 className="text-2xl font-bold mb-4 md:mb-8 flex items-center border-l-4 border-[#F5C518] pl-3 mx-4 md:mx-8 relative z-20">
-        {title}
-      </h2>
+      <div className="flex items-center justify-between mb-4 md:mb-8 mx-4 md:mx-8 relative z-20">
+        <div className="flex items-center gap-3">
+          <div className="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#F5C518] via-amber-400 to-yellow-600 shadow-[0_0_15px_rgba(245,197,24,0.6)]" />
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-[#F5C518] block">
+              Official Leaderboard
+            </span>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
+              {title}
+            </h2>
+          </div>
+        </div>
+        <span className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-white bg-white/5 border border-white/10 backdrop-blur-md">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Live TMDB Charts
+        </span>
+      </div>
       
       <button 
         onClick={() => scroll('left')}

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getMovieTrailer } from "@/actions/movieActions";
 import { getAISummary } from "@/actions/aiActions";
 import AISummaryModal from "@/components/AISummaryModal";
+import { Play, Video, Sparkles, Loader2 } from "lucide-react";
 
 export default function HeroButtons({ movie, onInteractionChange }: { movie: any, onInteractionChange?: (acting: boolean) => void }) {
   const [trailerKey, setTrailerKey] = useState<string | null>(null);
@@ -41,35 +42,34 @@ export default function HeroButtons({ movie, onInteractionChange }: { movie: any
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full sm:w-auto flex-wrap">
+      <div className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-3 w-full sm:w-auto flex-wrap">
         <Link
           href={`/watch/${movie?.name && !movie?.title ? 'tv' : 'movie'}/${movie?.id}`}
-          className="w-full sm:w-auto bg-[#F5C518] text-black font-bold py-3 px-8 rounded-md hover:bg-yellow-400 hover:scale-105 transition-all duration-300 flex justify-center items-center shadow-[0_0_20px_rgba(245,197,24,0.3)] shrink-0"
+          className="w-full sm:w-auto bg-gradient-to-r from-[#F5C518] to-yellow-500 hover:from-yellow-400 hover:to-amber-500 text-black font-extrabold py-3.5 px-8 rounded-full shadow-[0_0_30px_rgba(245,197,24,0.4)] hover:shadow-[0_0_40px_rgba(245,197,24,0.6)] hover:scale-105 active:scale-95 transition-all flex justify-center items-center gap-2 shrink-0 group"
         >
-          <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
-          </svg>
-          Watch {movie?.name && !movie?.title ? 'Show' : 'Movie'}
+          <Play className="w-5 h-5 fill-current transition-transform group-hover:scale-110" />
+          <span>Watch {movie?.name && !movie?.title ? 'Series' : 'Movie'}</span>
         </Link>
+        
         <button 
           onClick={handlePlayTrailer}
           disabled={isLoading}
-          className="w-full sm:w-auto bg-neutral-800 text-white font-bold py-3 px-8 rounded-md hover:bg-neutral-700 hover:scale-105 transition-all duration-300 flex justify-center items-center shadow-lg border border-neutral-700 disabled:opacity-50 shrink-0"
+          className="w-full sm:w-auto bg-white/10 hover:bg-white/20 text-white font-bold py-3.5 px-7 rounded-full backdrop-blur-xl border border-white/20 hover:border-white/40 shadow-lg hover:scale-105 active:scale-95 transition-all flex justify-center items-center gap-2 disabled:opacity-50 shrink-0"
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          {isLoading ? "..." : "Trailer"}
+          {isLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin text-neutral-300" />
+          ) : (
+            <Video className="w-5 h-5 text-neutral-300" />
+          )}
+          <span>Trailer</span>
         </button>
+
         <button 
           onClick={handleAISummary}
-          className="w-full sm:w-auto bg-neutral-500/50 text-white font-bold py-3 px-8 rounded-md hover:bg-neutral-500/70 hover:scale-105 transition-all duration-300 flex justify-center items-center backdrop-blur-sm shadow-lg border border-neutral-500/50"
+          className="w-full sm:w-auto bg-gradient-to-r from-indigo-600/30 via-purple-600/30 to-indigo-600/30 hover:from-indigo-600/50 hover:to-purple-600/50 text-white font-bold py-3.5 px-7 rounded-full backdrop-blur-xl border border-purple-500/30 hover:border-purple-500/60 shadow-lg hover:scale-105 active:scale-95 transition-all flex justify-center items-center gap-2 shrink-0"
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          ✨ AI Summary
+          <Sparkles className="w-5 h-5 text-[#F5C518]" />
+          <span>AI Insights</span>
         </button>
       </div>
 

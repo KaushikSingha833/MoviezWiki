@@ -36,13 +36,15 @@ export default function CelebrityRow({ celebrities, title = "A-List Celebrities"
 
   return (
     <section className="relative w-full content-auto group/carousel">
-      <div className="flex items-center justify-between mb-6 md:mb-8">
-        <h2 className="text-2xl md:text-3xl font-black text-white flex items-center gap-3">
-          <div className="w-1.5 h-8 bg-[#F5C518] rounded-full" />
-          {title}
-        </h2>
-        <span className="text-xs font-bold text-[#F5C518] uppercase tracking-wider bg-[#F5C518]/10 px-3 py-1 rounded-full border border-[#F5C518]/20 flex items-center gap-1">
-          <Sparkles className="w-3 h-3" /> Trending Weekly
+      <div className="flex items-center justify-between mb-4 md:mb-6 px-1">
+        <div className="flex items-center gap-3">
+          <div className="w-1.5 h-7 rounded-full bg-gradient-to-b from-[#F5C518] to-amber-600 shadow-[0_0_12px_rgba(245,197,24,0.6)]" />
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
+            {title}
+          </h2>
+        </div>
+        <span className="text-xs font-bold text-[#F5C518] uppercase tracking-wider bg-[#F5C518]/10 px-3.5 py-1 rounded-full border border-[#F5C518]/30 flex items-center gap-1.5 backdrop-blur-md shadow-sm">
+          <Sparkles className="w-3.5 h-3.5" /> Trending Weekly
         </span>
       </div>
 
@@ -70,12 +72,12 @@ export default function CelebrityRow({ celebrities, title = "A-List Celebrities"
         viewport={{ once: true, margin: "100px" }}
         className="flex space-x-4 md:space-x-5 overflow-x-auto pb-6 md:pb-8 scrollbar-hide snap-x px-2 smooth-scroll-x"
       >
-        {celebrities.slice(0, 10).map((person: any) => (
+        {celebrities.slice(0, 12).map((person: any, idx: number) => (
           <motion.div 
             key={person.id} 
             variants={item}
             onClick={() => setSelectedActorId(person.id)}
-            className="relative flex-shrink-0 snap-start w-32 sm:w-44 lg:w-48 aspect-[2/3] rounded-2xl md:rounded-3xl overflow-hidden group cursor-pointer border border-neutral-800 hover:border-[#F5C518]/50 shadow-xl transition-colors duration-300 bg-neutral-900"
+            className="relative flex-shrink-0 snap-start w-36 sm:w-44 lg:w-48 aspect-[3/4] rounded-3xl overflow-hidden group cursor-pointer border border-white/10 hover:border-[#F5C518]/70 shadow-2xl transition-all duration-300 hover:scale-[1.03] bg-gradient-to-b from-neutral-900 via-neutral-950 to-black"
           >
             <img 
               src={person.profile_path ? `${IMAGE_BASE_URL}${person.profile_path}` : 'https://via.placeholder.com/300x450'} 
@@ -84,14 +86,31 @@ export default function CelebrityRow({ celebrities, title = "A-List Celebrities"
               loading="lazy"
               decoding="async"
             />
-            {/* Cinematic Gradient Fade */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent group-hover:from-black/90 transition-all duration-300" />
             
-            <div className="absolute bottom-0 left-0 w-full p-3 md:p-4 transform translate-y-1 md:translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-              <p className="text-white font-black text-xs md:text-sm lg:text-base truncate drop-shadow-md">
+            {/* VIP Starlight Top Pill */}
+            <div className="absolute top-3 left-3 z-20 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md border border-white/15 text-[9px] font-bold text-amber-300 shadow-md">
+              <span className="text-[#F5C518]">★</span>
+              <span>#{idx + 1} ICON</span>
+            </div>
+
+            {/* Cinematic Gradient Fade */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent group-hover:from-black/95 transition-all duration-300" />
+            
+            <div className="absolute bottom-0 left-0 w-full p-3.5 md:p-4 transform translate-y-0.5 group-hover:translate-y-0 transition-transform duration-300">
+              <p className="text-white font-black text-sm md:text-base truncate drop-shadow-md group-hover:text-[#F5C518] transition-colors">
                 {person.name}
               </p>
-              <div className="w-6 h-0.5 bg-[#F5C518] mt-1.5 md:mt-2 group-hover:w-full transition-all duration-500 ease-out" />
+              <div className="flex items-center gap-2 mt-1">
+                <span className="text-[10px] text-neutral-400 font-medium">
+                  {person.known_for_department || "Star"}
+                </span>
+                {person.popularity && (
+                  <span className="text-[9px] text-amber-400 font-bold bg-amber-500/10 px-1.5 py-0.5 rounded-md border border-amber-500/20">
+                    🔥 {Math.round(person.popularity)} pts
+                  </span>
+                )}
+              </div>
+              <div className="w-8 h-0.5 bg-[#F5C518] mt-2 group-hover:w-full transition-all duration-500 ease-out rounded-full" />
             </div>
           </motion.div>
         ))}
