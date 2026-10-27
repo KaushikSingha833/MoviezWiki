@@ -9,6 +9,7 @@ import AuthWarningModal from "@/components/AuthWarningModal";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import WikiBot from "@/components/WikiBot";
 import Footer from "@/components/Footer";
+import CinematicSplashIntro from "@/components/CinematicSplashIntro";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "700", "900"] });
 
@@ -51,6 +52,8 @@ export default function RootLayout({
           <div className="absolute top-[20%] right-[-10%] w-[40%] h-[60%] bg-purple-600/[0.07] rounded-full blur-[80px]" />
           <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[50%] bg-blue-600/[0.07] rounded-full blur-[80px]" />
         </div>
+        {/* Global Cinematic Splash Screen on First Visit */}
+        <CinematicSplashIntro />
         
         <SettingsProvider>
           <WishlistProvider>

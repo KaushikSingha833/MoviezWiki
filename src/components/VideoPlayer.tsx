@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Server, Settings2, Lightbulb, X } from "lucide-react";
+import { Server, Settings2, Lightbulb, X, Sparkles, Zap, Globe, Shield } from "lucide-react";
 
 type ServerOption = {
   name: string;
+  tag: string;
+  badgeColor: string;
   url: (id: string, type: "movie" | "tv") => string;
   description: string;
 };
@@ -12,27 +14,37 @@ type ServerOption = {
 const servers: ServerOption[] = [
   {
     name: "Server 1 (Vidsrc.cc)",
-    description: "Alternative player. Sometimes includes multi-audio.",
+    tag: "Multi-Audio",
+    badgeColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+    description: "Alternative player. Often includes Hindi & multi-lingual dubbed tracks.",
     url: (id, type) => `https://vidsrc.cc/v2/embed/${type}/${id}`,
   },
   {
     name: "Server 2 (AutoEmbed)",
-    description: "Standard dual audio support. Check the gear icon ⚙️.",
+    tag: "Dual Audio ⚙️",
+    badgeColor: "bg-[#F5C518]/10 text-amber-300 border-[#F5C518]/30",
+    description: "Standard dual audio support. Look for the player settings gear icon.",
     url: (id, type) => `https://autoembed.co/${type}/tmdb/${id}`,
   },
   {
     name: "Server 3 (VidLink)",
-    description: "Check the settings icon in the player for audio tracks.",
+    tag: "High Quality",
+    badgeColor: "bg-blue-500/10 text-blue-400 border-blue-500/30",
+    description: "Crisp 1080p stream with customizable subtitle options.",
     url: (id, type) => `https://vidlink.pro/${type}/${id}`,
   },
   {
-    name: "Server 4 (VidSrc.me - Fast)",
-    description: "High speed, but usually English only.",
+    name: "Server 4 (VidSrc.me)",
+    tag: "Ultra Fast",
+    badgeColor: "bg-purple-500/10 text-purple-400 border-purple-500/30",
+    description: "Instant high-speed CDN buffer. Best for original language audio.",
     url: (id, type) => `https://vidsrc.me/embed/${type}?tmdb=${id}`,
   },
   {
     name: "Server 5 (VidSrc.to)",
-    description: "Alternative fast server.",
+    tag: "Backup Mirror",
+    badgeColor: "bg-rose-500/10 text-rose-400 border-rose-500/30",
+    description: "Reliable fallback mirror if other servers are under load.",
     url: (id, type) => `https://vidsrc.to/embed/${type}/${id}`,
   }
 ];
@@ -52,21 +64,32 @@ export default function VideoPlayer({
       {/* Theater Mode Dark Overlay */}
       {isTheaterMode && (
         <div 
-          className="fixed inset-0 bg-black/95 z-[9000] backdrop-blur-md transition-all duration-700" 
+          className="fixed inset-0 bg-black/95 z-[9000] backdrop-blur-xl transition-all duration-700" 
           onClick={() => setIsTheaterMode(false)}
         />
       )}
 
-      <div className={`w-full flex flex-col gap-4 transition-all duration-700 ${isTheaterMode ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-6xl z-[9010]' : 'relative'}`}>
+      <div className={`w-full flex flex-col gap-6 transition-all duration-700 ${isTheaterMode ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[96vw] max-w-7xl z-[9010]' : 'relative'}`}>
         
-        {/* Theater Mode Toggle Button */}
-        <div className="flex justify-end absolute -top-12 right-0 z-[9020]">
+        {/* Top Control Bar */}
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-black/70 backdrop-blur-md text-[#F5C518] border border-[#F5C518]/30 shadow-md">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              IMAX Player Live
+            </span>
+            <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/5 border border-white/10 text-neutral-400">
+              <Zap className="w-3 h-3 text-[#F5C518]" /> 1080p HD • Adaptive Bitrate
+            </span>
+          </div>
+
           <button 
+            type="button"
             onClick={() => setIsTheaterMode(!isTheaterMode)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold transition-all border ${
+            className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold transition-all border cursor-pointer select-none active:scale-95 ${
               isTheaterMode 
-                ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 hover:bg-rose-500 hover:text-white' 
-                : 'bg-black/60 text-[#F5C518] border-[#F5C518]/30 hover:bg-[#F5C518] hover:text-black backdrop-blur-md'
+                ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 hover:bg-rose-500 hover:text-white shadow-[0_0_20px_rgba(244,63,94,0.3)]' 
+                : 'bg-black/60 text-[#F5C518] border-[#F5C518]/30 hover:bg-[#F5C518] hover:text-black backdrop-blur-md shadow-md'
             }`}
           >
             {isTheaterMode ? (
@@ -77,55 +100,87 @@ export default function VideoPlayer({
           </button>
         </div>
 
-        {/* Video Player */}
-        <div className={`w-full aspect-video bg-neutral-950 rounded-xl overflow-hidden border border-neutral-800 relative transition-shadow duration-700 ${isTheaterMode ? 'shadow-[0_0_150px_-20px_rgba(255,255,255,0.15)] ring-1 ring-white/10' : 'shadow-[0_0_60px_rgba(0,0,0,0.9)]'}`}>
-        <iframe
-          src={servers[activeServer].url(tmdbId, type)}
-          className="w-full h-full border-0 absolute inset-0"
-          allowFullScreen
-          referrerPolicy="origin"
-        ></iframe>
-      </div>
+        {/* Video Player Display */}
+        <div className="relative group">
+          {/* Ambient Glow */}
+          <div className="absolute -inset-1 rounded-3xl bg-gradient-to-r from-[#F5C518]/10 via-purple-500/5 to-[#F5C518]/10 blur-xl opacity-75 group-hover:opacity-100 transition duration-1000 -z-10" />
 
-      {/* Server Selection Controls */}
-      <div className="bg-neutral-900/50 border border-neutral-800/80 rounded-xl p-4 backdrop-blur-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <Settings2 className="w-5 h-5 text-[#F5C518]" />
-          <h3 className="text-white font-bold text-sm sm:text-base">
-            Change Server (For Different Languages)
-          </h3>
+          <div className={`w-full aspect-video bg-black rounded-3xl overflow-hidden border border-white/15 relative transition-all duration-700 ${
+            isTheaterMode 
+              ? 'shadow-[0_0_150px_-20px_rgba(245,197,24,0.25)] ring-1 ring-white/20' 
+              : 'shadow-[0_25px_70px_rgba(0,0,0,0.95)]'
+          }`}>
+            <iframe
+              key={`player-${tmdbId}-${activeServer}`}
+              src={servers[activeServer].url(tmdbId, type)}
+              className="w-full h-full border-0 absolute inset-0"
+              allowFullScreen
+              referrerPolicy="origin"
+            ></iframe>
+          </div>
         </div>
-        
-        <div className="flex flex-col sm:flex-row gap-3">
-          {servers.map((server, index) => (
-            <button
-              key={index}
-              onClick={() => setActiveServer(index)}
-              className={`flex-1 flex flex-col items-start p-3 rounded-lg border transition-all text-left ${
-                activeServer === index
-                  ? "bg-[#F5C518]/10 border-[#F5C518] shadow-[0_0_15px_rgba(245,197,24,0.15)]"
-                  : "bg-black/50 border-neutral-800 hover:border-neutral-600 hover:bg-neutral-800/50"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <Server className={`w-4 h-4 ${activeServer === index ? "text-[#F5C518]" : "text-neutral-400"}`} />
-                <span className={`font-bold text-sm ${activeServer === index ? "text-white" : "text-neutral-300"}`}>
-                  {server.name}
-                </span>
+
+        {/* Server Selection Controls */}
+        <div className="bg-gradient-to-br from-neutral-900/90 via-neutral-950 to-black border border-white/10 rounded-3xl p-5 md:p-6 backdrop-blur-2xl shadow-2xl">
+          <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#F5C518]/10 border border-[#F5C518]/20 flex items-center justify-center text-[#F5C518]">
+                <Settings2 className="w-4 h-4" />
               </div>
-              <span className={`text-xs ${activeServer === index ? "text-neutral-300" : "text-neutral-500"}`}>
-                {server.description}
-              </span>
-            </button>
-          ))}
+              <div>
+                <h3 className="text-white font-black text-sm sm:text-base tracking-tight">
+                  High-Speed Streaming Servers
+                </h3>
+                <p className="text-[11px] text-neutral-400">Switch server if you experience buffering or require different language dubs</p>
+              </div>
+            </div>
+            <span className="hidden md:inline-flex text-[10px] font-bold uppercase tracking-wider text-[#F5C518] bg-[#F5C518]/10 px-2.5 py-1 rounded-full border border-[#F5C518]/20">
+              5 Active Mirrors
+            </span>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            {servers.map((server, index) => {
+              const isActive = activeServer === index;
+              return (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => setActiveServer(index)}
+                  className={`flex flex-col items-start p-3.5 rounded-2xl border transition-all duration-300 text-left cursor-pointer ${
+                    isActive
+                      ? "bg-gradient-to-b from-[#F5C518]/15 via-[#F5C518]/5 to-transparent border-[#F5C518] shadow-[0_0_25px_rgba(245,197,24,0.2)] scale-[1.02]"
+                      : "bg-white/[0.03] border-white/5 hover:border-white/20 hover:bg-white/[0.06]"
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full mb-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <Server className={`w-3.5 h-3.5 ${isActive ? "text-[#F5C518]" : "text-neutral-400"}`} />
+                      <span className={`font-bold text-xs ${isActive ? "text-white" : "text-neutral-300"}`}>
+                        Server {index + 1}
+                      </span>
+                    </div>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border ${server.badgeColor}`}>
+                      {server.tag}
+                    </span>
+                  </div>
+                  <span className={`text-[11px] line-clamp-2 leading-tight ${isActive ? "text-neutral-200" : "text-neutral-400"}`}>
+                    {server.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          
+          {/* Audio Dub Tip */}
+          <div className="mt-4 pt-3 border-t border-white/5 flex items-center gap-2 text-xs text-neutral-400">
+            <Globe className="w-4 h-4 text-[#F5C518] shrink-0" />
+            <p>
+              <strong className="text-white">Multi-Language Tip:</strong> For Hindi, Tamil, Telugu, Spanish or French dubs, select <strong>Server 1</strong> or <strong>Server 2</strong>. Once playing, tap the gear icon ⚙️ inside the player to switch audio tracks.
+            </p>
+          </div>
         </div>
-        
-        {/* Helper text for user */}
-        <p className="text-neutral-500 text-xs mt-4">
-          <strong className="text-[#F5C518]">Tip:</strong> If you're looking for Hindi, Tamil, or other dubbed versions, try Server 1 or Server 2. Once the video loads, check the player's internal settings (usually a gear icon ⚙️) to switch audio tracks.
-        </p>
       </div>
-    </div>
     </>
   );
 }

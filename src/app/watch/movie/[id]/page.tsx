@@ -50,14 +50,24 @@ export default async function WatchMoviePage({
       <header className="p-4 sm:p-6 flex items-center justify-between z-10 w-full pointer-events-none">
         <Link 
           href={`/movies/${id}`} 
-          className="inline-flex items-center gap-2 bg-neutral-900/80 hover:bg-neutral-800 text-white font-bold px-4 py-2 rounded-full text-xs sm:text-sm backdrop-blur-md transition-all pointer-events-auto border border-neutral-800 shadow-md"
+          className="inline-flex items-center gap-2 bg-white/5 hover:bg-[#F5C518] hover:text-black text-white font-bold px-4 sm:px-5 py-2 rounded-full text-xs sm:text-sm backdrop-blur-xl transition-all pointer-events-auto border border-white/10 shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Details</span>
         </Link>
-        <h1 className="text-lg sm:text-xl font-black text-neutral-300 hidden md:block drop-shadow-md">
-          Now Playing: <span className="text-white">{title}</span>
-        </h1>
+
+        <div className="hidden md:flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <h1 className="text-base sm:text-lg font-black text-neutral-300 drop-shadow-md">
+            Now Streaming: <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-neutral-100 to-[#F5C518]">{title}</span>
+          </h1>
+          {movie?.release_date && (
+            <span className="text-xs text-neutral-400 bg-white/5 px-2.5 py-0.5 rounded-full border border-white/10">
+              {movie.release_date.substring(0, 4)}
+            </span>
+          )}
+        </div>
+
         <div className="w-24 hidden md:block"></div>
       </header>
 
@@ -66,14 +76,17 @@ export default async function WatchMoviePage({
         <VideoPlayer tmdbId={id} type="movie" />
 
         {/* Ad-Blocker Disclaimer */}
-        <div className="mt-6 sm:mt-8 w-full max-w-4xl bg-neutral-900/60 border border-neutral-800/80 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-start gap-4 text-xs sm:text-sm text-neutral-400 backdrop-blur-sm">
-          <div className="p-2.5 bg-black rounded-lg text-[#F5C518] shrink-0 border border-neutral-800 shadow-inner">
-            <ShieldAlert className="w-5 h-5" />
+        <div className="mt-8 w-full max-w-4xl bg-gradient-to-r from-amber-500/10 via-neutral-950 to-black border border-amber-500/20 rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row items-start gap-4 text-xs sm:text-sm text-neutral-400 backdrop-blur-2xl shadow-xl">
+          <div className="p-3 bg-amber-500/10 rounded-2xl text-[#F5C518] shrink-0 border border-amber-500/30 shadow-inner">
+            <ShieldAlert className="w-6 h-6" />
           </div>
           <div>
-            <strong className="text-white block mb-1 text-sm">Third-Party Source Disclaimer</strong>
-            <p className="leading-relaxed">
-              This video player is provided by an external streaming network. MoviezWiki has no control over the popups or advertisements shown within the player. For an uninterrupted cinematic experience, we strongly recommend using an <strong className="text-[#F5C518]">Ad-Blocker (like uBlock Origin)</strong> or the <strong className="text-[#F5C518]">Brave Browser</strong>.
+            <div className="flex items-center gap-2 mb-1">
+              <strong className="text-white text-sm sm:text-base font-bold">Uninterrupted Cinema Experience</strong>
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-md border border-amber-500/30">Recommended</span>
+            </div>
+            <p className="leading-relaxed text-neutral-300 text-xs sm:text-sm">
+              Third-party streaming network servers may show external popups. For zero ads and maximum quality, we strongly recommend browsing with an <strong className="text-[#F5C518]">Ad-Blocker (uBlock Origin)</strong> or using the <strong className="text-[#F5C518]">Brave Browser</strong>.
             </p>
           </div>
         </div>
