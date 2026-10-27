@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
+import { createPortal } from "react-dom";
 import { getProfileByUsername, UserProfile } from "@/lib/profiles";
 import { useWishlist } from "@/context/WishlistContext";
-import { Lock, User, Calendar, MapPin, Activity, ShieldCheck, Heart, UserPlus, UserMinus, Settings, FolderHeart, Film } from "lucide-react";
+import { Lock, User, Calendar, MapPin, Activity, ShieldCheck, Heart, UserPlus, UserMinus, Settings, FolderHeart, Film, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { getNetworkCounts, getFollowState, followUser, unfollowUser, getNetworkList } from "@/lib/network";
@@ -111,6 +112,23 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
   const [showNetworkModal, setShowNetworkModal] = useState<"followers" | "following" | null>(null);
   const [networkUsers, setNetworkUsers] = useState<UserProfile[]>([]);
   const [loadingNetwork, setLoadingNetwork] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Lock body scroll when network modal is open
+  useEffect(() => {
+    if (showNetworkModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [showNetworkModal]);
 
   useEffect(() => {
     if (authLoaded && user && username) {
@@ -437,27 +455,70 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
         )}
       </div>
 
-      {/* Network Modal */}
-      {showNetworkModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#121215] border border-neutral-800 rounded-3xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh] shadow-2xl">
-            <div className="p-6 border-b border-neutral-800/80 flex items-center justify-between">
-              <h3 className="text-xl font-black text-white capitalize">{showNetworkModal}</h3>
-              <button onClick={() => setShowNetworkModal(null)} className="text-neutral-500 hover:text-white transition bg-neutral-900 p-2 rounded-full">
-                 ✕ 
+      {/* Network Modal (Portaled directly to document.body to remain centered in viewport) */}
+      {mounted && typeof document !== "undefined" && showNetworkModal && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowNetworkModal(null);
+          }}
+        >
+          <div 
+            className="bg-[#121215]/95 border border-white/10 rounded-3xl w-full max-w-md overflow-hidden flex flex-col max-h-[85vh] shadow-[0_25px_60px_rgba(0,0,0,0.9)] animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header with Switcher Tabs */}
+            <div className="p-4 sm:p-5 border-b border-white/5 flex items-center justify-between bg-black/40">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <button
+                  onClick={() => handleOpenNetwork("followers")}
+                  className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black transition-all ${
+                    showNetworkModal === "followers"
+                      ? "bg-[#F5C518] text-black shadow-[0_0_15px_rgba(245,197,24,0.3)]"
+                      : "text-neutral-400 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  Followers <span className="opacity-70 text-[11px] ml-1">({followersCount})</span>
+                </button>
+                <button
+                  onClick={() => handleOpenNetwork("following")}
+                  className={`px-3 py-1.5 rounded-xl text-xs sm:text-sm font-black transition-all ${
+                    showNetworkModal === "following"
+                      ? "bg-[#F5C518] text-black shadow-[0_0_15px_rgba(245,197,24,0.3)]"
+                      : "text-neutral-400 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  Following <span className="opacity-70 text-[11px] ml-1">({followingCount})</span>
+                </button>
+              </div>
+
+              <button 
+                onClick={() => setShowNetworkModal(null)} 
+                className="text-neutral-400 hover:text-white hover:bg-white/10 p-2 rounded-full transition-colors"
+                title="Close"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-4 flex-1 overflow-y-auto">
+
+            {/* User List */}
+            <div className="p-3 sm:p-4 flex-1 overflow-y-auto custom-scrollbar">
               {loadingNetwork ? (
-                <div className="flex justify-center p-8">
+                <div className="flex flex-col items-center justify-center p-12 gap-3">
                   <div className="w-8 h-8 border-2 border-[#F5C518] border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs text-neutral-500 font-bold tracking-wider uppercase">Loading network...</span>
                 </div>
               ) : networkUsers.length === 0 ? (
-                <div className="text-center p-8 text-neutral-500 font-medium">
-                  {showNetworkModal === "followers" ? "No followers yet." : "You aren't following anyone yet."}
+                <div className="text-center py-12 px-4 text-neutral-500 font-medium">
+                  <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-3">
+                    <User className="w-6 h-6 text-neutral-600" />
+                  </div>
+                  <p className="text-sm">
+                    {showNetworkModal === "followers" ? "No followers yet." : "You aren't following anyone yet."}
+                  </p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-1.5">
                   {networkUsers.map((netUser) => (
                     <NetworkUserRow 
                       key={netUser.uid}
@@ -471,7 +532,8 @@ export default function PublicProfilePage({ params }: { params: Promise<{ userna
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
