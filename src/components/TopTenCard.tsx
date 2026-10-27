@@ -10,6 +10,7 @@ import Link from "next/link";
 import AISummaryModal from "@/components/AISummaryModal";
 import InfoModal from "@/components/InfoModal";
 import { Info, Play, Sparkles, Video } from "lucide-react";
+import MWPosterImage from "@/components/MWPosterImage";
 
 export default function TopTenCard({ item, index }: { item: any, index: number }) {
   const genres = getGenreNames(item.genre_ids);
@@ -134,12 +135,11 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
         >
           {/* BASE CARD (Always visible underneath) */}
           <div className="absolute inset-0 rounded-2xl bg-neutral-900 overflow-hidden shadow-xl border border-white/10 hover:border-[#F5C518]/70 hover:shadow-[0_12px_32px_rgba(245,197,24,0.2)] transition-all duration-300 group">
-            <img 
-              src={item.poster_path ? `${POSTER_BASE_URL}${item.poster_path}` : 'https://via.placeholder.com/342x513?text=No+Poster'} 
+            <MWPosterImage 
+              src={item.poster_path ? `${POSTER_BASE_URL}${item.poster_path}` : null} 
               alt={item.title || item.name}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-              loading="lazy"
-              decoding="async"
+              title={item.title || item.name}
+              className="group-hover:scale-105 transition-transform duration-500 ease-out"
             />
 
             {/* Top-Left Rating Pill */}
@@ -230,12 +230,11 @@ export default function TopTenCard({ item, index }: { item: any, index: number }
               >
                 {/* Top Image Section (Cropped to aspect-video) */}
                 <div className="relative w-full aspect-video shrink-0 bg-neutral-900 overflow-hidden">
-                  <img 
-                    src={`${IMAGE_BASE_URL}${item.backdrop_path || item.poster_path}`} 
+                  <MWPosterImage 
+                    src={item.backdrop_path || item.poster_path ? `${IMAGE_BASE_URL}${item.backdrop_path || item.poster_path}` : null} 
                     alt={item.title || item.name}
+                    title={item.title || item.name}
                     className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
                   />
                   
                   {/* Fade gradient */}

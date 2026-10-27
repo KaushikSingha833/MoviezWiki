@@ -11,6 +11,7 @@ import Link from "next/link";
 import AISummaryModal from "./AISummaryModal";
 import InfoModal from "./InfoModal";
 import { Info, Play, Sparkles, Video } from "lucide-react";
+import MWPosterImage from "./MWPosterImage";
 
 export default function MovieCard({ movie, index }: { movie: any, index?: number }) {
   const { logInteraction } = useTaste();
@@ -112,12 +113,11 @@ export default function MovieCard({ movie, index }: { movie: any, index?: number
       >
         {/* BASE CARD (Always visible underneath) */}
         <div className="absolute inset-0 rounded-2xl bg-neutral-900 overflow-hidden shadow-xl border border-white/10 hover:border-[#F5C518]/70 hover:shadow-[0_12px_32px_rgba(245,197,24,0.2)] transition-all duration-300 group">
-          <img 
-            src={movie.poster_path ? `${POSTER_BASE_URL}${movie.poster_path}` : 'https://via.placeholder.com/342x513?text=No+Poster'} 
+          <MWPosterImage 
+            src={movie.poster_path ? `${POSTER_BASE_URL}${movie.poster_path}` : null} 
             alt={movie.title || movie.name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-            loading="lazy"
-            decoding="async"
+            title={movie.title || movie.name}
+            className="group-hover:scale-105 transition-transform duration-500 ease-out"
           />
 
           {/* Top-Left Rating Pill */}
@@ -238,12 +238,11 @@ export default function MovieCard({ movie, index }: { movie: any, index?: number
             >
               {/* Top Image Section (Cropped to aspect-video on hover to save space) */}
               <div className="relative w-full aspect-video shrink-0 bg-neutral-900 overflow-hidden">
-                <img 
-                  src={`${IMAGE_BASE_URL}${movie.backdrop_path || movie.poster_path}`} 
+                <MWPosterImage 
+                  src={movie.backdrop_path || movie.poster_path ? `${IMAGE_BASE_URL}${movie.backdrop_path || movie.poster_path}` : null} 
                   alt={movie.title || movie.name}
+                  title={movie.title || movie.name}
                   className="w-full h-full object-cover"
-                  loading="lazy"
-                  decoding="async"
                 />
                 
                 {/* Fade gradient at the bottom of the image to blend into the card body */}

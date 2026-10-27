@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { getMovieTrailer } from "@/actions/movieActions";
 import { getGenreNames } from "@/lib/genres";
 import { Play, Loader2, VideoOff } from "lucide-react";
+import MWPosterImage from "./MWPosterImage";
 
 export default function LatestTrailers({ movies }: { movies: any[] }) {
   if (!movies || movies.length === 0) return null;
@@ -197,12 +198,11 @@ export default function LatestTrailers({ movies }: { movies: any[] }) {
               }`}
             >
               <div className="relative w-20 h-24 rounded-xl overflow-hidden shadow-md shrink-0 bg-neutral-900">
-                <img
-                  src={movie.poster_path ? `${POSTER_BASE_URL}${movie.poster_path}` : 'https://via.placeholder.com/150x225'}
-                  className="w-full h-full object-cover"
+                <MWPosterImage
+                  src={movie.poster_path ? `${POSTER_BASE_URL}${movie.poster_path}` : null}
                   alt={movie.title || movie.name}
-                  loading="lazy"
-                  decoding="async"
+                  title={movie.title || movie.name}
+                  className="w-full h-full object-cover"
                 />
                 {isThisLoading ? (
                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-[1px]">

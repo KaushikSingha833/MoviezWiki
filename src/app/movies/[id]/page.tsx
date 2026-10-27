@@ -2,6 +2,7 @@ import Link from "next/link";
 import { fetchTMDB } from "@/lib/tmdb";
 import { getGenreNames } from "@/lib/genres";
 import HeroButtons from "@/components/HeroButtons";
+import MWPosterImage from "@/components/MWPosterImage";
 
 export default async function MovieDetailPage({
   params,
@@ -91,20 +92,15 @@ export default async function MovieDetailPage({
           
           {/* Left Poster */}
           <div className="md:col-span-4 lg:col-span-3 relative group">
-            {posterPath ? (
-              <div className="relative rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 transform transition-transform duration-500 group-hover:scale-[1.02]">
-                <img
-                  src={posterPath}
-                  alt={movie.title || movie.name}
-                  className="w-full h-auto object-cover aspect-[2/3]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
-            ) : (
-              <div className="w-full aspect-[2/3] bg-neutral-900 rounded-2xl border border-neutral-800 flex items-center justify-center text-neutral-500 font-bold shadow-2xl">
-                No Poster Available
-              </div>
-            )}
+            <div className="relative rounded-2xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 transform transition-transform duration-500 group-hover:scale-[1.02] aspect-[2/3]">
+              <MWPosterImage
+                src={posterPath}
+                alt={movie.title || movie.name}
+                title={movie.title || movie.name}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+            </div>
 
             {movie.vote_average && (
               <div className="mt-6 p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between shadow-xl backdrop-blur-md">
