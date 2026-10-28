@@ -9,7 +9,7 @@ import AuthWarningModal from "@/components/AuthWarningModal";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import WikiBot from "@/components/WikiBot";
 import Footer from "@/components/Footer";
-import CinematicSplashIntro from "@/components/CinematicSplashIntro";
+import PWARegistration from "@/components/PWARegistration";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "700", "900"] });
 
@@ -35,25 +35,13 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning className={`${outfit.className} antialiased bg-[#050505] selection:bg-purple-500/30 selection:text-white relative`}>
         {/* Register Service Worker for PWA */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js');
-                });
-              }
-            `,
-          }}
-        />
+        <PWARegistration />
         {/* Global Ambient Aurora Background (GPU accelerated without expensive mix-blend re-rasterization) */}
         <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden gpu-accelerated">
           <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/[0.07] rounded-full blur-[80px]" />
           <div className="absolute top-[20%] right-[-10%] w-[40%] h-[60%] bg-purple-600/[0.07] rounded-full blur-[80px]" />
           <div className="absolute bottom-[-20%] left-[20%] w-[60%] h-[50%] bg-blue-600/[0.07] rounded-full blur-[80px]" />
         </div>
-        {/* Global Cinematic Splash Screen on First Visit */}
-        <CinematicSplashIntro />
         
         <SettingsProvider>
           <WishlistProvider>
