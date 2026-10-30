@@ -13,6 +13,10 @@ import {
   CheckCircle2,
   HelpCircle,
   Play,
+  Pause,
+  Volume2,
+  Maximize2,
+  ArrowLeft,
   RotateCcw,
   Sliders,
   Share2,
@@ -28,7 +32,15 @@ import {
   BatteryCharging,
   Eye,
   Check,
-  X
+  X,
+  Heart,
+  Bookmark,
+  UserPlus,
+  Users,
+  Settings as SettingsIcon,
+  Shield,
+  Bell,
+  Wifi
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
@@ -43,9 +55,65 @@ export default function DownloadAppPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
   const [qrTarget, setQrTarget] = useState<"page" | "direct">("page");
 
+  // Phone Mockup 5-State Interactive Guided Tour:
+  // 0 = Favorites & Feed, 1 = Details Pop-up, 2 = 16:9 Cinema Player, 3 = Friends Wishlist, 4 = Settings & Privacy
+  const [simStep, setSimStep] = useState<0 | 1 | 2 | 3 | 4>(0);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [privacyToggled, setPrivacyToggled] = useState(true);
+
   const APK_DOWNLOAD_URL = "https://github.com/KaushikSingha833/MoviezWiki/releases/download/v1.0.0/MoviezWiki.apk";
   const GITHUB_RELEASES_URL = "https://github.com/KaushikSingha833/MoviezWiki/releases/latest";
   const SITE_URL = "https://moviez-wiki.vercel.app/download";
+
+  // Comprehensive ~13-second auto-looping guided tour of MoviezWiki Mobile
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+
+    const runLoop = () => {
+      setSimStep(0); // 0: Feed & Favorites (2.8s)
+      setIsFavorited(false);
+      setIsFollowing(false);
+
+      // Tap Heart button at 0.9s
+      timeoutId = setTimeout(() => {
+        setIsFavorited(true);
+
+        // Move to Step 1: Details Pop-up at 2.6s
+        timeoutId = setTimeout(() => {
+          setSimStep(1); // 1: Details Pop-up (2.2s)
+
+          // Move to Step 2: 16:9 Cinema Player at 2.0s
+          timeoutId = setTimeout(() => {
+            setSimStep(2); // 2: 16:9 Cinema Player (3.0s)
+
+            // Move to Step 3: Friends & Community Wishlists at 3.0s
+            timeoutId = setTimeout(() => {
+              setSimStep(3); // 3: Friends Wishlists (2.8s)
+
+              // Tap Follow friend at 1.0s
+              timeoutId = setTimeout(() => {
+                setIsFollowing(true);
+
+                // Move to Step 4: Settings & Privacy at 1.8s
+                timeoutId = setTimeout(() => {
+                  setSimStep(4); // 4: Settings & Privacy (2.8s)
+
+                  // Loop back smoothly to Step 0
+                  timeoutId = setTimeout(() => {
+                    runLoop();
+                  }, 2800);
+                }, 1800);
+              }, 1000);
+            }, 3000);
+          }, 2000);
+        }, 1700);
+      }, 900);
+    };
+
+    runLoop();
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -216,36 +284,6 @@ export default function DownloadAppPage() {
               {/* Glow Behind Mockup */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#F5C518]/25 to-purple-600/20 rounded-[50px] blur-3xl transform scale-105 pointer-events-none" />
 
-              {/* Floating Badges */}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                className="absolute -top-4 -left-6 z-20 px-3.5 py-2 rounded-2xl bg-[#121216]/90 border border-white/10 backdrop-blur-xl shadow-2xl flex items-center gap-2 text-xs font-bold text-amber-300"
-              >
-                <Zap className="w-4 h-4 text-[#F5C518]" />
-                <span>120Hz ProMotion</span>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 }}
-                className="absolute top-1/3 -right-6 z-20 px-3.5 py-2 rounded-2xl bg-[#121216]/90 border border-white/10 backdrop-blur-xl shadow-2xl flex items-center gap-2 text-xs font-bold text-emerald-400"
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>Hardware Back Button</span>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.8 }}
-                className="absolute -bottom-4 -left-4 z-20 px-3.5 py-2 rounded-2xl bg-[#121216]/90 border border-white/10 backdrop-blur-xl shadow-2xl flex items-center gap-2 text-xs font-bold text-white"
-              >
-                <Share2 className="w-4 h-4 text-indigo-400" />
-                <span>Real-Time Cloud Sync</span>
-              </motion.div>
 
               {/* Phone Outer Chassis */}
               <div className="relative rounded-[48px] p-3.5 bg-gradient-to-b from-neutral-700 via-neutral-900 to-black shadow-[0_25px_70px_rgba(0,0,0,0.8),inset_0_2px_4px_rgba(255,255,255,0.2)] border border-neutral-700/60">
@@ -276,12 +314,75 @@ export default function DownloadAppPage() {
 
                   {/* Simulated App Content Body */}
                   <div className="flex-1 px-4 overflow-hidden relative">
+                    {/* Step 0: Animated Touch Pointer on Spider-Man & Favorites */}
+                    {simStep === 0 && (
+                      <>
+                        {/* Cursor 1: Tapping the Heart Favorites Icon at 0.4s */}
+                        <motion.div
+                          key="heart-cursor"
+                          initial={{ opacity: 0, scale: 0.7, x: 50, y: -10 }}
+                          animate={{
+                            opacity: [0, 1, 1, 0],
+                            scale: [0.7, 1, 0.8, 1.25],
+                            x: [50, 42, 42, 42],
+                            y: [-10, -2, -2, -2],
+                          }}
+                          transition={{ duration: 0.9, delay: 0.3 }}
+                          className="absolute top-16 right-6 z-30 pointer-events-none flex flex-col items-center"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-rose-500/40 border-2 border-rose-400 animate-ping" />
+                          <div className="w-5 h-5 rounded-full bg-rose-500 border border-white -mt-7 shadow-xl flex items-center justify-center">
+                            <Heart className="w-2.5 h-2.5 fill-white text-white" />
+                          </div>
+                        </motion.div>
+
+                        {/* Favorite Toast Notification */}
+                        {isFavorited && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            className="absolute top-2 left-4 right-4 z-30 p-2 rounded-xl bg-rose-950/90 border border-rose-500/40 backdrop-blur-md text-[8.5px] font-bold text-rose-200 flex items-center gap-1.5 shadow-xl"
+                          >
+                            <Heart className="w-3 h-3 fill-rose-500 text-rose-500 shrink-0" />
+                            <span>Added Spider-Man to 4K Favorites!</span>
+                          </motion.div>
+                        )}
+
+                        {/* Cursor 2: Tapping the Spider-Man Banner at 1.4s */}
+                        <motion.div
+                          key="movie-cursor"
+                          initial={{ opacity: 0, scale: 0.7, x: 25, y: 35 }}
+                          animate={{
+                            opacity: [0, 0, 1, 1, 0],
+                            scale: [0.7, 0.7, 1, 0.8, 1.2],
+                            x: [25, 25, 0, 0, 0],
+                            y: [35, 35, 0, 0, 0],
+                          }}
+                          transition={{ duration: 1.2, delay: 1.2, times: [0, 0.2, 0.5, 0.75, 1] }}
+                          className="absolute top-24 left-1/2 -translate-x-1/2 z-30 pointer-events-none flex flex-col items-center"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-[#F5C518]/30 border-2 border-[#F5C518] backdrop-blur-md flex items-center justify-center animate-ping" />
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-[#F5C518] to-yellow-300 border-2 border-white -mt-8 shadow-xl flex items-center justify-center">
+                            <div className="w-2 h-2 rounded-full bg-black/80" />
+                          </div>
+                          <span className="text-[8px] font-black text-black bg-[#F5C518] px-2 py-0.5 rounded-full mt-1 shadow">
+                            Opening Movie Info...
+                          </span>
+                        </motion.div>
+                      </>
+                    )}
+
                     {/* Featured Movie Hero Banner with Real TMDB Backdrop */}
-                    <div className="relative h-44 rounded-2xl overflow-hidden border border-white/10 p-3 flex flex-col justify-end shadow-xl mb-3.5 group">
+                    <motion.div
+                      animate={simStep === 0 ? { scale: [1, 1, 0.97, 1] } : {}}
+                      transition={{ duration: 1.2, times: [0, 0.6, 0.75, 1], delay: 1.3 }}
+                      onClick={() => setSimStep(1)}
+                      className="relative h-44 rounded-2xl overflow-hidden border border-white/10 p-3 flex flex-col justify-end shadow-xl mb-3.5 group cursor-pointer active:scale-[0.98] transition-transform"
+                    >
                       <img
                         src="https://image.tmdb.org/t/p/w780/14QbnygCuTO0vl7CAFmPf1fgZfV.jpg"
                         alt="Spider-Man: No Way Home"
-                        className="absolute inset-0 w-full h-full object-cover object-center"
+                        className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/20" />
 
@@ -290,9 +391,26 @@ export default function DownloadAppPage() {
                           <span className="px-2 py-0.5 rounded-md bg-[#F5C518] text-black font-black text-[9px] uppercase tracking-wider">
                             Featured
                           </span>
-                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 border border-white/10 backdrop-blur-md text-[9px] font-bold text-amber-300">
-                            <Play className="w-2.5 h-2.5 fill-current text-[#F5C518]" />
-                            <span>Play</span>
+                          <div className="flex items-center gap-1.5">
+                            {/* Heart Favorites Button */}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setIsFavorited(!isFavorited);
+                              }}
+                              className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${
+                                isFavorited
+                                  ? "bg-rose-600 text-white shadow-lg shadow-rose-600/50 scale-110"
+                                  : "bg-black/60 border border-white/10 text-white/80 hover:text-white"
+                              }`}
+                            >
+                              <Heart className={`w-3 h-3 ${isFavorited ? "fill-white" : ""}`} />
+                            </button>
+
+                            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 border border-white/10 backdrop-blur-md text-[9px] font-bold text-amber-300">
+                              <Play className="w-2.5 h-2.5 fill-current text-[#F5C518]" />
+                              <span>Play</span>
+                            </div>
                           </div>
                         </div>
                         <span className="text-[9px] font-bold text-amber-300 tracking-wider uppercase block">
@@ -308,7 +426,7 @@ export default function DownloadAppPage() {
                           <span className="text-[10px] text-neutral-300 font-medium drop-shadow">• 2h 28m • 4K HDR</span>
                         </div>
                       </div>
-                    </div>
+                    </motion.div>
 
                     {/* Quick Row 1: Continue Watching with Real Backdrops */}
                     <div className="mb-3.5">
@@ -419,12 +537,587 @@ export default function DownloadAppPage() {
                     </div>
                   </div>
 
+                  {/* =====================================================================
+                      STEP 1 ANIMATION: POP-UP DETAILS MODAL (Slides Up)
+                  ===================================================================== */}
+                  <AnimatePresence>
+                    {simStep === 1 && (
+                      <motion.div
+                        key="popup-modal"
+                        initial={{ y: "100%", opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: "100%", opacity: 0 }}
+                        transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                        className="absolute inset-0 z-30 bg-black/75 backdrop-blur-sm flex flex-col justify-end p-2.5"
+                      >
+                        <div className="bg-[#121216] border border-white/15 rounded-3xl p-3.5 shadow-2xl overflow-hidden relative">
+                          {/* Top Drag Handle */}
+                          <div className="w-10 h-1 bg-white/25 rounded-full mx-auto mb-2.5" />
+
+                          {/* Movie Backdrop Header */}
+                          <div className="relative h-28 rounded-2xl overflow-hidden mb-2.5 border border-white/10">
+                            <img
+                              src="https://image.tmdb.org/t/p/w780/14QbnygCuTO0vl7CAFmPf1fgZfV.jpg"
+                              alt="Spider-Man"
+                              className="w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#121216] via-transparent to-transparent" />
+                            <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-white/10 text-[8px] font-bold text-amber-300">
+                              ★ 8.9 TMDB
+                            </div>
+                            <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-[#F5C518] text-black text-[8px] font-black uppercase tracking-wider">
+                              Cinema Preview
+                            </div>
+                          </div>
+
+                          {/* Title & Metadata */}
+                          <h4 className="text-sm font-black text-white leading-tight mb-1">
+                            Spider-Man: No Way Home
+                          </h4>
+                          <div className="flex items-center gap-1.5 text-[9px] font-semibold text-neutral-400 mb-2">
+                            <span>2021</span>
+                            <span>•</span>
+                            <span>2h 28m</span>
+                            <span>•</span>
+                            <span className="text-[#F5C518] font-bold">4K HDR</span>
+                            <span>•</span>
+                            <span>Action / Sci-Fi</span>
+                          </div>
+
+                          <p className="text-[9px] text-neutral-300 line-clamp-2 leading-relaxed mb-3">
+                            Peter Parker's secret identity is revealed. Desperate for help, he turns to Doctor Strange to undo the reveal, unleashing dangerous multiverse foes...
+                          </p>
+
+                          {/* Watch Movie Button with Tap Effect */}
+                          <div className="relative">
+                            <motion.div
+                              animate={{ scale: [1, 1, 0.95, 1] }}
+                              transition={{ duration: 1.0, times: [0, 0.6, 0.75, 1], delay: 0.3 }}
+                              onClick={() => setSimStep(2)}
+                              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#F5C518] to-yellow-500 text-black font-black text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-amber-500/25 cursor-pointer"
+                            >
+                              <Play className="w-3.5 h-3.5 fill-black" />
+                              <span>Watch Movie in 4K</span>
+                            </motion.div>
+
+                            {/* Animated Tap Cursor over Watch Button */}
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.7 }}
+                              animate={{ opacity: [0, 1, 1, 0], scale: [0.7, 1, 0.8, 1.25] }}
+                              transition={{ duration: 0.9, delay: 0.5 }}
+                              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none flex flex-col items-center z-10"
+                            >
+                              <div className="w-8 h-8 rounded-full bg-white/50 border-2 border-white animate-ping" />
+                              <div className="w-5 h-5 rounded-full bg-white border border-black -mt-7 shadow-lg" />
+                            </motion.div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* =====================================================================
+                      STEP 2 ANIMATION: TRUE HORIZONTAL 16:9 CINEMA PLAYER
+                  ===================================================================== */}
+                  <AnimatePresence>
+                    {simStep === 2 && (
+                      <motion.div
+                        key="cinema-player"
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: "100%" }}
+                        transition={{ type: "spring", damping: 28, stiffness: 280 }}
+                        className="absolute inset-0 z-30 bg-[#08080a] flex flex-col justify-between overflow-hidden"
+                      >
+                        {/* Top Navigation Header inside Phone (Clean & Always Pristine) */}
+                        <div className="pt-10 px-3.5 pb-2 flex items-center justify-between border-b border-white/5 bg-black/60 backdrop-blur-md relative z-20">
+                          <div className="flex items-center gap-2">
+                            {/* Native Back Button with animated tap target */}
+                            <div className="relative">
+                              <motion.button
+                                animate={{ scale: [1, 1, 0.88, 1] }}
+                                transition={{ duration: 0.8, delay: 1.5 }}
+                                onClick={() => setSimStep(0)}
+                                className="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center text-white cursor-pointer active:scale-90 transition-all shadow"
+                              >
+                                <ArrowLeft className="w-3.5 h-3.5 text-white" />
+                              </motion.button>
+
+                              {/* Animated Tap Cursor clicking the Back button at end of step */}
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.6, x: 15, y: 15 }}
+                                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1, 0.8, 1.2], x: [15, 0, 0, 0], y: [15, 0, 0, 0] }}
+                                transition={{ duration: 0.8, delay: 1.4 }}
+                                className="absolute -bottom-6 -right-2 pointer-events-none flex flex-col items-center z-30"
+                              >
+                                <div className="w-6 h-6 rounded-full bg-white/60 border border-white animate-ping" />
+                                <div className="w-4 h-4 rounded-full bg-[#F5C518] border border-black -mt-5 shadow-lg" />
+                              </motion.div>
+                            </div>
+
+                            <div className="truncate max-w-[150px]">
+                              <p className="text-[11px] font-black text-white truncate leading-tight">Spider-Man: No Way Home</p>
+                              <p className="text-[8px] font-semibold text-neutral-400">4K Ultra HD • Cinema Mode</p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="px-2 py-0.5 rounded-full bg-[#F5C518]/20 border border-[#F5C518]/40 text-[#F5C518] text-[8px] font-black uppercase">
+                              4K HDR
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Main Center Area: THE HORIZONTAL 16:9 WIDESCREEN CINEMA PLAYER */}
+                        <div className="flex-1 px-3.5 py-2 flex flex-col justify-center">
+                          {/* Ambient Backlight Glow behind 16:9 Frame */}
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 via-[#F5C518]/25 to-blue-600/20 rounded-2xl blur-xl scale-95 pointer-events-none" />
+
+                            {/* 16:9 Widescreen Player Frame */}
+                            <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-black border border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.9)] flex flex-col justify-between group">
+                              {/* Horizontal Movie Scene (Widescreen 16:9 Aspect Ratio) */}
+                              <img
+                                src="https://image.tmdb.org/t/p/w780/14QbnygCuTO0vl7CAFmPf1fgZfV.jpg"
+                                alt="Spider-Man 16:9 Widescreen Cinema"
+                                className="absolute inset-0 w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/60 pointer-events-none" />
+
+                              {/* Player Top Overlay */}
+                              <div className="p-2.5 flex items-center justify-between relative z-10">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                                  <span className="text-[8px] font-bold text-white/90 drop-shadow">120 FPS STREAM</span>
+                                </div>
+                                <div className="flex items-center gap-1 bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded border border-white/10 text-[8px] font-bold text-amber-300">
+                                  <Sparkles className="w-2.5 h-2.5 text-[#F5C518]" />
+                                  <span>Dolby Vision</span>
+                                </div>
+                              </div>
+
+                              {/* Center Play/Pause Pulsing Ring */}
+                              <div className="self-center my-auto relative z-10 flex items-center justify-center">
+                                <motion.div
+                                  animate={{ scale: [1, 1.08, 1] }}
+                                  transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+                                  className="w-10 h-10 rounded-full bg-black/70 border border-white/30 backdrop-blur-md flex items-center justify-center shadow-2xl text-[#F5C518]"
+                                >
+                                  <Pause className="w-4 h-4 fill-current" />
+                                </motion.div>
+                              </div>
+
+                              {/* Player Bottom Scrubber Bar & Controls */}
+                              <div className="p-2.5 relative z-10 bg-gradient-to-t from-black via-black/70 to-transparent">
+                                {/* Progress Scrubber */}
+                                <div className="flex items-center justify-between text-[8px] font-mono text-neutral-300 mb-1">
+                                  <span className="text-[#F5C518] font-bold">01:14:32</span>
+                                  <span className="text-neutral-400">02:28:10</span>
+                                </div>
+                                <div className="w-full bg-white/20 h-1 rounded-full overflow-hidden mb-2 relative">
+                                  <motion.div
+                                    initial={{ width: "48%" }}
+                                    animate={{ width: "56%" }}
+                                    transition={{ duration: 2.4, ease: "linear" }}
+                                    className="h-full bg-gradient-to-r from-amber-400 to-[#F5C518] rounded-full relative"
+                                  >
+                                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow" />
+                                  </motion.div>
+                                </div>
+
+                                {/* Bottom Quick Row */}
+                                <div className="flex items-center justify-between text-neutral-300">
+                                  <div className="flex items-center gap-2">
+                                    <Volume2 className="w-3.5 h-3.5 text-white" />
+                                    <span className="text-[8px] font-semibold text-neutral-300">English 5.1</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-[8px] font-bold text-[#F5C518] bg-black/60 px-1.5 py-0.5 rounded border border-white/10">1080p / 4K</span>
+                                    <Maximize2 className="w-3 h-3 text-neutral-300" />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Below Cinema Player: Real Native Mobile Stream Dashboard */}
+                          <div className="mt-2.5 bg-white/5 border border-white/10 rounded-2xl p-2.5">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-[9px] font-bold text-white">Playback Stream Stats</span>
+                              <span className="text-[8px] font-bold text-emerald-400 flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                                Buffer: 100% Full
+                              </span>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-1.5 text-center">
+                              <div className="bg-black/50 border border-white/5 rounded-xl p-1.5">
+                                <p className="text-[7px] text-neutral-400 uppercase font-semibold">Bitrate</p>
+                                <p className="text-[9px] font-black text-amber-300">48.5 Mbps</p>
+                              </div>
+                              <div className="bg-black/50 border border-white/5 rounded-xl p-1.5">
+                                <p className="text-[7px] text-neutral-400 uppercase font-semibold">Audio</p>
+                                <p className="text-[9px] font-black text-white">Atmos 7.1</p>
+                              </div>
+                              <div className="bg-black/50 border border-white/5 rounded-xl p-1.5">
+                                <p className="text-[7px] text-neutral-400 uppercase font-semibold">Display</p>
+                                <p className="text-[9px] font-black text-emerald-400">120Hz Pro</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Simulated Android Gesture Navigation Bar at Bottom */}
+                        <div className="h-6 flex items-center justify-center bg-black/95 relative z-20 border-t border-white/5">
+                          <div className="w-24 h-1 bg-white/30 rounded-full" />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* =====================================================================
+                      STEP 3 ANIMATION: FRIENDS & COMMUNITY WISHLISTS
+                  ===================================================================== */}
+                  <AnimatePresence>
+                    {simStep === 3 && (
+                      <motion.div
+                        key="social-wishlists"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.35 }}
+                        className="absolute inset-0 z-30 bg-[#08080a] flex flex-col justify-between overflow-hidden"
+                      >
+                        {/* Header */}
+                        <div className="pt-10 px-4 pb-2 flex items-center justify-between border-b border-white/5 bg-black/60 backdrop-blur-md relative z-15">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
+                              <Users className="w-3.5 h-3.5" />
+                            </div>
+                            <div>
+                              <h3 className="text-xs font-black text-white leading-tight">Curators & Friends</h3>
+                              <p className="text-[7.5px] font-semibold text-neutral-400">Public 4K Wishlists</p>
+                            </div>
+                          </div>
+
+                          <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-[7.5px] font-bold">
+                            Live Sync
+                          </span>
+                        </div>
+
+                        {/* Social Toast Notification */}
+                        {isFollowing && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -6, scale: 0.95 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            className="mx-3 mt-1.5 p-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[7.5px] font-bold flex items-center gap-1.5 shadow-lg"
+                          >
+                            <CheckCircle2 className="w-3 h-3 text-emerald-400 shrink-0" />
+                            <span>Following Alex Cinephile • Wishlist Synced!</span>
+                          </motion.div>
+                        )}
+
+                        {/* Friends Cards Feed */}
+                        <div className="flex-1 px-3 py-1.5 space-y-2 overflow-hidden">
+                          {/* Friend 1: Alex Cinephile */}
+                          <div className="p-2 rounded-2xl bg-white/5 border border-white/10 relative overflow-hidden">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-500 flex items-center justify-center text-[9px] font-black text-white shadow">
+                                  AC
+                                </div>
+                                <div>
+                                  <p className="text-[9.5px] font-black text-white leading-tight">Alex Cinephile</p>
+                                  <p className="text-[7px] text-neutral-400">42 Reviews • 18 Wishlists</p>
+                                </div>
+                              </div>
+
+                              {/* Follow Button with Tap Target */}
+                              <div className="relative">
+                                <button
+                                  onClick={() => setIsFollowing(!isFollowing)}
+                                  className={`px-2 py-0.5 rounded-full text-[8px] font-black transition-all flex items-center gap-1 ${
+                                    isFollowing
+                                      ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/30 scale-105"
+                                      : "bg-[#F5C518] text-black hover:bg-yellow-400"
+                                  }`}
+                                >
+                                  {isFollowing ? (
+                                    <>
+                                      <Check className="w-2.5 h-2.5 stroke-[3]" />
+                                      <span>Following</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <UserPlus className="w-2.5 h-2.5" />
+                                      <span>+ Follow</span>
+                                    </>
+                                  )}
+                                </button>
+
+                                {/* Animated Tap Cursor over Follow button */}
+                                {!isFollowing && (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0.6, x: 10, y: 10 }}
+                                    animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1, 0.8, 1.2], x: [10, 0, 0, 0], y: [10, 0, 0, 0] }}
+                                    transition={{ duration: 0.8, delay: 0.6 }}
+                                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none flex flex-col items-center z-30"
+                                  >
+                                    <div className="w-5 h-5 rounded-full bg-white/60 border border-white animate-ping" />
+                                    <div className="w-3.5 h-3.5 rounded-full bg-[#F5C518] border border-black -mt-4 shadow-lg" />
+                                  </motion.div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Mini Wishlist Posters */}
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[7px] text-neutral-400 font-semibold uppercase shrink-0">Wishlist:</span>
+                              <div className="flex items-center gap-1 flex-1 overflow-hidden">
+                                {[
+                                  { title: "Dune 2", img: "https://image.tmdb.org/t/p/w185/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg" },
+                                  { title: "Interstellar", img: "https://image.tmdb.org/t/p/w185/xJHokMbljvjADYdit5fK5VQsXEG.jpg" },
+                                  { title: "Spider-Verse", img: "https://image.tmdb.org/t/p/w185/4HodYYKEIsGOdinkGi2Ucz6X9i0.jpg" }
+                                ].map((m, idx) => (
+                                  <div key={idx} className="h-10 w-7 rounded-md overflow-hidden border border-white/10 relative shadow shrink-0">
+                                    <img src={m.img} alt={m.title} className="w-full h-full object-cover" />
+                                  </div>
+                                ))}
+                                <div className="h-10 px-1 rounded-md bg-black/40 border border-white/5 flex items-center justify-center text-[7px] font-bold text-amber-300">
+                                  +15
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Friend 2: Sophia Nolan */}
+                          <div className="p-2 rounded-2xl bg-white/5 border border-white/10 relative overflow-hidden">
+                            <div className="flex items-center justify-between mb-1.5">
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-[9px] font-black text-white shadow">
+                                  SN
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-1">
+                                    <p className="text-[9.5px] font-black text-white leading-tight">Sophia Nolan</p>
+                                    <span className="px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 text-[6px] font-bold">Top 1%</span>
+                                  </div>
+                                  <p className="text-[7px] text-neutral-400">98 Reviews • 4K Film Critic</p>
+                                </div>
+                              </div>
+
+                              <span className="px-2 py-0.5 rounded-full bg-white/10 text-white/90 text-[7.5px] font-bold flex items-center gap-1">
+                                <Bookmark className="w-2.5 h-2.5 text-[#F5C518]" />
+                                <span>32 Lists</span>
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[7px] text-neutral-400 font-semibold uppercase shrink-0">Favorites:</span>
+                              <div className="flex items-center gap-1 flex-1 overflow-hidden">
+                                {[
+                                  { title: "Oppenheimer", img: "https://image.tmdb.org/t/p/w185/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg" },
+                                  { title: "Dark Knight", img: "https://image.tmdb.org/t/p/w185/nMKdUUepR0i5zn0y1T4CsSB5chy.jpg" }
+                                ].map((m, idx) => (
+                                  <div key={idx} className="h-10 w-7 rounded-md overflow-hidden border border-white/10 relative shadow shrink-0">
+                                    <img src={m.img} alt={m.title} className="w-full h-full object-cover" />
+                                  </div>
+                                ))}
+                                <div className="h-10 px-1 rounded-md bg-black/40 border border-white/5 flex items-center justify-center text-[7px] font-bold text-neutral-400">
+                                  +28
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Simulated Android Gesture Navigation Bar */}
+                        <div className="h-6 flex items-center justify-center bg-black/95 relative z-20 border-t border-white/5">
+                          <div className="w-24 h-1 bg-white/30 rounded-full" />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* =====================================================================
+                      STEP 4 ANIMATION: SETTINGS & PRIVACY CONTROLS
+                  ===================================================================== */}
+                  <AnimatePresence>
+                    {simStep === 4 && (
+                      <motion.div
+                        key="settings-privacy"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.35 }}
+                        className="absolute inset-0 z-30 bg-[#08080a] flex flex-col justify-between overflow-hidden"
+                      >
+                        {/* Header */}
+                        <div className="pt-10 px-4 pb-2 flex items-center justify-between border-b border-white/5 bg-black/60 backdrop-blur-md relative z-15">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                              <Shield className="w-3.5 h-3.5" />
+                            </div>
+                            <div>
+                              <h3 className="text-xs font-black text-white leading-tight">Settings & Privacy</h3>
+                              <p className="text-[7.5px] font-semibold text-neutral-400">Zero-Log Security & Hardware</p>
+                            </div>
+                          </div>
+
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[7.5px] font-bold flex items-center gap-1">
+                            <Lock className="w-2.5 h-2.5" />
+                            <span>Protected</span>
+                          </span>
+                        </div>
+
+                        {/* Settings List */}
+                        <div className="flex-1 px-3 py-1.5 space-y-1.5 overflow-hidden">
+                          {/* Toggle 1: Zero-Log Privacy Mode */}
+                          <div className="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between relative">
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                                <ShieldCheck className="w-3 h-3" />
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-black text-white leading-tight">Zero-Log Private Browsing</p>
+                                <p className="text-[7px] text-neutral-400">No watch history sent to servers</p>
+                              </div>
+                            </div>
+
+                            {/* Glowing Switch Toggle */}
+                            <div className="relative">
+                              <div className="w-7 h-4 rounded-full bg-emerald-500 p-0.5 flex items-center justify-end shadow-md shadow-emerald-500/30">
+                                <div className="w-3 h-3 rounded-full bg-white shadow-sm" />
+                              </div>
+
+                              {/* Animated Tap Cursor */}
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.6, x: 10, y: 10 }}
+                                animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1, 0.8, 1.2], x: [10, 0, 0, 0], y: [10, 0, 0, 0] }}
+                                transition={{ duration: 0.8, delay: 0.7 }}
+                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none flex flex-col items-center z-30"
+                              >
+                                <div className="w-5 h-5 rounded-full bg-white/60 border border-white animate-ping" />
+                                <div className="w-3.5 h-3.5 rounded-full bg-emerald-400 border border-black -mt-4 shadow-lg" />
+                              </motion.div>
+                            </div>
+                          </div>
+
+                          {/* Toggle 2: 120Hz Hardware Decoder */}
+                          <div className="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-lg bg-[#F5C518]/20 text-[#F5C518] flex items-center justify-center">
+                                <Zap className="w-3 h-3" />
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-black text-white leading-tight">120Hz HEVC GPU Decoders</p>
+                                <p className="text-[7px] text-neutral-400">Direct hardware 4K acceleration</p>
+                              </div>
+                            </div>
+                            <div className="w-7 h-4 rounded-full bg-[#F5C518] p-0.5 flex items-center justify-end shadow-md shadow-amber-500/30">
+                              <div className="w-3 h-3 rounded-full bg-black shadow-sm" />
+                            </div>
+                          </div>
+
+                          {/* Toggle 3: Hide Wishlist from Public */}
+                          <div className="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                                <Lock className="w-3 h-3" />
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-black text-white leading-tight">Private Wishlist Mode</p>
+                                <p className="text-[7px] text-neutral-400">Share only with mutual friends</p>
+                              </div>
+                            </div>
+                            <div className="w-7 h-4 rounded-full bg-white/20 p-0.5 flex items-center justify-start">
+                              <div className="w-3 h-3 rounded-full bg-neutral-400 shadow-sm" />
+                            </div>
+                          </div>
+
+                          {/* Toggle 4: Download on Wi-Fi Only */}
+                          <div className="p-2 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center">
+                                <Wifi className="w-3 h-3" />
+                              </div>
+                              <div>
+                                <p className="text-[9px] font-black text-white leading-tight">Wi-Fi Only 4K Downloads</p>
+                                <p className="text-[7px] text-neutral-400">Preserve mobile cellular data</p>
+                              </div>
+                            </div>
+                            <div className="w-7 h-4 rounded-full bg-emerald-500 p-0.5 flex items-center justify-end shadow-md shadow-emerald-500/30">
+                              <div className="w-3 h-3 rounded-full bg-white shadow-sm" />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Simulated Android Gesture Navigation Bar */}
+                        <div className="h-6 flex items-center justify-center bg-black/95 relative z-20 border-t border-white/5">
+                          <div className="w-24 h-1 bg-white/30 rounded-full" />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Interactive Native Bottom App Navigation Bar */}
+                  <div className="h-11 bg-black/95 border-t border-white/10 px-3 flex items-center justify-between relative z-25">
+                    {[
+                      { step: 0, icon: Film, label: "Home" },
+                      { step: 1, icon: Heart, label: "Favorites" },
+                      { step: 3, icon: Users, label: "Wishlists" },
+                      { step: 4, icon: SettingsIcon, label: "Settings" },
+                    ].map((tab) => {
+                      const Icon = tab.icon;
+                      const isActive =
+                        (tab.step === 0 && (simStep === 0 || simStep === 2)) ||
+                        (tab.step === 1 && simStep === 1) ||
+                        (tab.step === 3 && simStep === 3) ||
+                        (tab.step === 4 && simStep === 4);
+                      return (
+                        <button
+                          key={tab.label}
+                          onClick={() => setSimStep(tab.step as any)}
+                          className={`flex flex-col items-center gap-0.5 transition-all ${
+                            isActive ? "text-[#F5C518] scale-105 font-bold" : "text-neutral-500 hover:text-neutral-300"
+                          }`}
+                        >
+                          <Icon className={`w-3.5 h-3.5 ${isActive ? "stroke-[2.5]" : "stroke-2"}`} />
+                          <span className="text-[7.5px]">{tab.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
                   {/* Simulated Android Gesture Navigation Bar */}
-                  <div className="h-6 flex items-center justify-center bg-black/90">
+                  <div className="h-5 flex items-center justify-center bg-black relative z-20">
                     <div className="w-24 h-1 bg-white/30 rounded-full" />
                   </div>
 
                 </div>
+              </div>
+
+              {/* Interactive Simulation Status Pills Below Phone */}
+              <div className="flex items-center justify-center gap-1.5 mt-5 flex-wrap max-w-md mx-auto relative z-10">
+                {[
+                  { step: 0, label: "1. Favorites" },
+                  { step: 1, label: "2. Movie Info" },
+                  { step: 2, label: "3. 16:9 Cinema" },
+                  { step: 3, label: "4. Wishlists" },
+                  { step: 4, label: "5. Privacy" },
+                ].map((pill) => (
+                  <button
+                    key={pill.step}
+                    onClick={() => setSimStep(pill.step as any)}
+                    className={`px-3 py-1.5 rounded-full text-[10px] font-bold transition-all ${
+                      simStep === pill.step
+                        ? "bg-[#F5C518] text-black shadow-lg shadow-amber-500/30 scale-105"
+                        : "bg-white/5 border border-white/10 text-neutral-400 hover:text-white"
+                    }`}
+                  >
+                    {pill.label}
+                  </button>
+                ))}
               </div>
             </motion.div>
           </div>
