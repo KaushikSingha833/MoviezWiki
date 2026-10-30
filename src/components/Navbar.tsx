@@ -11,7 +11,7 @@ import { useState, useEffect, useRef } from "react";
 import { getSearchSuggestions } from "@/actions/movieActions";
 import { searchUsers } from "@/lib/profiles";
 import { GENRE_MAP } from "@/lib/genres";
-import { Filter, SlidersHorizontal, Search, Settings2, Popcorn, Film, Globe, User, UserPlus, Bell, Check, X, Lock, Home, Map, Sparkles, LogIn, FolderHeart } from "lucide-react";
+import { Filter, SlidersHorizontal, Search, Settings2, Popcorn, Film, Globe, User, UserPlus, Bell, Check, X, Lock, Home, Map, Sparkles, LogIn, FolderHeart, Smartphone } from "lucide-react";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { approveAccessRequest, dismissNotification, AppNotification } from "@/lib/notifications";
@@ -395,6 +395,10 @@ export default function Navbar() {
       <Link href="/welcome" onClick={() => mobile && setIsMobileMenuOpen(false)} className={`flex items-center gap-3 transition-all ${pathname === '/welcome' ? 'text-[#F5C518] drop-shadow-[0_0_10px_rgba(245,197,24,0.5)] scale-110' : 'text-neutral-500 hover:text-[#F5C518] hover:scale-110'}`} title="Explore">
          <Sparkles className="w-5 h-5 md:w-6 md:h-6" />
          {mobile && <span>Explore</span>}
+      </Link>
+      <Link href="/download" onClick={() => mobile && setIsMobileMenuOpen(false)} className={`flex items-center gap-3 transition-colors ${pathname === '/download' ? 'text-[#F5C518]' : 'text-neutral-500 hover:text-white'}`} title="Get Android App (.apk)">
+         <Smartphone className="w-5 h-5 md:w-6 md:h-6" />
+         {mobile && <span>Get App (.apk)</span>}
       </Link>
       {mobile && (
         <Link href="/settings" onClick={() => setIsMobileMenuOpen(false)} className="hover:text-neutral-300 transition-colors flex items-center gap-3 text-neutral-500">

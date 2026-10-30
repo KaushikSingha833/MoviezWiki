@@ -10,6 +10,7 @@ import CookieConsentBanner from "@/components/CookieConsentBanner";
 import WikiBot from "@/components/WikiBot";
 import Footer from "@/components/Footer";
 import PWARegistration from "@/components/PWARegistration";
+import NativeAppHandler from "@/components/NativeAppHandler";
 
 const outfit = Outfit({ subsets: ["latin"], weight: ["300", "400", "500", "700", "900"] });
 
@@ -36,6 +37,8 @@ export default function RootLayout({
       <body suppressHydrationWarning className={`${outfit.className} antialiased bg-[#050505] selection:bg-purple-500/30 selection:text-white relative`}>
         {/* Register Service Worker for PWA */}
         <PWARegistration />
+        {/* Native Android Capacitor App Shell Handler */}
+        <NativeAppHandler />
         {/* Global Ambient Aurora Background (GPU accelerated without expensive mix-blend re-rasterization) */}
         <div className="fixed inset-0 z-[-1] pointer-events-none overflow-hidden gpu-accelerated">
           <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/[0.07] rounded-full blur-[80px]" />
