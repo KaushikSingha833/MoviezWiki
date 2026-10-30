@@ -276,48 +276,144 @@ export default function DownloadAppPage() {
 
                   {/* Simulated App Content Body */}
                   <div className="flex-1 px-4 overflow-hidden relative">
-                    {/* Featured Movie Hero Banner */}
-                    <div className="relative h-44 rounded-2xl overflow-hidden bg-gradient-to-br from-purple-900/40 via-neutral-900 to-amber-950/40 border border-white/10 p-3 flex flex-col justify-end shadow-lg mb-3">
-                      <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-[#F5C518] text-black font-black text-[9px] uppercase tracking-wider">
-                        Featured
-                      </div>
-                      <span className="text-[10px] font-bold text-amber-300 tracking-wide uppercase">Trending Now</span>
-                      <h4 className="text-sm font-black text-white leading-tight">Spider-Man: Beyond The Multiverse</h4>
-                      <div className="flex items-center gap-2 mt-2">
-                        <div className="flex items-center gap-1 text-[10px] font-bold text-amber-400">
-                          <span>★ 9.4</span>
+                    {/* Featured Movie Hero Banner with Real TMDB Backdrop */}
+                    <div className="relative h-44 rounded-2xl overflow-hidden border border-white/10 p-3 flex flex-col justify-end shadow-xl mb-3.5 group">
+                      <img
+                        src="https://image.tmdb.org/t/p/w780/14QbnygCuTO0vl7CAFmPf1fgZfV.jpg"
+                        alt="Spider-Man: No Way Home"
+                        className="absolute inset-0 w-full h-full object-cover object-center"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/20" />
+
+                      <div className="relative z-10">
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="px-2 py-0.5 rounded-md bg-[#F5C518] text-black font-black text-[9px] uppercase tracking-wider">
+                            Featured
+                          </span>
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/60 border border-white/10 backdrop-blur-md text-[9px] font-bold text-amber-300">
+                            <Play className="w-2.5 h-2.5 fill-current text-[#F5C518]" />
+                            <span>Play</span>
+                          </div>
                         </div>
-                        <span className="text-[10px] text-neutral-400">• 2h 28m • 4K HDR</span>
+                        <span className="text-[9px] font-bold text-amber-300 tracking-wider uppercase block">
+                          Trending #1 Today
+                        </span>
+                        <h4 className="text-sm font-black text-white leading-tight drop-shadow-md">
+                          Spider-Man: No Way Home
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <div className="flex items-center gap-0.5 text-[10px] font-bold text-amber-400">
+                            <span>★ 8.9</span>
+                          </div>
+                          <span className="text-[10px] text-neutral-300 font-medium drop-shadow">• 2h 28m • 4K HDR</span>
+                        </div>
                       </div>
                     </div>
 
-                    {/* Quick Row 1: Continue Watching */}
-                    <div className="mb-3">
-                      <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-[11px] font-bold text-white">Continue Watching</span>
+                    {/* Quick Row 1: Continue Watching with Real Backdrops */}
+                    <div className="mb-3.5">
+                      <div className="flex justify-between items-center mb-1.5 px-0.5">
+                        <span className="text-[11px] font-bold text-white tracking-tight">Continue Watching</span>
                         <span className="text-[9px] font-bold text-amber-400">See All</span>
                       </div>
                       <div className="grid grid-cols-3 gap-2">
-                        {[1, 2, 3].map((n) => (
-                          <div key={n} className="rounded-xl bg-white/5 border border-white/5 h-20 relative overflow-hidden flex flex-col justify-end p-1.5">
-                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent" />
-                            <div className="w-full bg-neutral-700 h-1 rounded-full overflow-hidden relative z-10">
-                              <div className="bg-[#F5C518] h-full" style={{ width: `${n * 30}%` }} />
+                        {[
+                          {
+                            title: "Spider-Verse",
+                            img: "https://image.tmdb.org/t/p/w500/4HodYYKEIsGOdinkGi2Ucz6X9i0.jpg",
+                            progress: 80,
+                          },
+                          {
+                            title: "Dark Knight",
+                            img: "https://image.tmdb.org/t/p/w500/nMKdUUepR0i5zn0y1T4CsSB5chy.jpg",
+                            progress: 45,
+                          },
+                          {
+                            title: "Interstellar",
+                            img: "https://image.tmdb.org/t/p/w500/xJHokMbljvjADYdit5fK5VQsXEG.jpg",
+                            progress: 65,
+                          },
+                        ].map((item, idx) => (
+                          <div
+                            key={idx}
+                            className="rounded-xl border border-white/10 h-20 relative overflow-hidden flex flex-col justify-between p-1.5 shadow-md bg-neutral-900 group"
+                          >
+                            <img
+                              src={item.img}
+                              alt={item.title}
+                              className="absolute inset-0 w-full h-full object-cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+                            
+                            {/* Play Icon Badge */}
+                            <div className="relative z-10 w-4 h-4 rounded-full bg-black/70 backdrop-blur-md flex items-center justify-center border border-white/10 ml-auto">
+                              <Play className="w-2 h-2 fill-white text-white translate-x-[0.5px]" />
+                            </div>
+
+                            {/* Progress Bar & Title */}
+                            <div className="relative z-10 w-full">
+                              <p className="text-[9px] font-bold text-white truncate drop-shadow mb-1">
+                                {item.title}
+                              </p>
+                              <div className="w-full bg-white/20 h-1 rounded-full overflow-hidden">
+                                <div
+                                  className="bg-[#F5C518] h-full rounded-full"
+                                  style={{ width: `${item.progress}%` }}
+                                />
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    {/* Quick Row 2: Top Charts */}
+                    {/* Quick Row 2: Curated For You with Real Posters */}
                     <div>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-[11px] font-bold text-white">Curated For You</span>
+                      <div className="flex justify-between items-center mb-1.5 px-0.5">
+                        <span className="text-[11px] font-bold text-white tracking-tight">Curated For You</span>
                         <span className="text-[9px] font-bold text-amber-400">AI Taste</span>
                       </div>
                       <div className="grid grid-cols-3 gap-2">
-                        {[1, 2, 3].map((n) => (
-                          <div key={n} className="rounded-xl bg-white/5 border border-white/5 h-24" />
+                        {[
+                          {
+                            title: "No Way Home",
+                            rating: "8.9",
+                            img: "https://image.tmdb.org/t/p/w342/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+                          },
+                          {
+                            title: "Oppenheimer",
+                            rating: "8.8",
+                            img: "https://image.tmdb.org/t/p/w342/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
+                          },
+                          {
+                            title: "Dune: Part Two",
+                            rating: "8.7",
+                            img: "https://image.tmdb.org/t/p/w342/1pdfLvkbY9ohJlCjQH2CZjjYVvJ.jpg",
+                          },
+                        ].map((movie, idx) => (
+                          <div
+                            key={idx}
+                            className="rounded-xl border border-white/10 h-28 relative overflow-hidden shadow-lg bg-neutral-900 group"
+                          >
+                            <img
+                              src={movie.img}
+                              alt={movie.title}
+                              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/20" />
+                            
+                            {/* Rating Badge */}
+                            <div className="absolute top-1 right-1 px-1 py-0.5 rounded bg-black/70 backdrop-blur-md border border-white/10 text-[8px] font-bold text-amber-400">
+                              ★ {movie.rating}
+                            </div>
+
+                            {/* Title bottom overlay */}
+                            <div className="absolute bottom-1 left-1 right-1">
+                              <p className="text-[9px] font-bold text-white truncate drop-shadow">
+                                {movie.title}
+                              </p>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>
