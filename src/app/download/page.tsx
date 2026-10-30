@@ -30,17 +30,53 @@ import {
   Check,
   X
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import QRCode from "qrcode";
 
 export default function DownloadAppPage() {
   const [downloadStarted, setDownloadStarted] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [mounted, setMounted] = useState(false);
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>("");
+  const [qrTarget, setQrTarget] = useState<"page" | "direct">("page");
 
   const APK_DOWNLOAD_URL = "https://github.com/KaushikSingha833/MoviezWiki/releases/download/v1.0.0/MoviezWiki.apk";
   const GITHUB_RELEASES_URL = "https://github.com/KaushikSingha833/MoviezWiki/releases/latest";
   const SITE_URL = "https://moviez-wiki.vercel.app/download";
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    const targetUrl = qrTarget === "direct" ? APK_DOWNLOAD_URL : SITE_URL;
+    QRCode.toDataURL(targetUrl, {
+      width: 400,
+      margin: 2,
+      color: {
+        dark: "#050505",
+        light: "#FFFFFF",
+      },
+      errorCorrectionLevel: "M",
+    })
+      .then((url) => setQrCodeUrl(url))
+      .catch((err) => console.error("QR Code Generation Error:", err));
+  }, [qrTarget]);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (showQrModal) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [showQrModal]);
 
   const handleDownloadClick = () => {
     setDownloadStarted(true);
@@ -724,110 +760,111 @@ export default function DownloadAppPage() {
       </div>
 
       {/* =========================================================================
-          INTERACTIVE QR CODE MODAL
+          REAL SCANNABLE QR CODE MODAL (PORTALED DIRECTLY TO VIEWPORT BODY)
       ========================================================================= */}
-      <AnimatePresence>
-        {showQrModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#121216] border border-white/15 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center relative shadow-2xl"
+      {mounted && showQrModal && createPortal(
+        <AnimatePresence>
+          {showQrModal && (
+            <div
+              className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setShowQrModal(false);
+              }}
             >
-              <button
-                onClick={() => setShowQrModal(false)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors"
-                title="Close"
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 15 }}
+                transition={{ duration: 0.2 }}
+                className="bg-[#121216] border border-white/15 rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center relative shadow-[0_25px_60px_rgba(0,0,0,0.95)] max-h-[90vh] overflow-y-auto"
               >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="w-12 h-12 rounded-2xl bg-[#F5C518]/10 border border-[#F5C518]/20 flex items-center justify-center mx-auto mb-4">
-                <QrCode className="w-6 h-6 text-[#F5C518]" />
-              </div>
-
-              <h3 className="text-xl font-black text-white mb-1">Scan with Phone</h3>
-              <p className="text-xs text-neutral-400 mb-6">
-                Open your smartphone camera or scanner to download MoviezWiki instantly.
-              </p>
-
-              {/* High Contrast Rendered QR Code */}
-              <div className="p-4 bg-white rounded-2xl inline-block shadow-xl mb-6">
-                <svg
-                  className="w-48 h-48 mx-auto"
-                  viewBox="0 0 100 100"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
+                <button
+                  onClick={() => setShowQrModal(false)}
+                  className="absolute top-4 right-4 p-2 rounded-full bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white transition-colors"
+                  title="Close"
+                  aria-label="Close"
                 >
-                  {/* Decorative QR Pattern */}
-                  <rect width="100" height="100" fill="white" />
-                  {/* Top-Left Finder */}
-                  <rect x="10" y="10" width="26" height="26" fill="black" />
-                  <rect x="14" y="14" width="18" height="18" fill="white" />
-                  <rect x="18" y="18" width="10" height="10" fill="black" />
-                  {/* Top-Right Finder */}
-                  <rect x="64" y="10" width="26" height="26" fill="black" />
-                  <rect x="68" y="14" width="18" height="18" fill="white" />
-                  <rect x="72" y="18" width="10" height="10" fill="black" />
-                  {/* Bottom-Left Finder */}
-                  <rect x="10" y="64" width="26" height="26" fill="black" />
-                  <rect x="14" y="68" width="18" height="18" fill="white" />
-                  <rect x="18" y="72" width="10" height="10" fill="black" />
-                  {/* Data Blocks */}
-                  <rect x="42" y="12" width="6" height="6" fill="black" />
-                  <rect x="52" y="12" width="6" height="6" fill="black" />
-                  <rect x="42" y="24" width="6" height="6" fill="black" />
-                  <rect x="48" y="30" width="6" height="6" fill="black" />
-                  <rect x="12" y="42" width="6" height="6" fill="black" />
-                  <rect x="24" y="42" width="6" height="6" fill="black" />
-                  <rect x="36" y="42" width="6" height="6" fill="black" />
-                  <rect x="48" y="42" width="6" height="6" fill="black" />
-                  <rect x="60" y="42" width="6" height="6" fill="black" />
-                  <rect x="72" y="42" width="6" height="6" fill="black" />
-                  <rect x="84" y="42" width="6" height="6" fill="black" />
-                  <rect x="18" y="52" width="6" height="6" fill="black" />
-                  <rect x="30" y="52" width="6" height="6" fill="black" />
-                  <rect x="42" y="52" width="6" height="6" fill="black" />
-                  <rect x="54" y="52" width="6" height="6" fill="black" />
-                  <rect x="66" y="52" width="6" height="6" fill="black" />
-                  <rect x="78" y="52" width="6" height="6" fill="black" />
-                  <rect x="42" y="64" width="6" height="6" fill="black" />
-                  <rect x="54" y="64" width="6" height="6" fill="black" />
-                  <rect x="66" y="64" width="6" height="6" fill="black" />
-                  <rect x="78" y="64" width="6" height="6" fill="black" />
-                  <rect x="48" y="76" width="6" height="6" fill="black" />
-                  <rect x="60" y="76" width="6" height="6" fill="black" />
-                  <rect x="72" y="76" width="6" height="6" fill="black" />
-                  <rect x="84" y="76" width="6" height="6" fill="black" />
-                  <rect x="42" y="84" width="6" height="6" fill="black" />
-                  <rect x="54" y="84" width="6" height="6" fill="black" />
-                  <rect x="66" y="84" width="6" height="6" fill="black" />
-                  <rect x="78" y="84" width="6" height="6" fill="black" />
-                </svg>
-              </div>
+                  <X className="w-5 h-5" />
+                </button>
 
-              {/* Direct Link Copy Button */}
-              <button
-                onClick={handleCopyLink}
-                className="w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white flex items-center justify-center gap-2 transition-colors"
-              >
-                {copiedLink ? (
-                  <>
-                    <Check className="w-4 h-4 text-emerald-400" />
-                    <span>Link Copied to Clipboard!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4 text-amber-300" />
-                    <span>Copy Download Page Link</span>
-                  </>
-                )}
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                <div className="w-12 h-12 rounded-2xl bg-[#F5C518]/10 border border-[#F5C518]/20 flex items-center justify-center mx-auto mb-3">
+                  <QrCode className="w-6 h-6 text-[#F5C518]" />
+                </div>
+
+                <h3 className="text-xl font-black text-white mb-1">Scan with Smartphone</h3>
+                <p className="text-xs text-neutral-400 mb-4">
+                  Point your camera to download MoviezWiki directly on your phone.
+                </p>
+
+                {/* Target Toggle */}
+                <div className="inline-flex p-1 rounded-xl bg-white/5 border border-white/10 mb-4 text-xs font-semibold">
+                  <button
+                    onClick={() => setQrTarget("page")}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      qrTarget === "page"
+                        ? "bg-[#F5C518] text-black font-bold shadow"
+                        : "text-neutral-400 hover:text-white"
+                    }`}
+                  >
+                    Download Page
+                  </button>
+                  <button
+                    onClick={() => setQrTarget("direct")}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      qrTarget === "direct"
+                        ? "bg-[#F5C518] text-black font-bold shadow"
+                        : "text-neutral-400 hover:text-white"
+                    }`}
+                  >
+                    Direct APK File
+                  </button>
+                </div>
+
+                {/* Real High-Resolution Scannable QR Code */}
+                <div className="p-4 bg-white rounded-2xl inline-block shadow-2xl mb-4 border-4 border-amber-400/20">
+                  {qrCodeUrl ? (
+                    <img
+                      src={qrCodeUrl}
+                      alt="Real Scannable QR Code for MoviezWiki"
+                      className="w-52 h-52 sm:w-56 sm:h-56 mx-auto block object-contain"
+                    />
+                  ) : (
+                    <div className="w-52 h-52 sm:w-56 sm:h-56 flex flex-col items-center justify-center bg-neutral-100 text-neutral-700 text-xs font-bold gap-2">
+                      <div className="w-6 h-6 border-2 border-neutral-400 border-t-black rounded-full animate-spin" />
+                      <span>Generating QR Code...</span>
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-[11px] text-neutral-400 mb-5 leading-relaxed">
+                  {qrTarget === "direct"
+                    ? "Scanning starts direct download of MoviezWiki.apk (~4.5MB)."
+                    : "Scanning opens the full MoviezWiki download & installation guide on your phone."}
+                </p>
+
+                {/* Direct Link Copy Button */}
+                <button
+                  onClick={handleCopyLink}
+                  className="w-full py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-bold text-white flex items-center justify-center gap-2 transition-colors active:scale-98"
+                >
+                  {copiedLink ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-400" />
+                      <span>Link Copied to Clipboard!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 text-amber-300" />
+                      <span>Copy Link to Clipboard</span>
+                    </>
+                  )}
+                </button>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
     </div>
   );
